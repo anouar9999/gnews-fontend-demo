@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft, Upload, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
@@ -8,12 +8,17 @@ export default function ArticleForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
+  const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
-    title: '', content: '', meta_title: '', meta_description: '',
-    featured_image: '', status: 'nouveau', is_featured: false,
+    title: '', slug: '', content: '', meta_title: '', meta_description: '',
+    status: 'nouveau', is_featured: false,
     is_breaking: false, category: '', tag_ids: [], media_ids: [],
   });
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
@@ -37,10 +42,10 @@ export default function ArticleForm() {
     api.get(`/articles/${id}/`).then(({ data }) => {
       setForm({
         title: data.title || '',
+        slug: data.slug || '',
         content: data.content || '',
         meta_title: data.meta_title || '',
         meta_description: data.meta_description || '',
-        featured_image: data.featured_image || '',
         status: data.status || 'nouveau',
         is_featured: data.is_featured || false,
         is_breaking: data.is_breaking || false,
@@ -48,6 +53,10 @@ export default function ArticleForm() {
         tag_ids: data.tags?.map((t) => t.id) || [],
         media_ids: data.media?.map((m) => m.id) || [],
       });
+      if (data.featured_image) {
+        setExistingImageUrl(data.featured_image);
+        setImagePreview(data.featured_image);
+      }
       setFetching(false);
     }).catch(() => {
       toast.error('Failed to load article');
@@ -55,9 +64,26 @@ export default function ArticleForm() {
     });
   }, [id, isEdit, navigate]);
 
+  const toSlug = (text) =>
+    text.toLowerCase().trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      if (name === 'title' && !isEdit && !slugManuallyEdited) {
+        updated.slug = toSlug(value);
+      }
+      return updated;
+    });
+  };
+
+  const handleSlugChange = (e) => {
+    setSlugManuallyEdited(true);
+    setForm((prev) => ({ ...prev, slug: e.target.value }));
   };
 
   const handleMultiSelect = (name, value) => {
@@ -68,19 +94,53 @@ export default function ArticleForm() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setExistingImageUrl('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
-        ...form,
-        category: form.category || null,
-      };
+      const formData = new FormData();
+      formData.append('title', form.title);
+      if (form.slug) formData.append('slug', form.slug);
+      formData.append('content', form.content);
+      formData.append('meta_title', form.meta_title);
+      formData.append('meta_description', form.meta_description);
+      formData.append('status', form.status);
+      formData.append('is_featured', form.is_featured);
+      formData.append('is_breaking', form.is_breaking);
+      formData.append('category', form.category || '');
+      form.tag_ids.forEach((tid) => formData.append('tag_ids', tid));
+      form.media_ids.forEach((mid) => formData.append('media_ids', mid));
+
+      if (imageFile) {
+        formData.append('featured_image', imageFile);
+      } else if (!imagePreview && existingImageUrl) {
+        // Image was removed — send empty to clear it
+        formData.append('featured_image', '');
+      }
+
       if (isEdit) {
-        await api.put(`/articles/${id}/`, payload);
+        await api.patch(`/articles/${id}/`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         toast.success('Article updated');
       } else {
-        await api.post('/articles/', payload);
+        await api.post('/articles/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
         toast.success('Article created');
       }
       navigate('/articles');
@@ -119,6 +179,23 @@ export default function ArticleForm() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Slug
+              {!isEdit && <span className="ml-2 text-xs text-gray-400 font-normal">auto-generated from title</span>}
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden">
+              <span className="px-3 py-2 bg-gray-50 text-gray-400 text-sm border-r border-gray-300 select-none whitespace-nowrap">/articles/</span>
+              <input
+                name="slug"
+                value={form.slug}
+                onChange={handleSlugChange}
+                placeholder="auto-generated"
+                className="flex-1 px-3 py-2 focus:outline-none text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
             <textarea name="content" value={form.content} onChange={handleChange} required rows={10}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -130,10 +207,34 @@ export default function ArticleForm() {
               <input name="meta_title" value={form.meta_title} onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
-              <input name="featured_image" value={form.featured_image} onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+              {imagePreview ? (
+                <div className="relative w-full h-36 rounded-lg overflow-hidden border border-gray-300 group">
+                  <img src={imagePreview} alt="Featured" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                  <Upload size={24} className="text-gray-400 mb-1" />
+                  <span className="text-sm text-gray-500">Click to upload image</span>
+                  <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           </div>
 
