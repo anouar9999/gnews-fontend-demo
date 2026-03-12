@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", sans-serif;
+  --color-orange: #FF6B00;
+  --color-orange-dim: #cc5500;
+  --color-dark: #1A1A1A;
+  --color-darker: #111111;
+  --color-card: #1A1A1A;
+  /* Custom xs breakpoint (below sm=640) */
+  --breakpoint-xs: 480px;
+}
+
+* {
+  font-family: "Montserrat", sans-serif;
+  box-sizing: border-box;
+  /* Prevent horizontal overflow globally */
+  max-width: 100%;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #000000;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Breaking ticker ── */
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track {
+  display: flex;
+  animation: ticker 40s linear infinite;
+  white-space: nowrap;
+  width: max-content;
+}
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #FF6B00; border-radius: 3px; }
+
+/* ── Card hover glow ── */
+.gnewz-card {
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  background: #1A1A1A;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.gnewz-card:hover {
+  border-color: #FF6B00;
+  transform: translateY(-2px);
+}
+/* Disable hover transform on touch devices (no hover) */
+@media (hover: none) {
+  .gnewz-card:hover { transform: none; }
+}
+
+/* ── Orange underline link ── */
+.gnewz-link {
+  position: relative;
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.gnewz-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #FF6B00;
+  transition: width 0.2s;
+}
+.gnewz-link:hover { color: #FF6B00; }
+.gnewz-link:hover::after { width: 100%; }
+
+/* ── Tag pill ── */
+.gnewz-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #FF6B00;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ── Live badge ── */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #FF6B00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  animation: pulse 1s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Responsive table wrapper ── */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── RTL support ── */
+[dir="rtl"] .ticker-track {
+  animation-direction: reverse;
+}
