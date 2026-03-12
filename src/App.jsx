@@ -4,13 +4,14 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layouts
-import AdminLayout   from './layouts/AdminLayout';
-import GnewzLayout   from './layouts/GnewzLayout';
+import AdminLayout        from './layouts/AdminLayout';
+import AdminPreviewLayout from './layouts/AdminPreviewLayout';
+import GnewzLayout        from './layouts/GnewzLayout';
 
 // Admin pages
 import AdminLogin      from './pages/admin/AdminLogin';
 import AdminDashboard  from './pages/admin/AdminDashboard';
-import AIOrchestration from './pages/admin/AIOrchestration';
+import AdminSettings   from './pages/admin/AdminSettings';
 
 // Existing admin CRUD pages
 import ArticleList  from './pages/articles/ArticleList';
@@ -54,6 +55,23 @@ export default function App() {
           {/* ── Admin Login (public) ── */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
+          {/* ── Admin Preview Site at /admin (protected) ── */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPreviewLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<LandingPage />} />
+            <Route path="gaming"   element={<GamingPage />} />
+            <Route path="hardware" element={<HardwarePage />} />
+            <Route path="culture"  element={<CulturePage />} />
+            <Route path="esports"  element={<EsportPage />} />
+            <Route path="search"   element={<SearchPage />} />
+          </Route>
+
           {/* ── Admin CMS (protected) ── */}
           <Route
             path="/admin"
@@ -63,8 +81,8 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminDashboard />} />
-            <Route path="ai" element={<AIOrchestration />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="settings"  element={<AdminSettings />} />
 
             <Route path="articles"          element={<ArticleList />} />
             <Route path="articles/new"      element={<ArticleForm />} />

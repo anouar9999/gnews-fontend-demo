@@ -47,7 +47,7 @@ export default function UserList() {
   };
 
   const columns = [
-    { key: 'username', label: 'Username', render: (row) => <span className="font-medium text-gray-800">{row.username}</span> },
+    { key: 'username', label: 'Username', render: (row) => <span className="font-medium text-white">{row.username}</span> },
     { key: 'email', label: 'Email', render: (row) => <span className="text-gray-600">{row.email}</span> },
     {
       key: 'user_type', label: 'Role',
@@ -78,17 +78,17 @@ export default function UserList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Users</h1>
-        <Link to="/users/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+        <h1 className="text-2xl font-bold text-white">Users</h1>
+        <Link to="/users/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
           <Plus size={16} /> New User
         </Link>
       </div>
       <div className="flex flex-wrap gap-3 mb-4">
         <input type="text" placeholder="Search users..." value={search} onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64" />
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable columns={columns} data={users} page={page} totalPages={totalPages} onPageChange={(p) => updateParam('page', String(p))} />
       )}

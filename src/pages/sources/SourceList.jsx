@@ -51,10 +51,10 @@ export default function SourceList() {
   };
 
   const columns = [
-    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-gray-800">{row.name}</span> },
+    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-white">{row.name}</span> },
     {
       key: 'type', label: 'Type',
-      render: (row) => <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-medium uppercase">{row.type}</span>,
+      render: (row) => <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded-full text-xs font-medium uppercase">{row.type}</span>,
     },
     {
       key: 'url', label: 'URL',
@@ -64,11 +64,11 @@ export default function SourceList() {
         </a>
       ),
     },
-    { key: 'fetch_interval', label: 'Interval', render: (row) => <span className="text-gray-600">{row.fetch_interval}m</span> },
+    { key: 'fetch_interval', label: 'Interval', render: (row) => <span className="text-gray-400">{row.fetch_interval}m</span> },
     {
       key: 'is_active', label: 'Status',
       render: (row) => (
-        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${row.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
           {row.is_active ? 'Active' : 'Inactive'}
         </span>
       ),
@@ -77,8 +77,8 @@ export default function SourceList() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/sources/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>}
-          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={15} /></button>}
+          {canEdit && <Link to={`/sources/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
     },
@@ -87,18 +87,18 @@ export default function SourceList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Sources</h1>
+        <h1 className="text-2xl font-bold text-white">Sources</h1>
         {canEdit && (
-          <Link to="/sources/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <Link to="/sources/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Source
           </Link>
         )}
       </div>
       <div className="flex flex-wrap gap-3 mb-4">
         <input type="text" placeholder="Search sources..." value={search} onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64" />
         <select value={type} onChange={(e) => updateParam('type', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors">
           <option value="">All Types</option>
           <option value="rss">RSS</option>
           <option value="api">API</option>
@@ -106,7 +106,7 @@ export default function SourceList() {
         </select>
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable columns={columns} data={sources} page={page} totalPages={totalPages} onPageChange={(p) => updateParam('page', String(p))} />
       )}

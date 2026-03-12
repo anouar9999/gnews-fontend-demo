@@ -76,7 +76,7 @@ export default function AdminLayout() {
             </button>
 
             <Link
-              to="/"
+              to="/admin"
               className="hidden lg:flex items-center gap-1.5 text-gray-400 hover:text-[#FF6B00] text-xs transition-colors"
             >
               <ExternalLink size={13} />

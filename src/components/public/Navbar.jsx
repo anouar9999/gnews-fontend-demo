@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Menu, X, Bell, LayoutDashboard } from 'lucide-react';
+import { Search, Menu, X, Bell } from 'lucide-react';
 import GnewzLogo from './GnewzLogo';
 import LanguageSwitch from '../LanguageSwitch';
-import { useAuth } from '../../context/AuthContext';
 
-export default function Navbar() {
+export default function Navbar({ basePath = '' }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -16,18 +14,18 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const navLinks = [
-    { label: t('nav.home'),     to: '/' },
-    { label: t('nav.gaming'),   to: '/gaming' },
-    { label: t('nav.hardware'), to: '/hardware' },
-    { label: t('nav.culture'),  to: '/culture' },
-    { label: t('nav.esports'),  to: '/esports' },
+    { label: t('nav.home'),     to: basePath === '' ? '/' : basePath },
+    { label: t('nav.gaming'),   to: `${basePath}/gaming` },
+    { label: t('nav.hardware'), to: `${basePath}/hardware` },
+    { label: t('nav.culture'),  to: `${basePath}/culture` },
+    { label: t('nav.esports'),  to: `${basePath}/esports` },
   ];
 
   const handleSearch = (e) => {
     e.preventDefault();
     const q = searchQuery.trim();
     if (q) {
-      navigate(`/search?q=${encodeURIComponent(q)}`);
+      navigate(`${basePath}/search?q=${encodeURIComponent(q)}`);
       setSearchOpen(false);
       setSearchQuery('');
     }
@@ -44,7 +42,8 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ label, to }) => {
-            const active = pathname === to || (to !== '/' && pathname.startsWith(to));
+            const isHome = to === '/' || to === basePath;
+            const active = isHome ? pathname === to : pathname === to || pathname.startsWith(to + '/');
             return (
               <Link
                 key={to}
@@ -93,30 +92,6 @@ export default function Navbar() {
             <span className="absolute top-0 right-0 w-2 h-2 bg-[#FF6B00] rounded-full" />
           </button>
 
-          {/* Admin dashboard link (if logged in) */}
-          {user && (
-            <Link
-              to="/admin"
-              className="hidden md:flex items-center gap-1.5 text-gray-400 hover:text-[#FF6B00] transition-colors text-xs font-semibold"
-              title={t('nav.adminDashboard')}
-            >
-              <div className="w-7 h-7 rounded-full bg-[#FF6B00] flex items-center justify-center text-white text-xs font-bold">
-                {user.username?.[0]?.toUpperCase() ?? 'A'}
-              </div>
-            </Link>
-          )}
-
-          {/* Admin icon for non-logged-in (link to admin login) */}
-          {!user && (
-            <Link
-              to="/admin/login"
-              className="hidden md:flex items-center gap-1.5 text-gray-500 hover:text-[#FF6B00] transition-colors p-1"
-              title="Admin"
-            >
-              <LayoutDashboard size={16} />
-            </Link>
-          )}
-
           {/* Live Now CTA */}
           <Link
             to="/esports"
@@ -140,7 +115,8 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-[#111] border-t border-[#1A1A1A] px-4 py-4 flex flex-col gap-1">
           {navLinks.map(({ label, to }) => {
-            const active = pathname === to || (to !== '/' && pathname.startsWith(to));
+            const isHome = to === '/' || to === basePath;
+            const active = isHome ? pathname === to : pathname === to || pathname.startsWith(to + '/');
             return (
               <Link
                 key={to}
@@ -154,6 +130,7 @@ export default function Navbar() {
               </Link>
             );
           })}
+
           {/* Mobile search */}
           <form onSubmit={handleSearch} className="flex gap-2 mt-2">
             <input
@@ -166,17 +143,12 @@ export default function Navbar() {
               <Search size={16} />
             </button>
           </form>
-          {/* Mobile lang + admin */}
+
+          {/* Mobile lang switch */}
           <div className="flex items-center gap-2 mt-2">
             <LanguageSwitch />
-            <Link
-              to={user ? '/admin' : '/admin/login'}
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-1.5 text-gray-400 text-xs px-3 py-1.5 border border-[#333] rounded"
-            >
-              <LayoutDashboard size={13} /> Admin
-            </Link>
           </div>
+
           <Link
             to="/esports"
             onClick={() => setMenuOpen(false)}

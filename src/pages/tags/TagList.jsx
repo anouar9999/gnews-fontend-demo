@@ -53,19 +53,19 @@ export default function TagList() {
   };
 
   const columns = [
-    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-gray-800">{row.name}</span> },
-    { key: 'slug', label: 'Slug', render: (row) => <code className="text-xs bg-gray-100 px-2 py-0.5 rounded">{row.slug}</code> },
+    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-white">{row.name}</span> },
+    { key: 'slug', label: 'Slug', render: (row) => <code className="text-xs bg-[#1A1A1A] px-2 py-0.5 rounded">{row.slug}</code> },
     {
       key: 'type', label: 'Type',
-      render: (row) => <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">{typeLabels[row.type] || row.type}</span>,
+      render: (row) => <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full text-xs font-medium">{typeLabels[row.type] || row.type}</span>,
     },
     { key: 'created_at', label: 'Created', render: (row) => <span className="text-xs text-gray-500">{new Date(row.created_at).toLocaleDateString()}</span> },
     {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/tags/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>}
-          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={15} /></button>}
+          {canEdit && <Link to={`/tags/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
     },
@@ -74,18 +74,18 @@ export default function TagList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Tags</h1>
+        <h1 className="text-2xl font-bold text-white">Tags</h1>
         {canEdit && (
-          <Link to="/tags/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <Link to="/tags/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Tag
           </Link>
         )}
       </div>
       <div className="flex flex-wrap gap-3 mb-4">
         <input type="text" placeholder="Search tags..." value={search} onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64" />
         <select value={type} onChange={(e) => updateParam('type', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors">
           <option value="">All Types</option>
           <option value="game">Game</option>
           <option value="platform">Platform</option>
@@ -94,7 +94,7 @@ export default function TagList() {
         </select>
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable columns={columns} data={tags} page={page} totalPages={totalPages} onPageChange={(p) => updateParam('page', String(p))} />
       )}

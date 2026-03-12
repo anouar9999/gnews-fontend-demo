@@ -90,7 +90,7 @@ export default function ArticleList() {
       label: 'Title',
       render: (row) => (
         <div className="max-w-xs">
-          <p className="font-medium text-gray-800 truncate">{row.title}</p>
+          <p className="font-medium text-white truncate">{row.title}</p>
           <p className="text-xs text-gray-500 truncate">{row.category?.name || '—'}</p>
         </div>
       ),
@@ -127,23 +127,23 @@ export default function ArticleList() {
         <div className="flex gap-1">
           {canEdit && (
             <>
-              <Link to={`/articles/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
+              <Link to={`/articles/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded">
                 <Pencil size={15} />
               </Link>
               {row.status !== 'publie' && (
-                <button onClick={() => handleAction('publish', row)} className="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Publish">
+                <button onClick={() => handleAction('publish', row)} className="p-1.5 text-green-600 hover:bg-green-500/10 rounded" title="Publish">
                   <Send size={15} />
                 </button>
               )}
               {row.status !== 'archive' && (
-                <button onClick={() => handleAction('archive', row)} className="p-1.5 text-orange-600 hover:bg-orange-50 rounded" title="Archive">
+                <button onClick={() => handleAction('archive', row)} className="p-1.5 text-orange-600 hover:bg-orange-500/10 rounded" title="Archive">
                   <Archive size={15} />
                 </button>
               )}
             </>
           )}
           {canDelete && (
-            <button onClick={() => handleAction('delete', row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Delete">
+            <button onClick={() => handleAction('delete', row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded" title="Delete">
               <Trash2 size={15} />
             </button>
           )}
@@ -155,9 +155,9 @@ export default function ArticleList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Articles</h1>
+        <h1 className="text-2xl font-bold text-white">Articles</h1>
         {canEdit && (
-          <Link to="/articles/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <Link to="/articles/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Article
           </Link>
         )}
@@ -169,12 +169,12 @@ export default function ArticleList() {
           placeholder="Search articles..."
           value={search}
           onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64"
         />
         <select
           value={status}
           onChange={(e) => updateParam('status', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors"
         >
           <option value="">All Statuses</option>
           <option value="nouveau">New</option>
@@ -186,7 +186,7 @@ export default function ArticleList() {
         <select
           value={category}
           onChange={(e) => updateParam('category', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors"
         >
           <option value="">All Categories</option>
           {categories.map((c) => (
@@ -196,7 +196,7 @@ export default function ArticleList() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable
           columns={columns}

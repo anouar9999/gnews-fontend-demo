@@ -21,7 +21,7 @@ export default function AdminLogin() {
     try {
       await login(username, password);
       toast.success('Welcome back!');
-      navigate('/admin');
+      navigate('/admin/dashboard');
     } catch {
       toast.error('Invalid credentials');
     } finally {
@@ -30,20 +30,22 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+    <div className="h-screen bg-black overflow-hidden relative">
       {/* Top language switch */}
-      <div className="absolute top-6 right-6">
+      <div className="absolute top-6 right-6 z-10">
         <LanguageSwitch />
       </div>
 
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <GnewzLogo size={90} variant="dark" />
-        </div>
+      {/* True center wrapper */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <GnewzLogo size={72} variant="dark" />
+          </div>
 
-        {/* Card */}
-        <div className="bg-[#111] border border-[#222] rounded-xl p-8">
+          {/* Card */}
+          <div className="bg-[#111] border border-[#222] rounded-xl p-8">
           <div className="mb-6">
             <p className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest mb-1">
               {t('admin.adminConsole')}
@@ -94,9 +96,10 @@ export default function AdminLogin() {
           </form>
         </div>
 
-        <p className="text-center text-gray-600 text-xs mt-6">
-          © 2025 GNEWZ. All rights reserved.
-        </p>
+          <p className="text-center text-gray-600 text-xs mt-6">
+            © 2025 GNEWZ. All rights reserved.
+          </p>
+        </div>
       </div>
     </div>
   );

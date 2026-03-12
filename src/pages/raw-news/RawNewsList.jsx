@@ -101,19 +101,19 @@ export default function RawNewsList() {
   const columns = [
     {
       key: 'select', label: (
-        <button onClick={toggleAll} className="p-0.5 text-gray-500 hover:text-blue-600">
+        <button onClick={toggleAll} className="p-0.5 text-gray-500 hover:text-[#FF6B00]">
           {allSelected ? <CheckSquare size={18} /> : someSelected ? <MinusSquare size={18} /> : <Square size={18} />}
         </button>
       ),
       render: (row) => (
-        <button onClick={(e) => { e.stopPropagation(); toggleSelect(row.id); }} className="p-0.5 text-gray-500 hover:text-blue-600">
-          {selected.has(row.id) ? <CheckSquare size={18} className="text-blue-600" /> : <Square size={18} />}
+        <button onClick={(e) => { e.stopPropagation(); toggleSelect(row.id); }} className="p-0.5 text-gray-500 hover:text-[#FF6B00]">
+          {selected.has(row.id) ? <CheckSquare size={18} className="text-[#FF6B00]" /> : <Square size={18} />}
         </button>
       ),
     },
     {
       key: 'title', label: 'Title',
-      render: (row) => <span className="font-medium text-gray-800 truncate max-w-[250px] block">{row.title || `#${row.id}`}</span>,
+      render: (row) => <span className="font-medium text-white truncate max-w-[250px] block">{row.title || `#${row.id}`}</span>,
     },
     {
       key: 'url', label: 'URL',
@@ -129,7 +129,7 @@ export default function RawNewsList() {
     },
     {
       key: 'source', label: 'Source',
-      render: (row) => <span className="text-gray-600">{row.source || '-'}</span>,
+      render: (row) => <span className="text-gray-400">{row.source || '-'}</span>,
     },
     {
       key: 'created_at', label: 'Created',
@@ -139,8 +139,8 @@ export default function RawNewsList() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/raw-news/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>}
-          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={15} /></button>}
+          {canEdit && <Link to={`/raw-news/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
     },
@@ -149,37 +149,37 @@ export default function RawNewsList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Raw News</h1>
+        <h1 className="text-2xl font-bold text-white">Raw News</h1>
         {canEdit && (
-          <Link to="/raw-news/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <Link to="/raw-news/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Raw News
           </Link>
         )}
       </div>
 
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <span className="text-sm font-medium text-blue-800">{selected.size} selected</span>
+        <div className="flex items-center gap-3 mb-4 px-4 py-3 bg-[#1A1A1A] border border-[#333] rounded-lg">
+          <span className="text-sm font-medium text-white">{selected.size} selected</span>
           <div className="flex gap-2 ml-auto">
             {canEdit && (
               <>
                 <button onClick={() => bulkUpdateStatus('nouveau')}
-                  className="px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  className="px-3 py-1.5 text-xs font-medium bg-[#222] text-gray-300 rounded-lg hover:bg-[#2a2a2a] transition-colors">
                   Mark New
                 </button>
                 <button onClick={() => bulkUpdateStatus('traite')}
-                  className="px-3 py-1.5 text-xs font-medium bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
+                  className="px-3 py-1.5 text-xs font-medium bg-green-500/20 text-green-300 rounded-lg hover:bg-green-500/30 transition-colors">
                   Mark Processed
                 </button>
                 <button onClick={() => bulkUpdateStatus('ignore')}
-                  className="px-3 py-1.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors">
+                  className="px-3 py-1.5 text-xs font-medium bg-yellow-500/20 text-yellow-300 rounded-lg hover:bg-yellow-500/30 transition-colors">
                   Mark Ignored
                 </button>
               </>
             )}
             {canDelete && (
               <button onClick={() => setShowBulkDelete(true)}
-                className="px-3 py-1.5 text-xs font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
+                className="px-3 py-1.5 text-xs font-medium bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors">
                 Delete Selected
               </button>
             )}
@@ -193,9 +193,9 @@ export default function RawNewsList() {
 
       <div className="flex flex-wrap gap-3 mb-4">
         <input type="text" placeholder="Search raw news..." value={search} onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64" />
         <select value={status} onChange={(e) => updateParam('status', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors">
           <option value="">All Statuses</option>
           <option value="nouveau">New</option>
           <option value="traite">Processed</option>
@@ -203,7 +203,7 @@ export default function RawNewsList() {
         </select>
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable columns={columns} data={rawNews} page={page} totalPages={totalPages} onPageChange={(p) => updateParam('page', String(p))} />
       )}

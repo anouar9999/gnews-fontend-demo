@@ -269,47 +269,19 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Bottom row: System Health + Upcoming Event */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* System Health */}
-        <div className="lg:col-span-3 bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white font-bold">{t('dashboard.systemHealth')}</h2>
-            <Link to="/admin/ai" className="text-[#FF6B00] text-xs hover:underline">
-              {t('dashboard.viewLogs')}
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {[
-              { label: 'Main Database',       status: 'Operational',   dot: 'bg-green-400',  detail: 'Connected' },
-              { label: 'API Gateway (MENA)',  status: '98ms Latency',  dot: 'bg-yellow-400', detail: 'Degraded' },
-              { label: 'RSS Scraper #4',      status: 'Retrying...',   dot: 'bg-red-400',    detail: 'Error' },
-            ].map(({ label, status, dot }) => (
-              <div key={label} className="flex items-center justify-between py-2.5 border-b border-[#1A1A1A] last:border-0">
-                <div className="flex items-center gap-2.5">
-                  <span className={`w-2 h-2 rounded-full ${dot}`} />
-                  <span className="text-white text-sm">{label}</span>
-                </div>
-                <span className="text-gray-400 text-xs">{status}</span>
-              </div>
-            ))}
-          </div>
+      {/* Upcoming Event — full width */}
+      <div className="bg-gradient-to-br from-[#FF6B00]/80 to-[#cc4400]/80 border border-[#FF6B00]/30 rounded-xl p-5 relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-end opacity-10 pr-8">
+          <Trophy size={100} className="text-white" />
         </div>
-
-        {/* Upcoming Event */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-[#FF6B00]/80 to-[#cc4400]/80 border border-[#FF6B00]/30 rounded-xl p-5 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-end opacity-10 pr-4">
-            <Trophy size={80} className="text-white" />
-          </div>
-          <div className="relative">
-            <h2 className="text-white font-bold mb-2">{t('dashboard.upcomingEvent')}</h2>
-            <p className="text-orange-100 text-xs leading-relaxed mb-4">
-              &apos;GNEWZ Cup Maroc&apos; registrations are spiking. Ensure server capacity is allocated for the live stream dashboard.
-            </p>
-            <button className="px-4 py-2 bg-black/40 hover:bg-black/60 text-white text-xs font-bold rounded-lg transition-colors">
-              {t('dashboard.manageEvent')}
-            </button>
-          </div>
+        <div className="relative">
+          <h2 className="text-white font-bold mb-2">{t('dashboard.upcomingEvent')}</h2>
+          <p className="text-orange-100 text-sm leading-relaxed mb-4 max-w-xl">
+            &apos;GNEWZ Cup Maroc&apos; registrations are spiking. Ensure server capacity is allocated for the live stream dashboard.
+          </p>
+          <button className="px-4 py-2 bg-black/40 hover:bg-black/60 text-white text-xs font-bold rounded-lg transition-colors">
+            {t('dashboard.manageEvent')}
+          </button>
         </div>
       </div>
     </div>

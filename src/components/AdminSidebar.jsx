@@ -1,9 +1,9 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  LayoutDashboard, Newspaper, Cpu, Users, Settings,
+  LayoutDashboard, Newspaper, Users, Settings,
   LogOut, ChevronLeft, ChevronRight, BarChart3,
-  Database, Tag, Radio, Image, FolderTree, X,
+  Tag, Radio, Image, FolderTree, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import GnewzLogo from './public/GnewzLogo';
@@ -15,7 +15,7 @@ export default function AdminSidebar({ collapsed, onToggle, onClose }) {
   const navigate = useNavigate();
 
   const navItems = [
-    { to: '/admin',           icon: LayoutDashboard, label: t('admin.dashboard'),       end: true },
+    { to: '/admin/dashboard', icon: LayoutDashboard, label: t('admin.dashboard'),       end: true },
     { to: '/admin/raw-news',  icon: Newspaper,        label: t('admin.rawNews') },
     { to: '/admin/articles',  icon: BarChart3,        label: t('admin.articles') },
     { to: '/admin/categories',icon: FolderTree,       label: t('admin.categories') },
@@ -23,7 +23,6 @@ export default function AdminSidebar({ collapsed, onToggle, onClose }) {
     { to: '/admin/sources',   icon: Radio,            label: t('admin.sources') },
     { to: '/admin/media',     icon: Image,            label: t('admin.media') },
     { to: '/admin/users',     icon: Users,            label: t('admin.users') },
-    { to: '/admin/ai',        icon: Cpu,              label: t('admin.aiOrchestration') },
     { to: '/admin/settings',  icon: Settings,         label: t('admin.settings') },
   ];
 
@@ -100,19 +99,6 @@ export default function AdminSidebar({ collapsed, onToggle, onClose }) {
         ))}
       </nav>
 
-      {/* API Usage widget — hide when collapsed */}
-      {!collapsed && (
-        <div className="mx-3 mb-3 p-3 bg-[#111] border border-[#222] rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400 font-medium">API Usage</span>
-            <span className="text-xs text-[#FF6B00] font-bold">75%</span>
-          </div>
-          <div className="h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden mb-1.5">
-            <div className="h-full w-3/4 bg-[#FF6B00] rounded-full" />
-          </div>
-          <span className="text-xs text-white font-bold">$120.50</span>
-        </div>
-      )}
 
       {/* Logout */}
       <div className="border-t border-[#1A1A1A] p-2 shrink-0">

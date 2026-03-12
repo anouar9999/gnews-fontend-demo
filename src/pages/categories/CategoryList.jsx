@@ -52,16 +52,16 @@ export default function CategoryList() {
   };
 
   const columns = [
-    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-gray-800">{row.name}</span> },
-    { key: 'slug', label: 'Slug', render: (row) => <code className="text-xs bg-gray-100 px-2 py-0.5 rounded">{row.slug}</code> },
+    { key: 'name', label: 'Name', render: (row) => <span className="font-medium text-white">{row.name}</span> },
+    { key: 'slug', label: 'Slug', render: (row) => <code className="text-xs bg-[#1A1A1A] px-2 py-0.5 rounded">{row.slug}</code> },
     { key: 'parent', label: 'Parent', render: (row) => row.parent_name || '—' },
     { key: 'created_at', label: 'Created', render: (row) => <span className="text-xs text-gray-500">{new Date(row.created_at).toLocaleDateString()}</span> },
     {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/categories/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>}
-          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={15} /></button>}
+          {canEdit && <Link to={`/categories/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
     },
@@ -70,19 +70,19 @@ export default function CategoryList() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Categories</h1>
+        <h1 className="text-2xl font-bold text-white">Categories</h1>
         {canEdit && (
-          <Link to="/categories/new" className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          <Link to="/categories/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Category
           </Link>
         )}
       </div>
       <div className="mb-4">
         <input type="text" placeholder="Search categories..." value={search} onChange={(e) => updateParam('search', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+          className="px-3 py-2 bg-[#1A1A1A] border border-[#333] text-white rounded-lg text-sm outline-none focus:border-[#FF6B00] transition-colors w-64" />
       </div>
       {loading ? (
-        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>
+        <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>
       ) : (
         <DataTable columns={columns} data={categories} page={page} totalPages={totalPages} onPageChange={(p) => updateParam('page', String(p))} />
       )}
