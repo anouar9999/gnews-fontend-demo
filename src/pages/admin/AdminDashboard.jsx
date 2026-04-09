@@ -78,11 +78,21 @@ export default function AdminDashboard() {
 
   const handleApprove = async (id) => {
     try {
-      await api.post(`/articles/${id}/publish/`);
-      toast.success('Article published');
+      await api.patch(`/raw-news/${id}/`, { status: 'traite' });
+      toast.success('Marked as processed');
       fetchRawNews();
     } catch {
-      toast.error('Could not publish');
+      toast.error('Could not update status');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/raw-news/${id}/`);
+      toast.success('Deleted');
+      fetchRawNews();
+    } catch {
+      toast.error('Could not delete');
     }
   };
 
@@ -182,8 +192,8 @@ export default function AdminDashboard() {
               ) : rawNews.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-12 text-center">
-                    <p className="text-gray-500 text-sm">No raw news found. Backend may be offline.</p>
-                    <p className="text-gray-600 text-xs mt-1">Start the Django API server to see live data.</p>
+                    <p className="text-gray-500 text-sm">No raw news yet.</p>
+                    <p className="text-gray-600 text-xs mt-1">Add sources and sync scrapers to start collecting news.</p>
                   </td>
                 </tr>
               ) : (
@@ -221,7 +231,10 @@ export default function AdminDashboard() {
                           >
                             <CheckCircle size={13} />
                           </button>
-                          <button className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors">
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="w-7 h-7 flex items-center justify-center rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                          >
                             <Trash2 size={13} />
                           </button>
                         </div>

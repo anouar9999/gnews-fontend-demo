@@ -32,7 +32,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-10">
           {/* Brand */}
           <div className="md:col-span-2">
-            <GnewzLogo size={50} variant="dark" />
+            <GnewzLogo size={100} variant="dark" />
             <p className="mt-4 text-gray-400 text-sm leading-relaxed max-w-xs">
               The premier destination for gaming news, hardware reviews, esports coverage, and gaming culture.
             </p>

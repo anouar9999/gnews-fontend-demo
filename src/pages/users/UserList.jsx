@@ -68,7 +68,7 @@ export default function UserList() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          <Link to={`/users/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>
+          <Link to={`/admin/users/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Pencil size={15} /></Link>
           <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 size={15} /></button>
         </div>
       ),
@@ -79,7 +79,7 @@ export default function UserList() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-white">Users</h1>
-        <Link to="/users/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
+        <Link to="/admin/users/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
           <Plus size={16} /> New User
         </Link>
       </div>

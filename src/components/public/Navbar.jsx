@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Menu, X, Bell } from 'lucide-react';
+import { Search, Menu, X } from 'lucide-react';
 import GnewzLogo from './GnewzLogo';
 import LanguageSwitch from '../LanguageSwitch';
 
@@ -36,7 +36,7 @@ export default function Navbar({ basePath = '' }) {
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="shrink-0">
-          <GnewzLogo size={48} variant="dark" />
+          <GnewzLogo size={100} variant="dark" />
         </Link>
 
         {/* Desktop nav */}
@@ -62,35 +62,38 @@ export default function Navbar({ basePath = '' }) {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
-          {/* Search */}
-          <form onSubmit={handleSearch} className="relative flex items-center">
-            {searchOpen && (
-              <input
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="absolute right-8 w-52 bg-[#1A1A1A] border border-[#FF6B00] rounded text-white text-sm px-3 py-1.5 outline-none"
-                placeholder={t('nav.search')}
-                onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-              />
-            )}
+            {/* Search */}
+          {searchOpen ? (
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-48 bg-[#1A1A1A] border border-[#333] focus:border-[#FF6B00] text-white text-sm rounded-lg pl-8 pr-3 py-1.5 outline-none transition-colors"
+                  placeholder={t('nav.search')}
+                />
+              </div>
+              <button type="submit" className="px-3 py-1.5 bg-[#FF6B00] hover:bg-[#cc5500] text-white text-xs font-bold rounded-lg transition-colors">
+                Go
+              </button>
+              <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-gray-400 hover:text-white transition-colors">
+                <X size={18} />
+              </button>
+            </form>
+          ) : (
             <button
-              type={searchOpen ? 'submit' : 'button'}
-              onClick={() => !searchOpen && setSearchOpen(true)}
+              type="button"
+              onClick={() => setSearchOpen(true)}
               className="text-white hover:text-[#FF6B00] transition-colors p-1"
             >
               <Search size={18} />
             </button>
-          </form>
+          )}
 
           {/* Language switch */}
           <LanguageSwitch />
-
-          {/* Notifications */}
-          <button className="hidden md:flex text-white hover:text-[#FF6B00] transition-colors relative p-1">
-            <Bell size={18} />
-            <span className="absolute top-0 right-0 w-2 h-2 bg-[#FF6B00] rounded-full" />
-          </button>
 
           {/* Live Now CTA */}
           <Link

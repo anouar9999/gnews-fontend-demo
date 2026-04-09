@@ -47,7 +47,7 @@ export default function AdminSidebar({ collapsed, onToggle, onClose }) {
     `}>
       {/* Logo + close/toggle */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-[#1A1A1A] h-14 sm:h-16 shrink-0">
-        {!collapsed && <GnewzLogo size={44} variant="dark" />}
+        {!collapsed && <GnewzLogo size={100} variant="dark" />}
 
         {/* Mobile: X to close drawer */}
         <button

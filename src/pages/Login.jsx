@@ -29,7 +29,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
         <div className="flex flex-col items-center mb-6">
-          <GnewzLogo size={56} variant="light" />
+          <GnewzLogo size={100} variant="light" />
           <p className="text-sm text-gray-500 mt-3">Sign in to your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">

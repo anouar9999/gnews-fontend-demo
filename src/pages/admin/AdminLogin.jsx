@@ -41,7 +41,7 @@ export default function AdminLogin() {
         <div style={{ width: '100%', maxWidth: '400px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <GnewzLogo size={72} variant="dark" />
+            <GnewzLogo size={100} variant="dark" />
           </div>
 
           {/* Card */}

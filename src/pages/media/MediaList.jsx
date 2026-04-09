@@ -67,7 +67,7 @@ export default function MediaList() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/media/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canEdit && <Link to={`/admin/media/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
           {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
@@ -84,7 +84,7 @@ export default function MediaList() {
             <button onClick={() => setViewMode('list')} className={`p-2 ${viewMode === 'list' ? 'bg-[#FF6B00]/20 text-[#FF6B00]' : 'text-gray-500 hover:bg-[#1A1A1A]'}`}><List size={16} /></button>
           </div>
           {canEdit && (
-            <Link to="/media/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
+            <Link to="/admin/media/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
               <Plus size={16} /> New Media
             </Link>
           )}
@@ -113,7 +113,7 @@ export default function MediaList() {
                   <p className="text-xs font-medium text-white truncate">{item.alt_text || `Media #${item.id}`}</p>
                   <p className="text-xs text-gray-500 truncate">{item.credit || ''}</p>
                   <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {canEdit && <Link to={`/media/${item.id}/edit`} className="p-1 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={13} /></Link>}
+                    {canEdit && <Link to={`/admin/media/${item.id}/edit`} className="p-1 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={13} /></Link>}
                     {canDelete && <button onClick={() => setDeleteTarget(item)} className="p-1 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={13} /></button>}
                   </div>
                 </div>

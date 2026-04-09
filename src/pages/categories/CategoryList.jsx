@@ -60,7 +60,7 @@ export default function CategoryList() {
       key: 'actions', label: 'Actions',
       render: (row) => (
         <div className="flex gap-1">
-          {canEdit && <Link to={`/categories/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
+          {canEdit && <Link to={`/admin/categories/${row.id}/edit`} className="p-1.5 text-blue-600 hover:bg-blue-500/10 rounded"><Pencil size={15} /></Link>}
           {canDelete && <button onClick={() => setDeleteTarget(row)} className="p-1.5 text-red-600 hover:bg-red-500/10 rounded"><Trash2 size={15} /></button>}
         </div>
       ),
@@ -72,7 +72,7 @@ export default function CategoryList() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-white">Categories</h1>
         {canEdit && (
-          <Link to="/categories/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
+          <Link to="/admin/categories/new" className="flex items-center gap-1.5 px-4 py-2 bg-[#FF6B00] text-white text-sm font-medium rounded-lg hover:bg-[#cc5500] transition-colors">
             <Plus size={16} /> New Category
           </Link>
         )}

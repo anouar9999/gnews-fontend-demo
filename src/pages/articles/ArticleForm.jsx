@@ -4,6 +4,10 @@ import { Save, ArrowLeft, Upload, X } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
+const inputCls = 'w-full px-3 py-2 bg-[#181818] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] placeholder-gray-600';
+const labelCls = 'block text-sm font-medium text-gray-300 mb-1';
+const cardCls = 'bg-[#111] rounded-lg border border-[#1f1f1f] p-6 space-y-4';
+
 export default function ArticleForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -60,7 +64,7 @@ export default function ArticleForm() {
       setFetching(false);
     }).catch(() => {
       toast.error('Failed to load article');
-      navigate('/articles');
+      navigate('/admin/articles');
     });
   }, [id, isEdit, navigate]);
 
@@ -128,27 +132,21 @@ export default function ArticleForm() {
       if (imageFile) {
         formData.append('featured_image', imageFile);
       } else if (!imagePreview && existingImageUrl) {
-        // Image was removed — send empty to clear it
         formData.append('featured_image', '');
       }
 
       if (isEdit) {
-        await api.patch(`/articles/${id}/`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.patch(`/articles/${id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Article updated');
       } else {
-        await api.post('/articles/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.post('/articles/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Article created');
       }
-      navigate('/articles');
+      navigate('/admin/articles');
     } catch (err) {
       const errors = err.response?.data;
       if (errors && typeof errors === 'object') {
-        const firstError = Object.values(errors).flat()[0];
-        toast.error(String(firstError));
+        toast.error(String(Object.values(errors).flat()[0]));
       } else {
         toast.error('Failed to save article');
       }
@@ -158,60 +156,58 @@ export default function ArticleForm() {
   };
 
   if (fetching) {
-    return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
+    return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>;
   }
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/articles')} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+        <button onClick={() => navigate('/admin/articles')} className="p-2 hover:bg-[#1c1c1c] rounded-lg text-gray-300 transition-colors">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Edit Article' : 'New Article'}</h1>
+        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit Article' : 'New Article'}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        {/* Main fields */}
+        <div className={cardCls}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-            <input name="title" value={form.title} onChange={handleChange} required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className={labelCls}>Title *</label>
+            <input name="title" value={form.title} onChange={handleChange} required className={inputCls} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={labelCls}>
               Slug
-              {!isEdit && <span className="ml-2 text-xs text-gray-400 font-normal">auto-generated from title</span>}
+              {!isEdit && <span className="ml-2 text-xs text-gray-500 font-normal">auto-generated from title</span>}
             </label>
-            <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 overflow-hidden">
-              <span className="px-3 py-2 bg-gray-50 text-gray-400 text-sm border-r border-gray-300 select-none whitespace-nowrap">/articles/</span>
+            <div className="flex items-center border border-[#2a2a2a] rounded-lg focus-within:ring-2 focus-within:ring-[#FF6B00] overflow-hidden">
+              <span className="px-3 py-2 bg-[#1c1c1c] text-gray-500 text-sm border-r border-[#2a2a2a] select-none whitespace-nowrap">/articles/</span>
               <input
                 name="slug"
                 value={form.slug}
                 onChange={handleSlugChange}
                 placeholder="auto-generated"
-                className="flex-1 px-3 py-2 focus:outline-none text-sm"
+                className="flex-1 px-3 py-2 bg-[#181818] text-white text-sm focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
-            <textarea name="content" value={form.content} onChange={handleChange} required rows={10}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className={labelCls}>Content *</label>
+            <textarea name="content" value={form.content} onChange={handleChange} required rows={10} className={inputCls} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
-              <input name="meta_title" value={form.meta_title} onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <label className={labelCls}>Meta Title</label>
+              <input name="meta_title" value={form.meta_title} onChange={handleChange} className={inputCls} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+              <label className={labelCls}>Featured Image</label>
               {imagePreview ? (
-                <div className="relative w-full h-36 rounded-lg overflow-hidden border border-gray-300 group">
+                <div className="relative w-full h-36 rounded-lg overflow-hidden border border-[#2a2a2a] group">
                   <img src={imagePreview} alt="Featured" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -222,35 +218,28 @@ export default function ArticleForm() {
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
-                  <Upload size={24} className="text-gray-400 mb-1" />
+                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-[#2a2a2a] rounded-lg cursor-pointer hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 transition-colors">
+                  <Upload size={24} className="text-gray-500 mb-1" />
                   <span className="text-sm text-gray-500">Click to upload image</span>
-                  <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
+                  <span className="text-xs text-gray-600 mt-1">PNG, JPG, WEBP</span>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                 </label>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
-            <textarea name="meta_description" value={form.meta_description} onChange={handleChange} rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <label className={labelCls}>Meta Description</label>
+            <textarea name="meta_description" value={form.meta_description} onChange={handleChange} rows={2} className={inputCls} />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        {/* Status & options */}
+        <div className={cardCls}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select name="status" value={form.status} onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label className={labelCls}>Status</label>
+              <select name="status" value={form.status} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
                 <option value="nouveau">New</option>
                 <option value="brouillon_ia">AI Draft</option>
                 <option value="en_revision">In Review</option>
@@ -259,9 +248,8 @@ export default function ArticleForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select name="category" value={form.category} onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label className={labelCls}>Category</label>
+              <select name="category" value={form.category} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
                 <option value="">No category</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -271,25 +259,28 @@ export default function ArticleForm() {
           <div className="flex gap-6">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" name="is_featured" checked={form.is_featured} onChange={handleChange}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <span className="text-sm text-gray-700">Featured</span>
+                className="w-4 h-4 rounded border-[#2a2a2a] accent-[#FF6B00]" />
+              <span className="text-sm text-gray-300">Featured</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" name="is_breaking" checked={form.is_breaking} onChange={handleChange}
-                className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500" />
-              <span className="text-sm text-gray-700">Breaking News</span>
+                className="w-4 h-4 rounded border-[#2a2a2a] accent-red-500" />
+              <span className="text-sm text-gray-300">Breaking News</span>
             </label>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+        {/* Tags & Media */}
+        <div className={cardCls}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+            <label className={labelCls}>Tags</label>
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               {tags.map((tag) => (
                 <button key={tag.id} type="button" onClick={() => handleMultiSelect('tag_ids', tag.id)}
                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    form.tag_ids.includes(tag.id) ? 'bg-blue-100 border-blue-300 text-blue-700' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                    form.tag_ids.includes(tag.id)
+                      ? 'bg-[#FF6B00]/20 border-[#FF6B00]/40 text-[#FF6B00]'
+                      : 'bg-[#1c1c1c] border-[#2a2a2a] text-gray-400 hover:bg-[#252525]'
                   }`}>
                   {tag.name}
                 </button>
@@ -299,12 +290,14 @@ export default function ArticleForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Media</label>
+            <label className={labelCls}>Media</label>
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               {mediaItems.map((m) => (
                 <button key={m.id} type="button" onClick={() => handleMultiSelect('media_ids', m.id)}
                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                    form.media_ids.includes(m.id) ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                    form.media_ids.includes(m.id)
+                      ? 'bg-purple-500/20 border-purple-500/40 text-purple-400'
+                      : 'bg-[#1c1c1c] border-[#2a2a2a] text-gray-400 hover:bg-[#252525]'
                   }`}>
                   {m.alt_text || m.caption || `Media #${m.id}`}
                 </button>
@@ -316,12 +309,12 @@ export default function ArticleForm() {
 
         <div className="flex gap-3">
           <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white font-medium rounded-lg hover:bg-[#cc5500] disabled:opacity-50 transition-colors">
             <Save size={16} />
             {loading ? 'Saving...' : isEdit ? 'Update Article' : 'Create Article'}
           </button>
-          <button type="button" onClick={() => navigate('/articles')}
-            className="px-6 py-2.5 text-gray-700 bg-gray-100 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+          <button type="button" onClick={() => navigate('/admin/articles')}
+            className="px-6 py-2.5 text-gray-400 bg-[#1c1c1c] font-medium rounded-lg hover:bg-[#252525] transition-colors">
             Cancel
           </button>
         </div>

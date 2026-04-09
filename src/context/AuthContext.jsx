@@ -12,9 +12,6 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem('user');
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
-    } else {
-      // DEV: auto-login mock admin while backend is offline
-      setUser({ id: 1, username: 'admin', email: 'admin@gnewz.com', is_staff: true, is_superuser: true });
     }
     setLoading(false);
   }, []);
@@ -35,10 +32,10 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const isAdmin = true;
-  const isEditor = true;
-  const canEdit = true;
-  const canDelete = true;
+  const isAdmin = user?.user_type === 'admin';
+  const isEditor = user?.user_type === 'admin' || user?.user_type === 'editor';
+  const canEdit = isEditor;
+  const canDelete = isAdmin;
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isEditor, canEdit, canDelete }}>

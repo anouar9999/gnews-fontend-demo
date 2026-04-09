@@ -4,6 +4,9 @@ import { Save, ArrowLeft } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
+const inputCls = 'w-full px-3 py-2 bg-[#181818] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] placeholder-gray-600';
+const labelCls = 'block text-sm font-medium text-gray-300 mb-1';
+
 export default function RawNewsForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,7 +35,7 @@ export default function RawNewsForm() {
         raw_data: data.raw_data ? JSON.stringify(data.raw_data, null, 2) : '',
       });
       setFetching(false);
-    }).catch(() => { toast.error('Failed to load raw news'); navigate('/raw-news'); });
+    }).catch(() => { toast.error('Failed to load raw news'); navigate('/admin/raw-news'); });
   }, [id, isEdit, navigate]);
 
   const handleChange = (e) => {
@@ -52,7 +55,7 @@ export default function RawNewsForm() {
       if (isEdit) await api.put(`/raw-news/${id}/`, payload);
       else await api.post('/raw-news/', payload);
       toast.success(isEdit ? 'Raw news updated' : 'Raw news created');
-      navigate('/raw-news');
+      navigate('/admin/raw-news');
     } catch (err) {
       if (err instanceof SyntaxError) {
         toast.error('Invalid JSON in raw data field');
@@ -63,59 +66,54 @@ export default function RawNewsForm() {
     } finally { setLoading(false); }
   };
 
-  if (fetching) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" /></div>;
+  if (fetching) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>;
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/raw-news')} className="p-2 hover:bg-gray-200 rounded-lg"><ArrowLeft size={20} /></button>
-        <h1 className="text-2xl font-bold text-gray-800">{isEdit ? 'Edit Raw News' : 'New Raw News'}</h1>
+        <button onClick={() => navigate('/admin/raw-news')} className="p-2 hover:bg-[#1c1c1c] rounded-lg text-gray-300"><ArrowLeft size={20} /></button>
+        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit Raw News' : 'New Raw News'}</h1>
       </div>
-      <form onSubmit={handleSubmit} className="max-w-lg bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-          <select name="source" value={form.source} onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <label className={labelCls}>Source</label>
+          <select name="source" value={form.source} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
             <option value="">No source</option>
             {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-          <input name="title" value={form.title} onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <label className={labelCls}>Title</label>
+          <input name="title" value={form.title} onChange={handleChange} className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
-          <input name="url" value={form.url} onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <label className={labelCls}>URL</label>
+          <input name="url" value={form.url} onChange={handleChange} className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-          <textarea name="content" value={form.content} onChange={handleChange} rows={5}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <label className={labelCls}>Content</label>
+          <textarea name="content" value={form.content} onChange={handleChange} rows={5} className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select name="status" value={form.status} onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <label className={labelCls}>Status</label>
+          <select name="status" value={form.status} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
             <option value="nouveau">New</option>
             <option value="traite">Processed</option>
             <option value="ignore">Ignored</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Raw Data (JSON)</label>
+          <label className={labelCls}>Raw Data (JSON)</label>
           <textarea name="raw_data" value={form.raw_data} onChange={handleChange} rows={5} placeholder='{"key": "value"}'
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" />
+            className={inputCls + ' font-mono text-sm'} />
         </div>
         <div className="flex gap-3 pt-2">
           <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white font-medium rounded-lg hover:bg-[#cc5500] disabled:opacity-50 transition-colors">
             <Save size={16} /> {loading ? 'Saving...' : 'Save'}
           </button>
-          <button type="button" onClick={() => navigate('/raw-news')}
-            className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Cancel</button>
+          <button type="button" onClick={() => navigate('/admin/raw-news')}
+            className="px-6 py-2.5 text-gray-400 bg-[#1c1c1c] rounded-lg hover:bg-[#252525] transition-colors">Cancel</button>
         </div>
       </form>
     </div>
