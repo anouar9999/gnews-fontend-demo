@@ -28,6 +28,7 @@ const resources = {
       // Admin general
       admin: {
         dashboard: 'Dashboard',
+        analytics: 'Analytics',
         rawNews: 'Raw News',
         articles: 'Articles',
         categories: 'Categories',
@@ -148,6 +149,7 @@ const resources = {
       },
       admin: {
         dashboard: 'لوحة التحكم',
+        analytics: 'التحليلات',
         rawNews: 'الأخبار الخام',
         articles: 'المقالات',
         categories: 'الفئات',

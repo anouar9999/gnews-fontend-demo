@@ -1,121 +1,290 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Save, Link as LinkIcon, FileText, Database, Hash, Loader2 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-const inputCls = 'w-full px-3 py-2 bg-[#181818] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] placeholder-gray-600';
-const labelCls = 'block text-sm font-medium text-gray-300 mb-1';
+/* ─── field components ──────────────────────────────────── */
+function FieldLabel({ children }) {
+  return (
+    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 6 }}>
+      {children}
+    </p>
+  );
+}
 
-export default function RawNewsForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const isEdit = Boolean(id);
+function Field({ label, icon: Icon, children }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        {Icon && <Icon size={11} style={{ color: 'rgba(255,255,255,0.22)', flexShrink: 0 }} />}
+        <FieldLabel>{label}</FieldLabel>
+      </div>
+      {children}
+    </div>
+  );
+}
 
-  const [form, setForm] = useState({ source: '', title: '', url: '', content: '', status: 'nouveau', raw_data: '' });
+const inputStyle = {
+  width: '100%',
+  padding: '10px 13px',
+  background: '#111111',
+  border: '1px solid #2a2a2a',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 13,
+  outline: 'none',
+  boxSizing: 'border-box',
+  caretColor: '#FF6B00',
+  transition: 'border-color .15s, box-shadow .15s',
+};
+
+function DarkInput({ ...props }) {
+  return (
+    <input
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,0,0.07)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.boxShadow = 'none'; }}
+    />
+  );
+}
+
+function DarkTextarea({ ...props }) {
+  return (
+    <textarea
+      {...props}
+      style={{ ...inputStyle, resize: 'vertical', ...props.style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,0,0.07)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.boxShadow = 'none'; }}
+    />
+  );
+}
+
+function DarkSelect({ children, ...props }) {
+  return (
+    <select
+      {...props}
+      style={{ ...inputStyle, appearance: 'none', ...props.style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+    >
+      {children}
+    </select>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN EXPORT — rendered as overlay inside RawNewsList
+═══════════════════════════════════════════════════════════ */
+export default function RawNewsForm({ editId, onClose, onSaved }) {
+  const isEdit = Boolean(editId);
+
+  const [form, setForm]       = useState({ source: '', title: '', url: '', content: '', status: 'nouveau', raw_data: '' });
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
 
   useEffect(() => {
-    api.get('/sources/', { params: { page_size: 100 } }).then(({ data }) => {
-      setSources(data.results || data);
-    }).catch(() => {});
+    api.get('/sources/', { params: { page_size: 100 } })
+      .then(({ data }) => setSources(data.results || data))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!isEdit) return;
-    api.get(`/raw-news/${id}/`).then(({ data }) => {
-      setForm({
-        source: data.source || '',
-        title: data.title || '',
-        url: data.url || '',
-        content: data.content || '',
-        status: data.status || 'nouveau',
-        raw_data: data.raw_data ? JSON.stringify(data.raw_data, null, 2) : '',
-      });
-      setFetching(false);
-    }).catch(() => { toast.error('Failed to load raw news'); navigate('/admin/raw-news'); });
-  }, [id, isEdit, navigate]);
+    api.get(`/raw-news/${editId}/`)
+      .then(({ data }) => {
+        setForm({
+          source:   data.source   || '',
+          title:    data.title    || '',
+          url:      data.url      || '',
+          content:  data.content  || '',
+          status:   data.status   || 'nouveau',
+          raw_data: data.raw_data ? JSON.stringify(data.raw_data, null, 2) : '',
+        });
+        setFetching(false);
+      })
+      .catch(() => { toast.error('Failed to load raw news'); onClose(); });
+  }, [editId, isEdit]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
       const payload = {
         ...form,
-        source: form.source || null,
+        source:   form.source || null,
         raw_data: form.raw_data ? JSON.parse(form.raw_data) : null,
       };
-      if (isEdit) await api.put(`/raw-news/${id}/`, payload);
-      else await api.post('/raw-news/', payload);
-      toast.success(isEdit ? 'Raw news updated' : 'Raw news created');
-      navigate('/admin/raw-news');
+      if (isEdit) await api.put(`/raw-news/${editId}/`, payload);
+      else        await api.post('/raw-news/', payload);
+      toast.success(isEdit ? 'Updated' : 'Created');
+      onSaved();
     } catch (err) {
-      if (err instanceof SyntaxError) {
-        toast.error('Invalid JSON in raw data field');
-      } else {
-        const msg = err.response?.data ? Object.values(err.response.data).flat()[0] : 'Failed to save';
-        toast.error(String(msg));
-      }
+      if (err instanceof SyntaxError) toast.error('Invalid JSON in raw data');
+      else toast.error(String(err.response?.data ? Object.values(err.response.data).flat()[0] : 'Failed to save'));
     } finally { setLoading(false); }
   };
 
-  if (fetching) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>;
+  const PANEL_W = 460;
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/admin/raw-news')} className="p-2 hover:bg-[#1c1c1c] rounded-lg text-gray-300"><ArrowLeft size={20} /></button>
-        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit Raw News' : 'New Raw News'}</h1>
-      </div>
-      <form onSubmit={handleSubmit} className="max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] p-6 space-y-4">
-        <div>
-          <label className={labelCls}>Source</label>
-          <select name="source" value={form.source} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
-            <option value="">No source</option>
-            {sources.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className={labelCls}>Title</label>
-          <input name="title" value={form.title} onChange={handleChange} className={inputCls} />
-        </div>
-        <div>
-          <label className={labelCls}>URL</label>
-          <input name="url" value={form.url} onChange={handleChange} className={inputCls} />
-        </div>
-        <div>
-          <label className={labelCls}>Content</label>
-          <textarea name="content" value={form.content} onChange={handleChange} rows={5} className={inputCls} />
-        </div>
-        <div>
-          <label className={labelCls}>Status</label>
-          <select name="status" value={form.status} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
-            <option value="nouveau">New</option>
-            <option value="traite">Processed</option>
-            <option value="ignore">Ignored</option>
-          </select>
-        </div>
-        <div>
-          <label className={labelCls}>Raw Data (JSON)</label>
-          <textarea name="raw_data" value={form.raw_data} onChange={handleChange} rows={5} placeholder='{"key": "value"}'
-            className={inputCls + ' font-mono text-sm'} />
-        </div>
-        <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white font-medium rounded-lg hover:bg-[#cc5500] disabled:opacity-50 transition-colors">
-            <Save size={16} /> {loading ? 'Saving...' : 'Save'}
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, backdropFilter: 'blur(3px)' }}
+      />
+
+      {/* Slide-in panel */}
+      <motion.div
+        key="panel"
+        initial={{ x: -PANEL_W, opacity: 0 }}
+        animate={{ x: 0,        opacity: 1 }}
+        exit={{    x: -PANEL_W, opacity: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: 'fixed', top: 0, left: 0, bottom: 0,
+          width: PANEL_W,
+          background: '#161618',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '8px 0 40px rgba(0,0,0,0.5)',
+          zIndex: 50,
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* ── Panel header ── */}
+        <div style={{
+          padding: '18px 22px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+          background: '#1a1a1c',
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Orange accent bar */}
+              <div style={{ width: 3, height: 20, borderRadius: 2, background: 'linear-gradient(180deg,#FF6B00,rgba(255,107,0,0.2))' }} />
+              <h2 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+                {isEdit ? 'Edit Raw News' : 'New Raw News'}
+              </h2>
+            </div>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0 11px' }}>
+              {isEdit ? `Editing item #${editId}` : 'Add a new raw news entry'}
+            </p>
+          </div>
+          <button
+            type="button" onClick={onClose}
+            style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all .15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+          >
+            <X size={14} />
           </button>
-          <button type="button" onClick={() => navigate('/admin/raw-news')}
-            className="px-6 py-2.5 text-gray-400 bg-[#1c1c1c] rounded-lg hover:bg-[#252525] transition-colors">Cancel</button>
         </div>
-      </form>
-    </div>
+
+        {/* ── Form body ── */}
+        {fetching ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 size={24} style={{ color: '#FF6B00', animation: 'spin 1s linear infinite' }} />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '22px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+              {/* Title */}
+              <Field label="Title" icon={FileText}>
+                <DarkInput name="title" value={form.title} onChange={handleChange} placeholder="Article title…" />
+              </Field>
+
+              {/* URL */}
+              <Field label="URL" icon={LinkIcon}>
+                <DarkInput name="url" value={form.url} onChange={handleChange} placeholder="https://…" type="url" />
+              </Field>
+
+              {/* Source + Status side by side */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="Source" icon={Hash}>
+                  <DarkSelect name="source" value={form.source} onChange={handleChange}>
+                    <option value="" style={{ background: '#111' }}>No source</option>
+                    {sources.map(s => <option key={s.id} value={s.id} style={{ background: '#111' }}>{s.name}</option>)}
+                  </DarkSelect>
+                </Field>
+                <Field label="Status">
+                  <DarkSelect name="status" value={form.status} onChange={handleChange}>
+                    <option value="nouveau" style={{ background: '#111' }}>New</option>
+                    <option value="traite"  style={{ background: '#111' }}>Processed</option>
+                    <option value="ignore"  style={{ background: '#111' }}>Ignored</option>
+                  </DarkSelect>
+                </Field>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+
+              {/* Content */}
+              <Field label="Content" icon={FileText}>
+                <DarkTextarea name="content" value={form.content} onChange={handleChange} rows={5} placeholder="Raw article content…" />
+              </Field>
+
+              {/* Raw JSON */}
+              <Field label="Raw Data (JSON)" icon={Database}>
+                <DarkTextarea
+                  name="raw_data" value={form.raw_data} onChange={handleChange} rows={5}
+                  placeholder={'{\n  "key": "value"\n}'}
+                  style={{ fontFamily: 'monospace', fontSize: 12 }}
+                />
+              </Field>
+            </div>
+
+            {/* ── Sticky footer ── */}
+            <div style={{
+              padding: '14px 22px',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              background: '#1a1a1c',
+              display: 'flex', gap: 10, flexShrink: 0,
+            }}>
+              <button
+                type="submit" disabled={loading}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  padding: '10px 0', borderRadius: 10,
+                  background: loading ? 'rgba(255,107,0,0.4)' : 'linear-gradient(135deg,#FF6B00 0%,#cc4400 100%)',
+                  color: '#fff', fontSize: 13, fontWeight: 700,
+                  border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 0 #7a2800, 0 6px 14px rgba(255,107,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  transform: 'translateY(-2px)',
+                  transition: 'transform .08s, box-shadow .08s',
+                }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 0 #7a2800,0 10px 20px rgba(255,107,0,0.45),inset 0 1px 0 rgba(255,255,255,0.15)'; }}}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 0 #7a2800,0 6px 14px rgba(255,107,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                onMouseDown={e  => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = '0 1px 0 #7a2800,0 2px 6px rgba(255,107,0,0.2),inset 0 1px 0 rgba(0,0,0,0.1)'; }}
+                onMouseUp={e    => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 0 #7a2800,0 6px 14px rgba(255,107,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+              >
+                {loading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={14} />}
+                {loading ? 'Saving…' : isEdit ? 'Update' : 'Create'}
+              </button>
+              <button
+                type="button" onClick={onClose}
+                style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { PageTitleProvider } from './context/PageTitleContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Layouts
@@ -12,22 +13,18 @@ import GnewzLayout        from './layouts/GnewzLayout';
 import AdminLogin      from './pages/admin/AdminLogin';
 import AdminDashboard  from './pages/admin/AdminDashboard';
 import AdminSettings   from './pages/admin/AdminSettings';
+import AnalyticsPage   from './pages/admin/AnalyticsPage';
 
 // Existing admin CRUD pages
-import ArticleList  from './pages/articles/ArticleList';
-import ArticleForm  from './pages/articles/ArticleForm';
+import ArticleList   from './pages/articles/ArticleList';
+import ArticleForm   from './pages/articles/ArticleForm';
+import ArticleDetail from './pages/articles/ArticleDetail';
 import CategoryList from './pages/categories/CategoryList';
-import CategoryForm from './pages/categories/CategoryForm';
 import TagList      from './pages/tags/TagList';
-import TagForm      from './pages/tags/TagForm';
 import SourceList   from './pages/sources/SourceList';
-import SourceForm   from './pages/sources/SourceForm';
 import MediaList    from './pages/media/MediaList';
-import MediaForm    from './pages/media/MediaForm';
 import RawNewsList  from './pages/raw-news/RawNewsList';
-import RawNewsForm  from './pages/raw-news/RawNewsForm';
 import UserList     from './pages/users/UserList';
-import UserForm     from './pages/users/UserForm';
 
 // Public GNEWZ pages
 import LandingPage  from './pages/public/LandingPage';
@@ -39,6 +36,7 @@ import SearchPage   from './pages/public/SearchPage';
 
 export default function App() {
   return (
+    <PageTitleProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -81,36 +79,26 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard"  element={<AdminDashboard />} />
+            <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings"  element={<AdminSettings />} />
 
             <Route path="articles"          element={<ArticleList />} />
             <Route path="articles/new"      element={<ArticleForm />} />
+            <Route path="articles/:id"      element={<ArticleDetail />} />
             <Route path="articles/:id/edit" element={<ArticleForm />} />
 
-            <Route path="categories"          element={<CategoryList />} />
-            <Route path="categories/new"      element={<CategoryForm />} />
-            <Route path="categories/:id/edit" element={<CategoryForm />} />
+            <Route path="categories" element={<CategoryList />} />
 
-            <Route path="tags"          element={<TagList />} />
-            <Route path="tags/new"      element={<TagForm />} />
-            <Route path="tags/:id/edit" element={<TagForm />} />
+            <Route path="tags" element={<TagList />} />
 
-            <Route path="sources"          element={<SourceList />} />
-            <Route path="sources/new"      element={<SourceForm />} />
-            <Route path="sources/:id/edit" element={<SourceForm />} />
+            <Route path="sources" element={<SourceList />} />
 
-            <Route path="media"          element={<MediaList />} />
-            <Route path="media/new"      element={<MediaForm />} />
-            <Route path="media/:id/edit" element={<MediaForm />} />
+            <Route path="media" element={<MediaList />} />
 
-            <Route path="raw-news"          element={<RawNewsList />} />
-            <Route path="raw-news/new"      element={<RawNewsForm />} />
-            <Route path="raw-news/:id/edit" element={<RawNewsForm />} />
+            <Route path="raw-news" element={<RawNewsList />} />
 
-            <Route path="users"          element={<UserList />} />
-            <Route path="users/new"      element={<UserForm />} />
-            <Route path="users/:id/edit" element={<UserForm />} />
+            <Route path="users" element={<UserList />} />
           </Route>
 
           {/* Fallback */}
@@ -124,5 +112,6 @@ export default function App() {
         }}
       />
     </AuthProvider>
+    </PageTitleProvider>
   );
 }

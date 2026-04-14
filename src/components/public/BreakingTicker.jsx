@@ -1,22 +1,28 @@
-const items = [
-  "🔥 Casablanca Gaming Expo 2025 — inscriptions ouvertes dès maintenant",
-  "⚡ ESL Pro League S22 — Team Liquid vs NAVI — EN DIRECT MAINTENANT",
-  "🏆 GNEWZ Cup Maroc — Les qualifications débutent ce week-end à Rabat",
-  "🎮 GTA VI PC : date de sortie confirmée — Mars 2026",
-  "💻 L'équipe marocaine de e-sport 'Atlas Wolves' qualifiée pour la finale mondiale",
-  "🎯 Valorant Champions 2025 — résultats de la phase de groupes disponibles",
-  "📺 Xbox Series X — la prochaine génération confirmée pour 2026",
-  "🌍 Maroc Esport Federation annonce un tournoi national de 500 000 MAD",
-  "⚙️ RTX 5090 : test exclusif — benchmarks complets publiés demain",
-  "🎮 AMD Ryzen 9 9950X3D surpasse Intel dans les nouveaux tests synthétiques",
+import { useEffect, useState } from 'react';
+import api from '../../api/axios';
+
+const FALLBACK = [
+  'Breaking news — stay tuned for the latest updates',
 ];
 
 export default function BreakingTicker() {
+  const [items, setItems] = useState(FALLBACK);
+
+  useEffect(() => {
+    api.get('/articles/', { params: { status: 'publie', is_breaking: true, ordering: '-published_at' } })
+      .then(({ data }) => {
+        const titles = (data.results || []).map((a) => a.title);
+        if (titles.length > 0) setItems(titles);
+      })
+      .catch(() => {});
+  }, []);
+
   const repeated = [...items, ...items];
+
   return (
-    <div className="bg-[#FF6B00] overflow-hidden flex items-center h-8 sm:h-9 shrink-0">
+    <div className="bg-orange overflow-hidden flex items-center h-8 sm:h-9 shrink-0">
       <div
-        className="bg-black text-[#FF6B00] font-black text-[10px] sm:text-xs uppercase tracking-widest px-2 sm:px-3 h-full flex items-center shrink-0 z-10"
+        className="bg-black text-orange font-black text-[10px] sm:text-xs uppercase tracking-widest px-2 sm:px-3 h-full flex items-center shrink-0 z-10"
         style={{ minWidth: 'max-content' }}
       >
         BREAKING

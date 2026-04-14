@@ -76,11 +76,11 @@ export default function SearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('nav.search') || 'Search articles, games, hardware…'}
-              className="w-full bg-[#111] border border-[#333] text-white text-base rounded-xl pl-12 pr-28 py-4 outline-none focus:border-[#FF6B00] transition-colors"
+              className="w-full bg-[#111] border border-[#333] text-white text-base rounded-xl pl-12 pr-28 py-4 outline-none focus:border-orange transition-colors"
             />
             <button
               type="submit"
-              className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-[#FF6B00] hover:bg-[#cc5500] text-white text-sm font-bold rounded-lg transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-orange hover:bg-orange-dim text-white text-sm font-bold rounded-lg transition-colors"
             >
               Search
             </button>
@@ -100,7 +100,7 @@ export default function SearchPage() {
         {/* States */}
         {loading ? (
           <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-orange border-t-transparent rounded-full animate-spin" />
           </div>
         ) : results.length > 0 ? (
           <div className="space-y-4">
@@ -108,7 +108,7 @@ export default function SearchPage() {
               <Link
                 key={article.id}
                 to={`/articles/${article.slug ?? article.id}`}
-                className="flex gap-4 bg-[#111] border border-[#1A1A1A] hover:border-[#FF6B00]/40 rounded-xl p-4 transition-colors group"
+                className="flex gap-4 bg-[#111] border border-[#1A1A1A] hover:border-orange/40 rounded-xl p-4 transition-colors group"
               >
                 {article.featured_image && (
                   <img
@@ -119,11 +119,11 @@ export default function SearchPage() {
                 )}
                 <div className="flex-1 min-w-0">
                   {article.category?.name && (
-                    <span className="text-[#FF6B00] text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-orange text-[10px] font-bold uppercase tracking-wider">
                       {article.category.name}
                     </span>
                   )}
-                  <h3 className="text-white font-semibold text-sm group-hover:text-[#FF6B00] transition-colors line-clamp-2 mt-0.5">
+                  <h3 className="text-white font-semibold text-sm group-hover:text-orange transition-colors line-clamp-2 mt-0.5">
                     {article.title}
                   </h3>
                   {article.excerpt && (

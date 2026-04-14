@@ -50,8 +50,8 @@ export default function Navbar({ basePath = '' }) {
                 to={to}
                 className={`px-4 py-1.5 text-sm font-bold uppercase tracking-wider rounded transition-colors ${
                   active
-                    ? 'text-[#FF6B00] border-b-2 border-[#FF6B00]'
-                    : 'text-white hover:text-[#FF6B00]'
+                    ? 'text-orange border-b-2 border-orange'
+                    : 'text-white hover:text-orange'
                 }`}
               >
                 {label}
@@ -71,11 +71,11 @@ export default function Navbar({ basePath = '' }) {
                   autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 bg-[#1A1A1A] border border-[#333] focus:border-[#FF6B00] text-white text-sm rounded-lg pl-8 pr-3 py-1.5 outline-none transition-colors"
+                  className="w-48 bg-[#1A1A1A] border border-[#333] focus:border-orange text-white text-sm rounded-lg pl-8 pr-3 py-1.5 outline-none transition-colors"
                   placeholder={t('nav.search')}
                 />
               </div>
-              <button type="submit" className="px-3 py-1.5 bg-[#FF6B00] hover:bg-[#cc5500] text-white text-xs font-bold rounded-lg transition-colors">
+              <button type="submit" className="px-3 py-1.5 bg-orange hover:bg-orange-dim text-white text-xs font-bold rounded-lg transition-colors">
                 Go
               </button>
               <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-gray-400 hover:text-white transition-colors">
@@ -86,7 +86,7 @@ export default function Navbar({ basePath = '' }) {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="text-white hover:text-[#FF6B00] transition-colors p-1"
+              className="text-white hover:text-orange transition-colors p-1"
             >
               <Search size={18} />
             </button>
@@ -98,7 +98,7 @@ export default function Navbar({ basePath = '' }) {
           {/* Live Now CTA */}
           <Link
             to="/esports"
-            className="hidden md:flex items-center gap-2 bg-[#FF6B00] hover:bg-[#cc5500] text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded transition-colors"
+            className="hidden md:flex items-center gap-2 bg-orange hover:bg-orange-dim text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded transition-colors"
           >
             <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
             {t('nav.liveNow')}
@@ -126,7 +126,7 @@ export default function Navbar({ basePath = '' }) {
                 to={to}
                 onClick={() => setMenuOpen(false)}
                 className={`py-3 px-3 text-sm font-bold uppercase tracking-wider border-b border-[#1A1A1A] ${
-                  active ? 'text-[#FF6B00]' : 'text-white'
+                  active ? 'text-orange' : 'text-white'
                 }`}
               >
                 {label}
@@ -142,7 +142,7 @@ export default function Navbar({ basePath = '' }) {
               placeholder={t('nav.search')}
               className="flex-1 bg-[#1A1A1A] border border-[#333] text-white text-sm px-3 py-2 rounded outline-none"
             />
-            <button type="submit" className="bg-[#FF6B00] text-white px-3 py-2 rounded">
+            <button type="submit" className="bg-orange text-white px-3 py-2 rounded">
               <Search size={16} />
             </button>
           </form>
@@ -155,7 +155,7 @@ export default function Navbar({ basePath = '' }) {
           <Link
             to="/esports"
             onClick={() => setMenuOpen(false)}
-            className="mt-2 flex items-center justify-center gap-2 bg-[#FF6B00] text-white text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded"
+            className="mt-2 flex items-center justify-center gap-2 bg-orange text-white text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded"
           >
             <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
             {t('nav.liveNow')}

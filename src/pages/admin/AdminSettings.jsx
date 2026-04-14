@@ -2,56 +2,156 @@ import { useState } from 'react';
 import { Save, Globe, FileText, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-function Section({ icon: Icon, title, children }) {
+/* ─── Input primitives ───────────────────────────────────────── */
+const inputStyle = {
+  width: '100%', padding: '10px 13px',
+  background: '#111111', border: '1px solid #2a2a2a',
+  borderRadius: 8, color: '#fff', fontSize: 13,
+  outline: 'none', boxSizing: 'border-box',
+  caretColor: '#FF6B00', transition: 'border-color .15s, box-shadow .15s',
+};
+
+function DarkInput({ style, ...props }) {
   return (
-    <div className="bg-[#111] border border-[#1A1A1A] rounded-xl overflow-hidden">
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-[#1A1A1A]">
-        <div className="p-2 bg-[#FF6B00]/10 rounded-lg">
-          <Icon size={18} className="text-[#FF6B00]" />
-        </div>
-        <h2 className="text-white font-bold">{title}</h2>
-      </div>
-      <div className="p-6 space-y-5">{children}</div>
-    </div>
+    <input
+      {...props}
+      style={{ ...inputStyle, ...style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,0,0.07)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.boxShadow = 'none'; }}
+    />
   );
 }
 
-function Field({ label, hint, children }) {
+function DarkTextarea({ style, ...props }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-      <div className="sm:w-48 shrink-0">
-        <p className="text-sm font-medium text-gray-300">{label}</p>
-        {hint && <p className="text-xs text-gray-600 mt-0.5">{hint}</p>}
-      </div>
-      <div className="flex-1">{children}</div>
-    </div>
+    <textarea
+      {...props}
+      style={{ ...inputStyle, resize: 'vertical', ...style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,0,0.07)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.boxShadow = 'none'; }}
+    />
   );
 }
 
+function DarkSelect({ style, children, ...props }) {
+  return (
+    <select
+      {...props}
+      style={{ ...inputStyle, appearance: 'none', ...style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; }}
+    >
+      {children}
+    </select>
+  );
+}
+
+/* ─── Toggle ─────────────────────────────────────────────────── */
 function Toggle({ checked, onChange }) {
   return (
     <button
+      type="button"
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? 'bg-[#FF6B00]' : 'bg-[#333]'
-      }`}
+      style={{
+        position: 'relative', width: 40, height: 24, borderRadius: 12,
+        border: 'none', cursor: 'pointer', flexShrink: 0,
+        background: checked ? '#FF6B00' : '#2a2a2a',
+        transition: 'background .2s',
+        boxShadow: checked ? '0 0 12px rgba(255,107,0,0.4)' : 'none',
+      }}
     >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-6' : 'translate-x-1'
-        }`}
-      />
+      <span style={{
+        position: 'absolute', top: 4, left: checked ? 20 : 4,
+        width: 16, height: 16, borderRadius: '50%', background: '#fff',
+        transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+        display: 'block',
+      }} />
     </button>
   );
 }
 
-const inputCls = 'w-full bg-[#1A1A1A] border border-[#333] text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-[#FF6B00] transition-colors';
-const selectCls = `${inputCls} cursor-pointer`;
+/* ─── Section card ───────────────────────────────────────────── */
+function Section({ icon: Icon, title, children }) {
+  return (
+    <div style={{
+      background: 'linear-gradient(160deg,#161618 0%,#111113 100%)',
+      border: '1px solid rgba(255,255,255,0.07)',
+      borderRadius: 16, overflow: 'hidden',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+    }}>
+      {/* Section header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '16px 24px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.02)',
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 9, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(255,107,0,0.1)',
+          border: '1px solid rgba(255,107,0,0.2)',
+        }}>
+          <Icon size={15} style={{ color: '#FF6B00' }} />
+        </div>
+        <div>
+          <h2 style={{ fontSize: 13, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>{title}</h2>
+        </div>
+        {/* Orange top accent */}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 1, background: 'linear-gradient(90deg,rgba(255,107,0,0.4) 0%,transparent 40%)' }} />
+      </div>
+      <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
 
+/* ─── Field row ──────────────────────────────────────────────── */
+function Field({ label, hint, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 24 }}>
+        <div style={{ width: 220, flexShrink: 0, paddingTop: 2 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{label}</p>
+          {hint && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0' }}>{hint}</p>}
+        </div>
+        <div style={{ flex: 1 }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Toggle field row ───────────────────────────────────────── */
+function ToggleField({ label, hint, checked, onChange }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24,
+      padding: '12px 16px', borderRadius: 10,
+      background: checked ? 'rgba(255,107,0,0.04)' : 'rgba(255,255,255,0.02)',
+      border: checked ? '1px solid rgba(255,107,0,0.12)' : '1px solid rgba(255,255,255,0.05)',
+      transition: 'all .2s',
+    }}>
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.75)', margin: 0 }}>{label}</p>
+        {hint && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0' }}>{hint}</p>}
+      </div>
+      <Toggle checked={checked} onChange={onChange} />
+    </div>
+  );
+}
+
+/* ─── Divider ────────────────────────────────────────────────── */
+function Divider() {
+  return <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN
+═══════════════════════════════════════════════════════════════ */
 export default function AdminSettings() {
   const [general, setGeneral] = useState({
     siteName: 'GNEWZ',
-    siteDescription: 'Morocco\'s #1 Gaming & Esports News Platform',
+    siteDescription: "Morocco's #1 Gaming & Esports News Platform",
     defaultLanguage: 'en',
     timezone: 'Africa/Casablanca',
   });
@@ -74,120 +174,142 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-5 max-w-3xl">
+
+      {/* ══ HEADER ══ */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-white text-2xl font-bold">Settings</h1>
-          <p className="text-gray-500 text-sm mt-1">Manage your platform configuration</p>
+          <h1 className="text-[48px] font-black uppercase tracking-tighter text-white leading-none">Settings</h1>
+          <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+            Manage your platform configuration and preferences
+          </p>
         </div>
-        <button
-          onClick={handleSave}
-          className="flex items-center gap-2 px-4 py-2 bg-[#FF6B00] hover:bg-[#cc5500] text-white text-sm font-bold rounded-lg transition-colors"
-        >
-          <Save size={15} /> Save Changes
-        </button>
+
+        <div className="flex items-center gap-3 flex-wrap pt-2">
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-2 px-4 py-3 text-[13px] font-black text-white tracking-wide shrink-0 select-none"
+            style={{
+              background: 'linear-gradient(135deg, var(--color-orange) 0%, #e05500 100%)',
+              boxShadow: '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+              transform: 'translateY(-3px)', transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 0 #a33a00, 0 12px 24px rgba(255,107,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+            onMouseDown={e  => { e.currentTarget.style.boxShadow = '0 2px 0 #a33a00, 0 4px 8px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0px)'; }}
+            onMouseUp={e    => { e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
+          >
+            <Save size={14} strokeWidth={3} />
+            Save Changes
+          </button>
+        </div>
       </div>
 
-      {/* General */}
+      {/* ══ GENERAL ══ */}
       <Section icon={Globe} title="General Settings">
         <Field label="Site Name">
-          <input
+          <DarkInput
             value={general.siteName}
-            onChange={(e) => setGeneral({ ...general, siteName: e.target.value })}
-            className={inputCls}
+            onChange={e => setGeneral({ ...general, siteName: e.target.value })}
+            placeholder="Your site name"
           />
         </Field>
-        <Field label="Site Description">
-          <textarea
+        <Divider />
+        <Field label="Site Description" hint="Shown in search engines and social shares">
+          <DarkTextarea
             value={general.siteDescription}
-            onChange={(e) => setGeneral({ ...general, siteDescription: e.target.value })}
+            onChange={e => setGeneral({ ...general, siteDescription: e.target.value })}
             rows={2}
-            className={`${inputCls} resize-none`}
           />
         </Field>
+        <Divider />
         <Field label="Default Language">
-          <select
+          <DarkSelect
             value={general.defaultLanguage}
-            onChange={(e) => setGeneral({ ...general, defaultLanguage: e.target.value })}
-            className={selectCls}
+            onChange={e => setGeneral({ ...general, defaultLanguage: e.target.value })}
+            style={{ width: 200 }}
           >
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-          </select>
+            <option value="en" style={{ background: '#111' }}>English</option>
+            <option value="ar" style={{ background: '#111' }}>العربية</option>
+          </DarkSelect>
         </Field>
+        <Divider />
         <Field label="Timezone">
-          <select
+          <DarkSelect
             value={general.timezone}
-            onChange={(e) => setGeneral({ ...general, timezone: e.target.value })}
-            className={selectCls}
+            onChange={e => setGeneral({ ...general, timezone: e.target.value })}
+            style={{ width: 280 }}
           >
-            <option value="Africa/Casablanca">Africa/Casablanca (GMT+1)</option>
-            <option value="UTC">UTC</option>
-            <option value="Europe/Paris">Europe/Paris (GMT+2)</option>
-          </select>
+            <option value="Africa/Casablanca" style={{ background: '#111' }}>Africa/Casablanca (GMT+1)</option>
+            <option value="UTC"               style={{ background: '#111' }}>UTC</option>
+            <option value="Europe/Paris"      style={{ background: '#111' }}>Europe/Paris (GMT+2)</option>
+          </DarkSelect>
         </Field>
       </Section>
 
-      {/* Content */}
+      {/* ══ CONTENT ══ */}
       <Section icon={FileText} title="Content Settings">
-        <Field label="Articles per page" hint="Number shown in listings">
-          <input
-            type="number"
-            min={5}
-            max={100}
-            value={content.articlesPerPage}
-            onChange={(e) => setContent({ ...content, articlesPerPage: Number(e.target.value) })}
-            className={`${inputCls} w-24`}
-          />
-        </Field>
-        <Field label="Auto-publish AI drafts" hint="Automatically publish AI-generated articles">
-          <Toggle
-            checked={content.autoPublishAI}
-            onChange={(v) => setContent({ ...content, autoPublishAI: v })}
-          />
-        </Field>
-        <Field label="Breaking news duration" hint="Hours before a story is no longer breaking">
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              min={1}
-              max={72}
-              value={content.breakingNewsDuration}
-              onChange={(e) => setContent({ ...content, breakingNewsDuration: Number(e.target.value) })}
-              className={`${inputCls} w-24`}
+        <Field label="Articles per page" hint="Number of articles shown in listings">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <DarkInput
+              type="number" min={5} max={100}
+              value={content.articlesPerPage}
+              onChange={e => setContent({ ...content, articlesPerPage: Number(e.target.value) })}
+              style={{ width: 88 }}
             />
-            <span className="text-gray-500 text-sm">hours</span>
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>per page</span>
           </div>
         </Field>
-        <Field label="Enable comments">
-          <Toggle
-            checked={content.enableComments}
-            onChange={(v) => setContent({ ...content, enableComments: v })}
-          />
+        <Divider />
+        <ToggleField
+          label="Auto-publish AI drafts"
+          hint="Automatically publish AI-generated articles without review"
+          checked={content.autoPublishAI}
+          onChange={v => setContent({ ...content, autoPublishAI: v })}
+        />
+        <Divider />
+        <Field label="Breaking news duration" hint="Hours before a story is no longer breaking">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <DarkInput
+              type="number" min={1} max={72}
+              value={content.breakingNewsDuration}
+              onChange={e => setContent({ ...content, breakingNewsDuration: Number(e.target.value) })}
+              style={{ width: 88 }}
+            />
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>hours</span>
+          </div>
         </Field>
+        <Divider />
+        <ToggleField
+          label="Enable comments"
+          hint="Allow readers to comment on articles"
+          checked={content.enableComments}
+          onChange={v => setContent({ ...content, enableComments: v })}
+        />
       </Section>
 
-      {/* Notifications */}
+      {/* ══ NOTIFICATIONS ══ */}
       <Section icon={Bell} title="Notifications">
-        <Field label="Email notifications" hint="Receive alerts via email">
-          <Toggle
-            checked={notifications.emailNotifications}
-            onChange={(v) => setNotifications({ ...notifications, emailNotifications: v })}
-          />
-        </Field>
-        <Field label="New article alerts" hint="Notify when articles are submitted">
-          <Toggle
-            checked={notifications.newArticleAlerts}
-            onChange={(v) => setNotifications({ ...notifications, newArticleAlerts: v })}
-          />
-        </Field>
-        <Field label="System alerts" hint="Critical system notifications">
-          <Toggle
-            checked={notifications.systemAlerts}
-            onChange={(v) => setNotifications({ ...notifications, systemAlerts: v })}
-          />
-        </Field>
+        <ToggleField
+          label="Email notifications"
+          hint="Receive admin alerts via email"
+          checked={notifications.emailNotifications}
+          onChange={v => setNotifications({ ...notifications, emailNotifications: v })}
+        />
+        <Divider />
+        <ToggleField
+          label="New article alerts"
+          hint="Notify when articles are submitted for review"
+          checked={notifications.newArticleAlerts}
+          onChange={v => setNotifications({ ...notifications, newArticleAlerts: v })}
+        />
+        <Divider />
+        <ToggleField
+          label="System alerts"
+          hint="Critical system and infrastructure notifications"
+          checked={notifications.systemAlerts}
+          onChange={v => setNotifications({ ...notifications, systemAlerts: v })}
+        />
       </Section>
 
     </div>

@@ -22,8 +22,8 @@ export default function CookieConsent() {
       <div className="bg-black border border-[#222] rounded-2xl p-5 shadow-2xl">
         {/* Icon + title */}
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="p-1.5 bg-[#FF6B00]/15 rounded-lg">
-            <Cookie size={18} className="text-[#FF6B00]" />
+          <div className="p-1.5 bg-orange/15 rounded-lg">
+            <Cookie size={18} className="text-orange" />
           </div>
           <p className="text-white text-sm font-bold">We use cookies</p>
         </div>
@@ -38,7 +38,7 @@ export default function CookieConsent() {
         <div className="flex flex-col gap-2">
           <button
             onClick={() => handle('accepted')}
-            className="w-full py-2.5 text-xs font-bold text-white bg-[#FF6B00] hover:bg-[#cc5500] rounded-xl transition-colors"
+            className="w-full py-2.5 text-xs font-bold text-white bg-orange hover:bg-orange-dim rounded-xl transition-colors"
           >
             Accept All
           </button>

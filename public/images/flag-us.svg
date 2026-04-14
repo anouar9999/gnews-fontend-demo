@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30">
+  <!-- Stripes -->
+  <rect width="60" height="30" fill="#B22234"/>
+  <rect y="2.31" width="60" height="2.31" fill="#fff"/>
+  <rect y="6.92" width="60" height="2.31" fill="#fff"/>
+  <rect y="11.54" width="60" height="2.31" fill="#fff"/>
+  <rect y="16.15" width="60" height="2.31" fill="#fff"/>
+  <rect y="20.77" width="60" height="2.31" fill="#fff"/>
+  <rect y="25.38" width="60" height="2.31" fill="#fff"/>
+  <!-- Canton -->
+  <rect width="24" height="16.15" fill="#3C3B6E"/>
+  <!-- Stars (simplified 3x3 representative block) -->
+  <g fill="#fff" font-size="3" text-anchor="middle">
+    <text x="3" y="4">★</text><text x="7" y="4">★</text><text x="11" y="4">★</text><text x="15" y="4">★</text><text x="19" y="4">★</text><text x="23" y="4">★</text>
+    <text x="5" y="7">★</text><text x="9" y="7">★</text><text x="13" y="7">★</text><text x="17" y="7">★</text><text x="21" y="7">★</text>
+    <text x="3" y="10">★</text><text x="7" y="10">★</text><text x="11" y="10">★</text><text x="15" y="10">★</text><text x="19" y="10">★</text><text x="23" y="10">★</text>
+    <text x="5" y="13">★</text><text x="9" y="13">★</text><text x="13" y="13">★</text><text x="17" y="13">★</text><text x="21" y="13">★</text>
+  </g>
+</svg>

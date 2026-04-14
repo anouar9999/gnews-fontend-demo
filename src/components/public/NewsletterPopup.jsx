@@ -73,7 +73,7 @@ export default function NewsletterPopup() {
           <div className="flex flex-col md:flex-row">
 
             {/* ── Left panel — visual ── */}
-            <div className="md:w-2/5 bg-gradient-to-br from-[#FF6B00] to-[#cc3a00] p-8 flex flex-col justify-between relative overflow-hidden">
+            <div className="md:w-2/5 bg-gradient-to-br from-orange to-[#cc3a00] p-8 flex flex-col justify-between relative overflow-hidden">
               {/* Decorative circles */}
               <div className="absolute -top-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
               <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-black/20" />
@@ -101,7 +101,7 @@ export default function NewsletterPopup() {
 
             {/* ── Right panel — form ── */}
             <div className="md:w-3/5 p-8 flex flex-col justify-center">
-              <p className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest mb-2">
+              <p className="text-orange text-xs font-bold uppercase tracking-widest mb-2">
                 Free · No spam · Unsubscribe anytime
               </p>
               <h3 className="text-white text-xl font-black leading-snug mb-2">
@@ -118,7 +118,7 @@ export default function NewsletterPopup() {
                   onChange={(e) => { setEmail(e.target.value); setError(''); }}
                   placeholder="your@email.com"
                   required
-                  className="w-full bg-[#181818] border border-[#2a2a2a] focus:border-[#FF6B00] text-white text-sm rounded-xl px-4 py-3 outline-none transition-colors placeholder-gray-600"
+                  className="w-full bg-[#181818] border border-[#2a2a2a] focus:border-orange text-white text-sm rounded-xl px-4 py-3 outline-none transition-colors placeholder-gray-600"
                 />
 
                 {error && <p className="text-red-400 text-xs">{error}</p>}
@@ -126,7 +126,7 @@ export default function NewsletterPopup() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-[#FF6B00] hover:bg-[#cc5500] disabled:opacity-60 text-white text-sm font-black rounded-xl transition-colors tracking-wide"
+                  className="w-full py-3 bg-orange hover:bg-orange-dim disabled:opacity-60 text-white text-sm font-black rounded-xl transition-colors tracking-wide"
                 >
                   {loading ? 'Subscribing…' : 'Subscribe for free →'}
                 </button>

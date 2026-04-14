@@ -43,9 +43,9 @@ export default function Footer() {
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="flex-1 bg-[#1A1A1A] border border-[#2a2a2a] rounded px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-[#FF6B00] transition-colors"
+                  className="flex-1 bg-[#1A1A1A] border border-[#2a2a2a] rounded px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-orange transition-colors"
                 />
-                <button className="bg-[#FF6B00] hover:bg-[#cc5500] text-white text-xs font-700 uppercase px-4 py-2 rounded transition-colors">
+                <button className="bg-orange hover:bg-orange-dim text-white text-xs font-700 uppercase px-4 py-2 rounded transition-colors">
                   Subscribe
                 </button>
               </div>
@@ -59,7 +59,7 @@ export default function Footer() {
               <ul className="space-y-2">
                 {s.links.map((link) => (
                   <li key={link}>
-                    <Link to="#" className="text-gray-400 hover:text-[#FF6B00] text-sm transition-colors">
+                    <Link to="#" className="text-gray-400 hover:text-orange text-sm transition-colors">
                       {link}
                     </Link>
                   </li>
@@ -80,7 +80,7 @@ export default function Footer() {
                 key={label}
                 href="#"
                 aria-label={label}
-                className="text-gray-500 hover:text-[#FF6B00] transition-colors"
+                className="text-gray-500 hover:text-orange transition-colors"
               >
                 <Icon size={18} />
               </a>

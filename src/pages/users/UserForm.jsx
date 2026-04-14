@@ -1,91 +1,272 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Save, User, Mail, Lock, Shield, Loader2 } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-const inputCls = 'w-full px-3 py-2 bg-[#181818] border border-[#2a2a2a] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-[#FF6B00] placeholder-gray-600';
-const labelCls = 'block text-sm font-medium text-gray-300 mb-1';
+/* ─── field primitives ───────────────────────────────────────── */
+function FieldLabel({ children }) {
+  return (
+    <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', marginBottom: 6 }}>
+      {children}
+    </p>
+  );
+}
 
-export default function UserForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const isEdit = Boolean(id);
+function Field({ label, icon: Icon, children }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+        {Icon && <Icon size={11} style={{ color: 'rgba(255,255,255,0.22)', flexShrink: 0 }} />}
+        <FieldLabel>{label}</FieldLabel>
+      </div>
+      {children}
+    </div>
+  );
+}
 
-  const [form, setForm] = useState({ username: '', email: '', password: '', user_type: 'editor' });
+const inputStyle = {
+  width: '100%', padding: '10px 13px',
+  background: '#111111', border: '1px solid #2a2a2a',
+  borderRadius: 8, color: '#fff', fontSize: 13,
+  outline: 'none', boxSizing: 'border-box',
+  caretColor: '#FF6B00', transition: 'border-color .15s, box-shadow .15s',
+};
+
+function DarkInput({ ...props }) {
+  return (
+    <input
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,0,0.07)'; }}
+      onBlur={e  => { e.currentTarget.style.borderColor = '#2a2a2a'; e.currentTarget.style.boxShadow = 'none'; }}
+    />
+  );
+}
+
+/* ─── Role picker ────────────────────────────────────────────── */
+const ROLE_OPTIONS = [
+  { value: 'editor', label: 'Editor', desc: 'Can create and edit content', colorRgb: '96,165,250' },
+  { value: 'viewer', label: 'Viewer', desc: 'Read-only access',            colorRgb: '156,163,175' },
+];
+
+function RolePicker({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {ROLE_OPTIONS.map(opt => {
+        const active = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+              transition: 'all .12s',
+              background: active ? `rgba(${opt.colorRgb},0.08)` : 'rgba(255,255,255,0.02)',
+              border: active ? `1px solid rgba(${opt.colorRgb},0.3)` : '1px solid rgba(255,255,255,0.07)',
+              boxShadow: active ? `0 0 12px rgba(${opt.colorRgb},0.1)` : 'none',
+            }}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: active ? `rgba(${opt.colorRgb},0.15)` : 'rgba(255,255,255,0.05)',
+              border: active ? `1px solid rgba(${opt.colorRgb},0.3)` : '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <Shield size={14} style={{ color: active ? `rgb(${opt.colorRgb})` : 'rgba(255,255,255,0.25)' }} />
+            </div>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: active ? `rgb(${opt.colorRgb})` : 'rgba(255,255,255,0.7)', margin: 0 }}>{opt.label}</p>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '2px 0 0' }}>{opt.desc}</p>
+            </div>
+            {active && (
+              <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: `rgb(${opt.colorRgb})`, boxShadow: `0 0 8px rgb(${opt.colorRgb})`, flexShrink: 0 }} />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN EXPORT — rendered as overlay inside UserList
+═══════════════════════════════════════════════════════════════ */
+export default function UserForm({ editId, onClose, onSaved }) {
+  const isEdit = Boolean(editId);
+
+  const [form, setForm]       = useState({ username: '', email: '', password: '', user_type: 'editor' });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
 
   useEffect(() => {
     if (!isEdit) return;
-    api.get(`/auth/users/${id}/`).then(({ data }) => {
-      setForm({ username: data.username, email: data.email, password: '', user_type: data.user_type });
-      setFetching(false);
-    }).catch(() => { toast.error('Failed to load user'); navigate('/admin/users'); });
-  }, [id, isEdit, navigate]);
+    api.get(`/auth/users/${editId}/`)
+      .then(({ data }) => {
+        setForm({ username: data.username, email: data.email, password: '', user_type: data.user_type });
+        setFetching(false);
+      })
+      .catch(() => { toast.error('Failed to load user'); onClose(); });
+  }, [editId, isEdit]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleChange = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     try {
       if (isEdit) {
         const { password, ...payload } = form;
-        await api.patch(`/auth/users/${id}/`, payload);
+        await api.patch(`/auth/users/${editId}/`, payload);
       } else {
         await api.post('/auth/users/', form);
       }
       toast.success(isEdit ? 'User updated' : 'User created');
-      navigate('/admin/users');
+      onSaved();
     } catch (err) {
       const msg = err.response?.data ? Object.values(err.response.data).flat()[0] : 'Failed to save';
       toast.error(String(msg));
     } finally { setLoading(false); }
   };
 
-  if (fetching) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B00]" /></div>;
+  const PANEL_W = 440;
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/admin/users')} className="p-2 hover:bg-[#1c1c1c] rounded-lg text-gray-300"><ArrowLeft size={20} /></button>
-        <h1 className="text-2xl font-bold text-white">{isEdit ? 'Edit User' : 'New User'}</h1>
-      </div>
-      <form onSubmit={handleSubmit} className="max-w-lg bg-[#111] rounded-lg border border-[#1f1f1f] p-6 space-y-4">
-        <div>
-          <label className={labelCls}>Username *</label>
-          <input name="username" value={form.username} onChange={handleChange} required className={inputCls} />
-        </div>
-        <div>
-          <label className={labelCls}>Email *</label>
-          <input name="email" type="email" value={form.email} onChange={handleChange} required className={inputCls} />
-        </div>
-        {!isEdit && (
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, backdropFilter: 'blur(3px)' }}
+      />
+
+      {/* Slide-in panel */}
+      <motion.div
+        key="panel"
+        initial={{ x: -PANEL_W, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: -PANEL_W, opacity: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: 'fixed', top: 0, left: 0, bottom: 0,
+          width: PANEL_W,
+          background: '#161618',
+          borderRight: '1px solid rgba(255,255,255,0.07)',
+          boxShadow: '8px 0 40px rgba(0,0,0,0.5)',
+          zIndex: 50,
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* ── Panel header ── */}
+        <div style={{
+          padding: '18px 22px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+          background: '#1a1a1c',
+        }}>
           <div>
-            <label className={labelCls}>Password *</label>
-            <input name="password" type="password" value={form.password} onChange={handleChange} required={!isEdit} minLength={8} className={inputCls} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 3, height: 20, borderRadius: 2, background: 'linear-gradient(180deg,#FF6B00,rgba(255,107,0,0.2))' }} />
+              <h2 style={{ fontSize: 15, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>
+                {isEdit ? 'Edit User' : 'New User'}
+              </h2>
+            </div>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', margin: '3px 0 0 11px' }}>
+              {isEdit ? `Editing user #${editId}` : 'Create a new CMS account'}
+            </p>
           </div>
-        )}
-        <div>
-          <label className={labelCls}>Role</label>
-          <select name="user_type" value={form.user_type} onChange={handleChange} className={inputCls + ' [&>option]:bg-[#181818]'}>
-            <option value="editor">Editor</option>
-            <option value="viewer">Viewer</option>
-          </select>
-        </div>
-        <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#FF6B00] text-white font-medium rounded-lg hover:bg-[#cc5500] disabled:opacity-50 transition-colors">
-            <Save size={16} /> {loading ? 'Saving...' : 'Save'}
+          <button
+            type="button" onClick={onClose}
+            style={{ width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all .15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
+          >
+            <X size={14} />
           </button>
-          <button type="button" onClick={() => navigate('/admin/users')}
-            className="px-6 py-2.5 text-gray-400 bg-[#1c1c1c] rounded-lg hover:bg-[#252525] transition-colors">Cancel</button>
         </div>
-      </form>
-    </div>
+
+        {/* ── Form body ── */}
+        {fetching ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Loader2 size={24} style={{ color: '#FF6B00', animation: 'spin 1s linear infinite' }} />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '22px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+              {/* Username */}
+              <Field label="Username *" icon={User}>
+                <DarkInput name="username" value={form.username} onChange={handleChange} placeholder="username" required />
+              </Field>
+
+              {/* Email */}
+              <Field label="Email *" icon={Mail}>
+                <DarkInput name="email" type="email" value={form.email} onChange={handleChange} placeholder="user@example.com" required />
+              </Field>
+
+              {/* Password — only on create */}
+              {!isEdit && (
+                <Field label="Password *" icon={Lock}>
+                  <DarkInput name="password" type="password" value={form.password} onChange={handleChange} placeholder="Min. 8 characters" required minLength={8} />
+                </Field>
+              )}
+
+              {/* Divider */}
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+
+              {/* Role */}
+              <Field label="Role" icon={Shield}>
+                <RolePicker value={form.user_type} onChange={v => setForm(p => ({ ...p, user_type: v }))} />
+              </Field>
+
+            </div>
+
+            {/* ── Sticky footer ── */}
+            <div style={{
+              padding: '14px 22px',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              background: '#1a1a1c',
+              display: 'flex', gap: 10, flexShrink: 0,
+            }}>
+              <button
+                type="submit" disabled={loading}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                  padding: '10px 0', borderRadius: 10,
+                  background: loading ? 'rgba(255,107,0,0.4)' : 'linear-gradient(135deg,#FF6B00 0%,#cc4400 100%)',
+                  color: '#fff', fontSize: 13, fontWeight: 700,
+                  border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 4px 0 #7a2800, 0 6px 14px rgba(255,107,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  transform: 'translateY(-2px)', transition: 'transform .08s, box-shadow .08s',
+                }}
+                onMouseEnter={e => { if (!loading) { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 0 #7a2800,0 10px 20px rgba(255,107,0,0.45),inset 0 1px 0 rgba(255,255,255,0.15)'; }}}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 0 #7a2800,0 6px 14px rgba(255,107,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+                onMouseDown={e  => { e.currentTarget.style.transform = 'translateY(1px)'; e.currentTarget.style.boxShadow = '0 1px 0 #7a2800,0 2px 6px rgba(255,107,0,0.2),inset 0 1px 0 rgba(0,0,0,0.1)'; }}
+                onMouseUp={e    => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 0 #7a2800,0 6px 14px rgba(255,107,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15)'; }}
+              >
+                {loading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={14} />}
+                {loading ? 'Saving…' : isEdit ? 'Update' : 'Create'}
+              </button>
+              <button
+                type="button" onClick={onClose}
+                style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.45)', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all .15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -1,116 +1,298 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, Newspaper, Users, Settings,
-  LogOut, ChevronLeft, ChevronRight, BarChart3,
-  Tag, Radio, Image, FolderTree, X,
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import GnewzLogo from './public/GnewzLogo';
-import toast from 'react-hot-toast';
+  LayoutDashboard,
+  Newspaper,
+  Users,
+  Settings,
+  LogOut,
+  ChevronRight,
+  BarChart3,
+  TrendingUp,
+  Tag,
+  Radio,
+  Image,
+  FolderTree,
+  X,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import GnewzLogo from "./public/GnewzLogo";
+import toast from "react-hot-toast";
+
+const navGroups = [
+  {
+    label: "Overview",
+    items: [
+      {
+        to: "/admin/dashboard",
+        icon: LayoutDashboard,
+        labelKey: "admin.dashboard",
+        end: true,
+      },
+      {
+        to: "/admin/analytics",
+        icon: TrendingUp,
+        labelKey: "admin.analytics",
+        end: true,
+      },
+    ],
+  },
+  {
+    label: "Content",
+    items: [
+      { to: "/admin/articles", icon: BarChart3, labelKey: "admin.articles" },
+      { to: "/admin/raw-news", icon: Newspaper, labelKey: "admin.rawNews" },
+      { to: "/admin/categories", icon: FolderTree, labelKey: "admin.categories" },
+      { to: "/admin/tags", icon: Tag, labelKey: "admin.tags" },
+      { to: "/admin/sources", icon: Radio, labelKey: "admin.sources" },
+      { to: "/admin/media", icon: Image, labelKey: "admin.media" },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { to: "/admin/users", icon: Users, labelKey: "admin.users" },
+      { to: "/admin/settings", icon: Settings, labelKey: "admin.settings" },
+    ],
+  },
+];
 
 export default function AdminSidebar({ collapsed, onToggle, onClose }) {
   const { t } = useTranslation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
-
-  const navItems = [
-    { to: '/admin/dashboard', icon: LayoutDashboard, label: t('admin.dashboard'),       end: true },
-    { to: '/admin/raw-news',  icon: Newspaper,        label: t('admin.rawNews') },
-    { to: '/admin/articles',  icon: BarChart3,        label: t('admin.articles') },
-    { to: '/admin/categories',icon: FolderTree,       label: t('admin.categories') },
-    { to: '/admin/tags',      icon: Tag,              label: t('admin.tags') },
-    { to: '/admin/sources',   icon: Radio,            label: t('admin.sources') },
-    { to: '/admin/media',     icon: Image,            label: t('admin.media') },
-    { to: '/admin/users',     icon: Users,            label: t('admin.users') },
-    { to: '/admin/settings',  icon: Settings,         label: t('admin.settings') },
-  ];
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out');
-    navigate('/admin/login');
+    toast.success("Logged out");
+    navigate("/admin/login");
   };
 
   const handleNavClick = () => {
-    // Close mobile drawer when a nav item is clicked
     onClose?.();
   };
 
-  // On desktop: respect collapsed state. On mobile: always show full labels
-  const showLabels = !collapsed; // mobile is never collapsed (always full)
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
+    : "A";
 
   return (
-    <aside className={`
-      h-full bg-[#0A0A0A] border-r border-[#1A1A1A] flex flex-col transition-all duration-300
-      ${collapsed ? 'w-16' : 'w-64'}
-    `}>
-      {/* Logo + close/toggle */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-[#1A1A1A] h-14 sm:h-16 shrink-0">
-        {!collapsed && <GnewzLogo size={100} variant="dark" />}
+    <aside
+      className={`h-full flex flex-col transition-all duration-300 ease-in-out ${
+        collapsed ? "w-17.5" : "w-65"
+      }`}
+      style={{
+        background: "var(--color-dark)",
+        borderRight: "1px solid rgba(255,107,0,0.12)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center shrink-0 px-4"
+        style={{
+          height: "72px",
+          borderBottom: "1px solid rgba(255,107,0,0.10)",
+        }}
+      >
+        {collapsed ? (
+          <button
+            onClick={onToggle}
+            className="mx-auto flex items-center justify-center w-8 h-8 rounded-lg transition-colors"
+            style={{ background: "rgba(255,107,0,0.12)", color: "#ff6b00" }}
+          >
+            <ChevronRight size={16} />
+          </button>
+        ) : (
+          <>
+            <div className="flex flex-col gap-0.5 overflow-hidden flex-1">
+              <GnewzLogo size={130} variant="dark" />
+              
+            </div>
 
-        {/* Mobile: X to close drawer */}
-        <button
-          onClick={onClose}
-          className="lg:hidden p-1.5 rounded hover:bg-[#1A1A1A] text-gray-400 hover:text-white transition-colors ml-auto"
-        >
-          <X size={18} />
-        </button>
+            {/* Mobile close */}
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:text-white transition-colors ml-2 shrink-0"
+              style={{ background: "rgba(255,255,255,0.04)" }}
+            >
+              <X size={15} />
+            </button>
 
-        {/* Desktop: collapse toggle */}
-        <button
-          onClick={onToggle}
-          className="hidden lg:flex p-1.5 rounded hover:bg-[#1A1A1A] text-gray-400 hover:text-white transition-colors ml-auto"
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+            {/* Desktop collapse */}
+            <button
+              onClick={onToggle}
+              className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-gray-600 hover:text-white transition-all duration-200 shrink-0 ml-2"
+              style={{ background: "rgba(255,255,255,0.04)" }}
+            >
+              <ChevronRight
+                size={13}
+                style={{ transform: "rotate(180deg)" }}
+              />
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Console label */}
-      {!collapsed && (
-        <div className="px-4 pt-5 pb-2">
-          <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-            {t('admin.adminConsole')}
-          </span>
-        </div>
-      )}
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-5 space-y-1">
+        {navGroups.map((group) => (
+          <div key={group.label} className="mb-2">
+            {/* Group label */}
+            {!collapsed && (
+              <p
+                className="px-5 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] select-none"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                {group.label}
+              </p>
+            )}
+            {collapsed && (
+              <div
+                className="mx-auto my-3"
+                style={{
+                  width: "22px",
+                  height: "1px",
+                  background: "rgba(255,255,255,0.07)",
+                }}
+              />
+            )}
 
-      {/* Nav items */}
-      <nav className="flex-1 py-2 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={handleNavClick}
-            className={({ isActive }) =>
-              `flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg mb-0.5 transition-all text-sm font-medium
-              ${isActive
-                ? 'bg-[#FF6B00] text-white shadow-lg shadow-orange-900/30'
-                : 'text-gray-400 hover:bg-[#1A1A1A] hover:text-white'
-              }
-              ${collapsed ? 'justify-center' : ''}`
-            }
-            title={collapsed ? label : undefined}
-          >
-            <Icon size={18} className="shrink-0" />
-            {!collapsed && <span className="truncate">{label}</span>}
-          </NavLink>
+            <ul className="space-y-0.5 px-2">
+              {group.items.map(({ to, icon: Icon, labelKey, end }) => (
+                <li key={to}>
+                  <NavLink
+                    to={to}
+                    end={end}
+                    onClick={handleNavClick}
+                    title={collapsed ? t(labelKey) : undefined}
+                    className={({ isActive }) =>
+                      `group flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150 relative
+                      ${collapsed ? "justify-center px-0 py-3" : "px-3 py-2.5"}
+                      ${isActive ? "text-white" : "text-gray-500 hover:text-gray-300"}`
+                    }
+                    style={({ isActive }) =>
+                      isActive
+                        ? {
+                            background:
+                              "linear-gradient(135deg, rgba(255,107,0,0.18) 0%, rgba(255,107,0,0.07) 100%)",
+                            boxShadow: "inset 1px 0 0 0 rgba(255,107,0,0.5)",
+                          }
+                        : { background: "transparent" }
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        {/* Active left bar */}
+                        {isActive && !collapsed && (
+                          <span
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-r-full"
+                            style={{
+                              height: "60%",
+                              background: "#ff6b00",
+                              boxShadow: "0 0 8px rgba(255,107,0,0.6)",
+                            }}
+                          />
+                        )}
+
+                        <span
+                          className="shrink-0 flex items-center justify-center transition-all duration-150"
+                          style={{
+                            color: isActive
+                              ? "#ff6b00"
+                              : "rgba(255,255,255,0.3)",
+                          }}
+                        >
+                          <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
+                        </span>
+
+                        {!collapsed && (
+                          <span className="truncate leading-none flex-1">
+                            {t(labelKey)}
+                          </span>
+                        )}
+
+                        {!collapsed && (
+                          <ChevronRight
+                            size={12}
+                            className="shrink-0 transition-all duration-150"
+                            style={{
+                              opacity: isActive ? 0.7 : 0,
+                              color: "#ff6b00",
+                              transform: isActive
+                                ? "translateX(0)"
+                                : "translateX(-4px)",
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
       </nav>
 
+      {/* Footer */}
+      <div
+        className="shrink-0"
+        style={{ borderTop: "1px solid rgba(255,107,0,0.10)" }}
+      >
+        {/* User profile row */}
+        {!collapsed && (
+          <div
+            className="flex items-center gap-3 px-4 py-3"
+            style={{ borderBottom: "1px solid rgba(255,107,0,0.08)" }}
+          >
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(255,107,0,0.3), rgba(255,107,0,0.1))",
+                color: "#ff6b00",
+                border: "1px solid rgba(255,107,0,0.25)",
+              }}
+            >
+              {initials}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-xs font-semibold text-white truncate leading-tight">
+                {user?.username || "Admin"}
+              </p>
+              <p
+                className="text-[10px] truncate leading-tight mt-0.5"
+                style={{ color: "rgba(255,255,255,0.3)" }}
+              >
+                {user?.user_type || "administrator"}
+              </p>
+            </div>
+          </div>
+        )}
 
-      {/* Logout */}
-      <div className="border-t border-[#1A1A1A] p-2 shrink-0">
-        <button
-          onClick={handleLogout}
-          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors
-            ${collapsed ? 'justify-center' : ''}`}
-          title={collapsed ? t('admin.logout') : undefined}
-        >
-          <LogOut size={18} className="shrink-0" />
-          {!collapsed && <span>{t('admin.logout')}</span>}
-        </button>
+        {/* Logout button */}
+        {/* <div className="p-2">
+          <button
+            onClick={handleLogout}
+            title={collapsed ? t("admin.logout") : undefined}
+            className={`group flex items-center gap-3 w-full rounded-xl text-sm font-medium transition-all duration-150
+              ${collapsed ? "justify-center px-0 py-3" : "px-3 py-2.5"}`}
+            style={{ color: "rgba(248,113,113,0.55)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(239,68,68,0.07)";
+              e.currentTarget.style.color = "rgba(248,113,113,0.9)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgba(248,113,113,0.55)";
+            }}
+          >
+            <LogOut size={16} className="shrink-0" strokeWidth={1.8} />
+            {!collapsed && (
+              <span>{t("admin.logout")}</span>
+            )}
+          </button>
+        </div> */}
       </div>
     </aside>
   );

@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trophy, Swords, Calendar, DollarSign, ChevronRight, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import api from '../../api/axios';
+import { toCard } from '../../utils/article';
 
 const games = ['All', 'CS2', 'Valorant', 'LoL', 'Dota 2', 'Fortnite', 'Rocket League'];
 
@@ -74,12 +77,19 @@ const bracket = [
 
 export default function EsportPage() {
   const [activeGame, setActiveGame] = useState('All');
+  const [esportsNews, setEsportsNews] = useState([]);
+
+  useEffect(() => {
+    api.get('/articles/', { params: { status: 'publie', category__slug: 'esports', ordering: '-published_at' } })
+      .then(({ data }) => setEsportsNews((data.results || []).slice(0, 4).map(toCard)))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-1 h-8 bg-[#FF6B00] rounded-full" />
+        <div className="w-1 h-8 bg-orange rounded-full" />
         <h1 className="text-3xl font-900 text-white uppercase tracking-wide">Esports</h1>
         <span className="live-badge"><span className="live-dot" /> 3 Matches Live</span>
       </div>
@@ -91,7 +101,7 @@ export default function EsportPage() {
             key={g}
             onClick={() => setActiveGame(g)}
             className={`shrink-0 px-4 py-1.5 rounded text-xs font-700 uppercase tracking-wider transition-colors ${
-              activeGame === g ? 'bg-[#FF6B00] text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
+              activeGame === g ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
             }`}
           >
             {g}
@@ -102,13 +112,13 @@ export default function EsportPage() {
       {/* Live matches */}
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-5">
-          <Swords size={18} className="text-[#FF6B00]" />
+          <Swords size={18} className="text-orange" />
           <h2 className="text-xl font-900 text-white uppercase tracking-wide">Live Now</h2>
           <span className="live-badge"><span className="live-dot" /> Live</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {liveMatches.map((m) => (
-            <div key={m.id} className="gnewz-card p-5 border-[#FF6B00]/30 hover:border-[#FF6B00]">
+            <div key={m.id} className="gnewz-card p-5 border-orange/30 hover:border-orange">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <span className="gnewz-tag">{m.game}</span>
@@ -121,7 +131,7 @@ export default function EsportPage() {
 
               <div className="flex items-center justify-between">
                 <div className="text-center w-1/3">
-                  <div className="w-14 h-14 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30 mx-auto mb-2 flex items-center justify-center text-xl font-900 text-[#FF6B00]">
+                  <div className="w-14 h-14 rounded-full bg-orange/10 border border-orange/30 mx-auto mb-2 flex items-center justify-center text-xl font-900 text-orange">
                     {m.logo1}
                   </div>
                   <p className="text-white text-xs font-700 truncate">{m.t1}</p>
@@ -129,10 +139,10 @@ export default function EsportPage() {
                 <div className="text-center">
                   <div className="flex items-center gap-1">
                     <span className="text-3xl font-900 text-white">{m.s1}</span>
-                    <span className="text-[#FF6B00] font-900 text-xl">:</span>
+                    <span className="text-orange font-900 text-xl">:</span>
                     <span className="text-3xl font-900 text-white">{m.s2}</span>
                   </div>
-                  <span className="text-[10px] text-[#FF6B00] font-700 uppercase tracking-wider">Live</span>
+                  <span className="text-[10px] text-orange font-700 uppercase tracking-wider">Live</span>
                 </div>
                 <div className="text-center w-1/3">
                   <div className="w-14 h-14 rounded-full bg-[#2a2a2a] border border-[#2a2a2a] mx-auto mb-2 flex items-center justify-center text-xl font-900 text-gray-300">
@@ -146,7 +156,7 @@ export default function EsportPage() {
                 <div className="flex items-center gap-1 text-gray-500 text-xs">
                   <Users size={11} /> {m.viewers} watching
                 </div>
-                <button className="text-[#FF6B00] text-xs font-700 uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all">
+                <button className="text-orange text-xs font-700 uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all">
                   Watch <ChevronRight size={12} />
                 </button>
               </div>
@@ -160,7 +170,7 @@ export default function EsportPage() {
         {/* Tournaments */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-3 mb-5">
-            <Trophy size={18} className="text-[#FF6B00]" />
+            <Trophy size={18} className="text-orange" />
             <h2 className="text-xl font-900 text-white uppercase tracking-wide">Active Tournaments</h2>
           </div>
           {tournaments.map((t) => (
@@ -171,7 +181,7 @@ export default function EsportPage() {
                 <div className="absolute inset-0 flex items-center px-5 gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-700 uppercase tracking-widest px-2 py-0.5 rounded ${t.status === 'LIVE' ? 'bg-[#FF6B00] text-white' : 'bg-[#2a2a2a] text-gray-300'}`}>
+                      <span className={`text-[10px] font-700 uppercase tracking-widest px-2 py-0.5 rounded ${t.status === 'LIVE' ? 'bg-orange text-white' : 'bg-[#2a2a2a] text-gray-300'}`}>
                         {t.status}
                       </span>
                       <span className="gnewz-tag">{t.game}</span>
@@ -180,7 +190,7 @@ export default function EsportPage() {
                     <p className="text-gray-400 text-xs">{t.stage} · {t.teams} Teams</p>
                   </div>
                   <div className="ml-auto text-right">
-                    <div className="flex items-center gap-1 text-[#FF6B00]">
+                    <div className="flex items-center gap-1 text-orange">
                       <DollarSign size={14} />
                       <span className="font-900 text-lg">{t.prize}</span>
                     </div>
@@ -202,7 +212,7 @@ export default function EsportPage() {
                     <tbody>
                       {t.top.map((row) => (
                         <tr key={row.team} className="border-b border-[#1A1A1A] hover:bg-[#111] transition-colors">
-                          <td className="px-4 py-2 text-[#FF6B00] font-800">{row.pos}</td>
+                          <td className="px-4 py-2 text-orange font-800">{row.pos}</td>
                           <td className="px-4 py-2 text-white font-600">{row.team}</td>
                           <td className="px-4 py-2 text-center text-green-400 font-700">{row.w}</td>
                           <td className="px-4 py-2 text-center text-red-400 font-700">{row.l}</td>
@@ -216,7 +226,7 @@ export default function EsportPage() {
           ))}
         </div>
 
-        {/* Sidebar: Bracket + Upcoming */}
+        {/* Sidebar: Bracket + Upcoming + News */}
         <aside className="space-y-5">
           {/* Bracket */}
           <div className="gnewz-card p-4">
@@ -224,13 +234,13 @@ export default function EsportPage() {
             <div className="space-y-5">
               {bracket.map((round) => (
                 <div key={round.round}>
-                  <p className="text-[#FF6B00] text-[10px] font-700 uppercase tracking-widest mb-2">{round.round}</p>
+                  <p className="text-orange text-[10px] font-700 uppercase tracking-widest mb-2">{round.round}</p>
                   <div className="space-y-2">
                     {round.matches.map((m, i) => (
                       <div key={i} className="bg-[#111] rounded-lg overflow-hidden border border-[#2a2a2a]">
                         <div className={`flex items-center justify-between px-3 py-1.5 border-b border-[#2a2a2a] ${m.done ? '' : 'opacity-50'}`}>
                           <span className="text-white text-xs font-600">{m.t1}</span>
-                          <span className={`text-sm font-900 ${m.done ? 'text-[#FF6B00]' : 'text-gray-600'}`}>{m.s1}</span>
+                          <span className={`text-sm font-900 ${m.done ? 'text-orange' : 'text-gray-600'}`}>{m.s1}</span>
                         </div>
                         <div className={`flex items-center justify-between px-3 py-1.5 ${m.done ? '' : 'opacity-50'}`}>
                           <span className="text-white text-xs font-600">{m.t2}</span>
@@ -247,7 +257,7 @@ export default function EsportPage() {
           {/* Upcoming matches */}
           <div className="gnewz-card p-4">
             <div className="flex items-center gap-2 mb-4">
-              <Calendar size={14} className="text-[#FF6B00]" />
+              <Calendar size={14} className="text-orange" />
               <h3 className="font-800 text-sm uppercase tracking-wider text-white">Upcoming</h3>
             </div>
             <div className="space-y-3">
@@ -265,6 +275,33 @@ export default function EsportPage() {
               ))}
             </div>
           </div>
+
+          {esportsNews.length > 0 && (
+            <div className="gnewz-card p-4">
+              <h3 className="font-800 text-sm uppercase tracking-wider text-white mb-4">Latest Esports News</h3>
+              <div className="space-y-3">
+                {esportsNews.map((a) => (
+                  <Link
+                    key={a.slug}
+                    to={`/article/${a.slug}`}
+                    className="flex gap-3 group"
+                  >
+                    <img
+                      src={a.image}
+                      alt={a.title}
+                      className="w-16 h-12 object-cover rounded shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-xs font-700 leading-snug group-hover:text-orange transition-colors line-clamp-2">
+                        {a.title}
+                      </p>
+                      <p className="text-gray-600 text-[10px] mt-0.5">{a.time}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </aside>
       </div>
     </div>

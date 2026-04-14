@@ -22,7 +22,7 @@ const PIPELINE_STAGES = [
 ];
 
 const STATUS_CFG = {
-  running: { label: 'Running',    cls: 'bg-[#FF6B00]/20 text-orange-300 border-orange-500/30' },
+  running: { label: 'Running',    cls: 'bg-orange/20 text-orange-300 border-orange-500/30' },
   review:  { label: 'Review',     cls: 'bg-gray-500/20  text-gray-300  border-gray-500/30' },
   success: { label: 'Success',    cls: 'bg-green-500/20 text-green-300 border-green-500/30' },
   failed:  { label: 'Failed',     cls: 'bg-red-500       text-white' },
@@ -39,7 +39,7 @@ function Toggle({ label, desc, value, onChange, danger }) {
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`w-11 h-6 rounded-full transition-colors relative ${value ? 'bg-[#FF6B00]' : 'bg-[#333]'}`}
+        className={`w-11 h-6 rounded-full transition-colors relative ${value ? 'bg-orange' : 'bg-[#333]'}`}
       >
         <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${value ? 'left-6' : 'left-1'}`} />
       </button>
@@ -71,13 +71,13 @@ export default function AIOrchestration() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => toast.success('Refreshed')}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-300 border border-[#333] rounded-lg hover:border-[#FF6B00] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-300 border border-[#333] rounded-lg hover:border-orange transition-colors"
           >
             <RefreshCw size={14} /> {t('ai.refresh')}
           </button>
           <button
             onClick={() => toast.success('Manual job started')}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#FF6B00] hover:bg-[#cc5500] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-orange hover:bg-orange-dim rounded-lg transition-colors"
           >
             <Play size={14} /> {t('ai.runManualJob')}
           </button>
@@ -89,7 +89,7 @@ export default function AIOrchestration() {
         {/* Total Jobs */}
         <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
           <div className="flex items-center justify-between mb-2">
-            <Activity size={18} className="text-[#FF6B00]" />
+            <Activity size={18} className="text-orange" />
             <span className="text-green-400 text-xs font-bold">+12%</span>
           </div>
           <p className="text-white text-2xl font-bold">1,284</p>
@@ -100,7 +100,7 @@ export default function AIOrchestration() {
         {/* Avg Processing */}
         <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
           <div className="flex items-center justify-between mb-2">
-            <Clock size={18} className="text-[#FF6B00]" />
+            <Clock size={18} className="text-orange" />
             <span className="text-red-400 text-xs font-bold">-5%</span>
           </div>
           <p className="text-white text-2xl font-bold">2m 14s</p>
@@ -111,7 +111,7 @@ export default function AIOrchestration() {
         {/* System Controls */}
         <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
-            <Sliders size={18} className="text-[#FF6B00]" />
+            <Sliders size={18} className="text-orange" />
             <p className="text-white text-sm font-bold">{t('ai.systemControls')}</p>
           </div>
           <Toggle label={t('ai.autoPublish')}    desc={t('ai.autoPublishDesc')}    value={controls.autoPublish}    onChange={setControl('autoPublish')} />
@@ -123,10 +123,10 @@ export default function AIOrchestration() {
         <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Percent size={18} className="text-[#FF6B00]" />
+              <Percent size={18} className="text-orange" />
               <p className="text-white text-sm font-bold">{t('ai.apiCostTracker')}</p>
             </div>
-            <span className="text-[#FF6B00] text-[10px] font-bold">{t('ai.monthly')}</span>
+            <span className="text-orange text-[10px] font-bold">{t('ai.monthly')}</span>
           </div>
           <p className="text-gray-500 text-[11px] mb-3">Estimated usage for current billing cycle</p>
           {[
@@ -143,7 +143,7 @@ export default function AIOrchestration() {
                 <span className="text-white text-[11px] font-semibold">{cost}</span>
               </div>
               <div className="h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
-                <div className="h-full bg-[#FF6B00] rounded-full" style={{ width: `${pct}%` }} />
+                <div className="h-full bg-orange rounded-full" style={{ width: `${pct}%` }} />
               </div>
             </div>
           ))}
@@ -158,7 +158,7 @@ export default function AIOrchestration() {
       <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Zap size={16} className="text-[#FF6B00]" />
+            <Zap size={16} className="text-orange" />
             <h2 className="text-white font-bold">{t('ai.liveWorkflow')}</h2>
           </div>
           <span className="flex items-center gap-1.5 text-green-400 text-xs font-semibold">
@@ -170,7 +170,7 @@ export default function AIOrchestration() {
           {PIPELINE_STAGES.map(({ label, icon: Icon, status, current, max }) => (
             <div key={label} className="bg-[#0D0D0D] border border-[#1A1A1A] rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">
-                <Icon size={16} className="text-[#FF6B00]" />
+                <Icon size={16} className="text-orange" />
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                   status === 'warning' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                     : status === 'idle' ? 'bg-gray-500/20 text-gray-400 border-gray-600/30'
@@ -182,7 +182,7 @@ export default function AIOrchestration() {
               <p className="text-white text-sm font-semibold">{label}</p>
               <div className="mt-2 h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#FF6B00] rounded-full"
+                  className="h-full bg-orange rounded-full"
                   style={{ width: `${(current / max) * 100}%` }}
                 />
               </div>
@@ -196,7 +196,7 @@ export default function AIOrchestration() {
       <div className="bg-[#111] border border-[#1A1A1A] rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#1A1A1A] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Terminal size={16} className="text-[#FF6B00]" />
+            <Terminal size={16} className="text-orange" />
             <h2 className="text-white font-bold">{t('ai.scraperLogs')}</h2>
           </div>
           <div className="flex items-center gap-1">
@@ -240,7 +240,7 @@ export default function AIOrchestration() {
                       <p className="text-white text-xs truncate">{log.headline}</p>
                       <div className="mt-1.5 h-1.5 bg-[#1A1A1A] rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${log.progress === 100 ? 'bg-green-400' : log.status === 'failed' ? 'bg-red-400' : 'bg-[#FF6B00]'}`}
+                          className={`h-full rounded-full ${log.progress === 100 ? 'bg-green-400' : log.status === 'failed' ? 'bg-red-400' : 'bg-orange'}`}
                           style={{ width: `${log.progress}%` }}
                         />
                       </div>
