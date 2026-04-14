@@ -14,6 +14,7 @@ import AdminLogin      from './pages/admin/AdminLogin';
 import AdminDashboard  from './pages/admin/AdminDashboard';
 import AdminSettings   from './pages/admin/AdminSettings';
 import AnalyticsPage   from './pages/admin/AnalyticsPage';
+import SitePagesAdmin  from './pages/admin/SitePagesAdmin';
 
 // Existing admin CRUD pages
 import ArticleList   from './pages/articles/ArticleList';
@@ -32,7 +33,13 @@ import GamingPage   from './pages/public/GamingPage';
 import HardwarePage from './pages/public/HardwarePage';
 import CulturePage  from './pages/public/CulturePage';
 import EsportPage   from './pages/public/EsportPage';
-import SearchPage   from './pages/public/SearchPage';
+import SearchPage            from './pages/public/SearchPage';
+import PublicArticleDetail   from './pages/public/PublicArticleDetail';
+import AboutPage        from './pages/public/AboutPage';
+import ContactPage      from './pages/public/ContactPage';
+import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
+import TermsOfUsePage   from './pages/public/TermsOfUsePage';
+import CookiePolicyPage from './pages/public/CookiePolicyPage';
 
 export default function App() {
   return (
@@ -47,7 +54,13 @@ export default function App() {
             <Route path="hardware" element={<HardwarePage />} />
             <Route path="culture"  element={<CulturePage />} />
             <Route path="esports"  element={<EsportPage />} />
-            <Route path="search"   element={<SearchPage />} />
+            <Route path="search"          element={<SearchPage />} />
+            <Route path="articles/:slug"  element={<PublicArticleDetail />} />
+            <Route path="about"           element={<AboutPage />} />
+            <Route path="contact"         element={<ContactPage />} />
+            <Route path="privacy-policy"  element={<PrivacyPolicyPage />} />
+            <Route path="terms-of-use"    element={<TermsOfUsePage />} />
+            <Route path="cookie-policy"   element={<CookiePolicyPage />} />
           </Route>
 
           {/* ── Admin Login (public) ── */}
@@ -99,6 +112,8 @@ export default function App() {
             <Route path="raw-news" element={<RawNewsList />} />
 
             <Route path="users" element={<UserList />} />
+
+            <Route path="site-pages" element={<SitePagesAdmin />} />
           </Route>
 
           {/* Fallback */}

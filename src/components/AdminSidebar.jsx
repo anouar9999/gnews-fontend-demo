@@ -11,8 +11,8 @@ import {
   TrendingUp,
   Tag,
   Radio,
-  Image,
   FolderTree,
+  FileText,
   X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -45,7 +45,12 @@ const navGroups = [
       { to: "/admin/categories", icon: FolderTree, labelKey: "admin.categories" },
       { to: "/admin/tags", icon: Tag, labelKey: "admin.tags" },
       { to: "/admin/sources", icon: Radio, labelKey: "admin.sources" },
-      { to: "/admin/media", icon: Image, labelKey: "admin.media" },
+    ],
+  },
+  {
+    label: "Site",
+    items: [
+      { to: "/admin/site-pages", icon: FileText, labelKey: "admin.sitePages" },
     ],
   },
   {
@@ -78,7 +83,7 @@ export default function AdminSidebar({ collapsed, onToggle, onClose }) {
 
   return (
     <aside
-      className={`h-full flex flex-col transition-all duration-300 ease-in-out ${
+      className={`gnewz-admin-chrome h-full flex flex-col transition-all duration-300 ease-in-out ${
         collapsed ? "w-17.5" : "w-65"
       }`}
       style={{

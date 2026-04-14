@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, Filter } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
 
-const FILTERS = ['All', 'PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile', 'VR'];
+const FILTER_KEYS = ['all', 'pc', 'ps', 'xbox', 'nintendo', 'mobile', 'vr'];
+const FILTER_VALUES = ['All', 'PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile', 'VR'];
 
 export default function GamingPage() {
-  const [active, setActive] = useState('All');
+  const { t } = useTranslation();
+  const [activeIdx, setActiveIdx] = useState(0);
   const [hero, setHero] = useState(null);
   const [articles, setArticles] = useState([]);
   const [trending, setTrending] = useState([]);
@@ -36,11 +39,12 @@ export default function GamingPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const displayed = active === 'All'
+  const activeValue = FILTER_VALUES[activeIdx];
+  const displayed = activeIdx === 0
     ? articles
     : articles.filter((a) =>
-        a.tag?.toLowerCase().includes(active.toLowerCase()) ||
-        a.category?.toLowerCase().includes(active.toLowerCase())
+        a.tag?.toLowerCase().includes(activeValue.toLowerCase()) ||
+        a.category?.toLowerCase().includes(activeValue.toLowerCase())
       );
 
   const handleLoadMore = async () => {
@@ -69,21 +73,21 @@ export default function GamingPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">Gaming News</h1>
-        <span className="gnewz-tag ml-2">Today</span>
+        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">{t('gaming.title')}</h1>
+        <span className="gnewz-tag ml-2">{t('gaming.today')}</span>
       </div>
 
       <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
         <Filter size={14} className="text-gray-500 shrink-0" />
-        {FILTERS.map((f) => (
+        {FILTER_KEYS.map((key, idx) => (
           <button
-            key={f}
-            onClick={() => setActive(f)}
+            key={key}
+            onClick={() => setActiveIdx(idx)}
             className={`shrink-0 px-4 py-1.5 rounded text-xs font-700 uppercase tracking-wider transition-colors ${
-              active === f ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
+              activeIdx === idx ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
             }`}
           >
-            {f}
+            {t(`gaming.filters.${key}`)}
           </button>
         ))}
       </div>
@@ -101,7 +105,7 @@ export default function GamingPage() {
                 {displayed.map((a) => <NewsCard key={a.slug} article={a} size="lg" showExcerpt />)}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm py-8 text-center">No articles found.</p>
+              <p className="text-gray-500 text-sm py-8 text-center">{t('gaming.noArticles')}</p>
             )}
             {nextPage && (
               <div className="text-center pt-4">
@@ -110,7 +114,7 @@ export default function GamingPage() {
                   disabled={loadingMore}
                   className="bg-[#1A1A1A] hover:bg-orange border border-[#2a2a2a] hover:border-orange text-white text-sm font-700 uppercase px-8 py-3 rounded transition-colors tracking-wider disabled:opacity-50"
                 >
-                  {loadingMore ? 'Loading…' : 'Load More Stories'}
+                  {loadingMore ? t('gaming.loading') : t('gaming.loadMore')}
                 </button>
               </div>
             )}
@@ -121,7 +125,7 @@ export default function GamingPage() {
               <div className="gnewz-card p-4">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp size={16} className="text-orange" />
-                  <h3 className="font-800 text-sm uppercase tracking-wider text-white">Trending Now</h3>
+                  <h3 className="font-800 text-sm uppercase tracking-wider text-white">{t('gaming.trendingNow')}</h3>
                 </div>
                 <div className="space-y-3">
                   {trending.map((a, i) => (
@@ -135,17 +139,17 @@ export default function GamingPage() {
             )}
 
             <div className="gnewz-card p-5 text-center">
-              <p className="text-orange text-xs font-700 uppercase tracking-widest mb-2">Never Miss a Story</p>
-              <h3 className="text-white font-800 text-lg mb-3">Get Gaming News Daily</h3>
+              <p className="text-orange text-xs font-700 uppercase tracking-widest mb-2">{t('gaming.neverMiss')}</p>
+              <h3 className="text-white font-800 text-lg mb-3">{t('gaming.getDailyNews')}</h3>
               {nlDone ? (
-                <p className="text-green-400 text-sm font-700 py-2">You're subscribed!</p>
+                <p className="text-green-400 text-sm font-700 py-2">{t('gaming.subscribed')}</p>
               ) : (
                 <form onSubmit={handleNewsletter}>
                   <input
                     type="email"
                     value={nlEmail}
                     onChange={(e) => setNlEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder={t('gaming.emailPlaceholder')}
                     className="w-full bg-[#111] border border-[#2a2a2a] rounded px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-orange mb-3 transition-colors"
                   />
                   <button
@@ -153,7 +157,7 @@ export default function GamingPage() {
                     disabled={nlLoading}
                     className="w-full bg-orange hover:bg-orange-dim text-white text-xs font-700 uppercase py-2.5 rounded transition-colors tracking-wider disabled:opacity-50"
                   >
-                    {nlLoading ? 'Subscribing…' : 'Subscribe Free'}
+                    {nlLoading ? t('gaming.subscribing') : t('gaming.subscribeFree')}
                   </button>
                 </form>
               )}

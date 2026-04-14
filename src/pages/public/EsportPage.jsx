@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Trophy, Swords, Calendar, DollarSign, ChevronRight, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
@@ -63,19 +64,20 @@ const tournaments = [
 ];
 
 const bracket = [
-  { round: 'Quarter-Finals', matches: [
+  { roundKey: 'quarterFinals', matches: [
     { t1: 'Team Liquid', t2: 'NAVI', s1: '2', s2: '1', done: true },
     { t1: 'FaZe Clan', t2: 'Astralis', s1: '2', s2: '0', done: true },
   ]},
-  { round: 'Semi-Finals', matches: [
+  { roundKey: 'semiFinals', matches: [
     { t1: 'Team Liquid', t2: 'FaZe Clan', s1: '-', s2: '-', done: false },
   ]},
-  { round: 'Grand Final', matches: [
+  { roundKey: 'grandFinal', matches: [
     { t1: 'TBD', t2: 'TBD', s1: '-', s2: '-', done: false },
   ]},
 ];
 
 export default function EsportPage() {
+  const { t } = useTranslation();
   const [activeGame, setActiveGame] = useState('All');
   const [esportsNews, setEsportsNews] = useState([]);
 
@@ -90,8 +92,8 @@ export default function EsportPage() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">Esports</h1>
-        <span className="live-badge"><span className="live-dot" /> 3 Matches Live</span>
+        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">{t('esports.title')}</h1>
+        <span className="live-badge"><span className="live-dot" /> {t('esports.matchesLive', { count: 3 })}</span>
       </div>
 
       {/* Game filter */}
@@ -113,8 +115,8 @@ export default function EsportPage() {
       <section className="mb-10">
         <div className="flex items-center gap-3 mb-5">
           <Swords size={18} className="text-orange" />
-          <h2 className="text-xl font-900 text-white uppercase tracking-wide">Live Now</h2>
-          <span className="live-badge"><span className="live-dot" /> Live</span>
+          <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('esports.liveNow')}</h2>
+          <span className="live-badge"><span className="live-dot" /> {t('esports.live')}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {liveMatches.map((m) => (
@@ -142,7 +144,7 @@ export default function EsportPage() {
                     <span className="text-orange font-900 text-xl">:</span>
                     <span className="text-3xl font-900 text-white">{m.s2}</span>
                   </div>
-                  <span className="text-[10px] text-orange font-700 uppercase tracking-wider">Live</span>
+                  <span className="text-[10px] text-orange font-700 uppercase tracking-wider">{t('esports.live')}</span>
                 </div>
                 <div className="text-center w-1/3">
                   <div className="w-14 h-14 rounded-full bg-[#2a2a2a] border border-[#2a2a2a] mx-auto mb-2 flex items-center justify-center text-xl font-900 text-gray-300">
@@ -154,10 +156,10 @@ export default function EsportPage() {
 
               <div className="mt-4 pt-3 border-t border-[#2a2a2a] flex items-center justify-between">
                 <div className="flex items-center gap-1 text-gray-500 text-xs">
-                  <Users size={11} /> {m.viewers} watching
+                  <Users size={11} /> {m.viewers} {t('esports.watching')}
                 </div>
                 <button className="text-orange text-xs font-700 uppercase tracking-wider flex items-center gap-1 hover:gap-2 transition-all">
-                  Watch <ChevronRight size={12} />
+                  {t('esports.watch')} <ChevronRight size={12} />
                 </button>
               </div>
             </div>
@@ -171,46 +173,46 @@ export default function EsportPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-3 mb-5">
             <Trophy size={18} className="text-orange" />
-            <h2 className="text-xl font-900 text-white uppercase tracking-wide">Active Tournaments</h2>
+            <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('esports.activeTournaments')}</h2>
           </div>
-          {tournaments.map((t) => (
-            <div key={t.name} className="gnewz-card overflow-hidden">
+          {tournaments.map((tour) => (
+            <div key={tour.name} className="gnewz-card overflow-hidden">
               <div className="relative" style={{ height: 100 }}>
-                <img src={t.image} alt={t.name} className="w-full h-full object-cover" />
+                <img src={tour.image} alt={tour.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
                 <div className="absolute inset-0 flex items-center px-5 gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-700 uppercase tracking-widest px-2 py-0.5 rounded ${t.status === 'LIVE' ? 'bg-orange text-white' : 'bg-[#2a2a2a] text-gray-300'}`}>
-                        {t.status}
+                      <span className={`text-[10px] font-700 uppercase tracking-widest px-2 py-0.5 rounded ${tour.status === 'LIVE' ? 'bg-orange text-white' : 'bg-[#2a2a2a] text-gray-300'}`}>
+                        {tour.status === 'LIVE' ? t('esports.live') : t('esports.upcoming')}
                       </span>
-                      <span className="gnewz-tag">{t.game}</span>
+                      <span className="gnewz-tag">{tour.game}</span>
                     </div>
-                    <h3 className="text-white font-800 text-base">{t.name}</h3>
-                    <p className="text-gray-400 text-xs">{t.stage} · {t.teams} Teams</p>
+                    <h3 className="text-white font-800 text-base">{tour.name}</h3>
+                    <p className="text-gray-400 text-xs">{tour.stage} · {tour.teams} {t('esports.teams')}</p>
                   </div>
                   <div className="ml-auto text-right">
                     <div className="flex items-center gap-1 text-orange">
                       <DollarSign size={14} />
-                      <span className="font-900 text-lg">{t.prize}</span>
+                      <span className="font-900 text-lg">{tour.prize}</span>
                     </div>
-                    <p className="text-gray-500 text-xs">Prize Pool</p>
+                    <p className="text-gray-500 text-xs">{t('esports.prizePool')}</p>
                   </div>
                 </div>
               </div>
-              {t.top.length > 0 && (
+              {tour.top.length > 0 && (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-[#2a2a2a]">
                         <th className="px-4 py-2 text-left text-gray-600 font-600">#</th>
-                        <th className="px-4 py-2 text-left text-gray-600 font-600">Team</th>
-                        <th className="px-4 py-2 text-center text-gray-600 font-600">W</th>
-                        <th className="px-4 py-2 text-center text-gray-600 font-600">L</th>
+                        <th className="px-4 py-2 text-left text-gray-600 font-600">{t('esports.teamCol')}</th>
+                        <th className="px-4 py-2 text-center text-gray-600 font-600">{t('esports.winsCol')}</th>
+                        <th className="px-4 py-2 text-center text-gray-600 font-600">{t('esports.lossesCol')}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {t.top.map((row) => (
+                      {tour.top.map((row) => (
                         <tr key={row.team} className="border-b border-[#1A1A1A] hover:bg-[#111] transition-colors">
                           <td className="px-4 py-2 text-orange font-800">{row.pos}</td>
                           <td className="px-4 py-2 text-white font-600">{row.team}</td>
@@ -230,11 +232,11 @@ export default function EsportPage() {
         <aside className="space-y-5">
           {/* Bracket */}
           <div className="gnewz-card p-4">
-            <h3 className="font-800 text-sm uppercase tracking-wider text-white mb-4">ESL S22 Bracket</h3>
+            <h3 className="font-800 text-sm uppercase tracking-wider text-white mb-4">{t('esports.bracketTitle')}</h3>
             <div className="space-y-5">
               {bracket.map((round) => (
-                <div key={round.round}>
-                  <p className="text-orange text-[10px] font-700 uppercase tracking-widest mb-2">{round.round}</p>
+                <div key={round.roundKey}>
+                  <p className="text-orange text-[10px] font-700 uppercase tracking-widest mb-2">{t(`esports.${round.roundKey}`)}</p>
                   <div className="space-y-2">
                     {round.matches.map((m, i) => (
                       <div key={i} className="bg-[#111] rounded-lg overflow-hidden border border-[#2a2a2a]">
@@ -258,7 +260,7 @@ export default function EsportPage() {
           <div className="gnewz-card p-4">
             <div className="flex items-center gap-2 mb-4">
               <Calendar size={14} className="text-orange" />
-              <h3 className="font-800 text-sm uppercase tracking-wider text-white">Upcoming</h3>
+              <h3 className="font-800 text-sm uppercase tracking-wider text-white">{t('esports.upcomingTitle')}</h3>
             </div>
             <div className="space-y-3">
               {upcomingMatches.map((m, i) => (
@@ -268,7 +270,7 @@ export default function EsportPage() {
                     <span className="text-gray-600 text-[10px]">{m.date} · {m.time}</span>
                   </div>
                   <p className="text-white text-xs font-700">
-                    {m.t1} <span className="text-gray-500 font-400">vs</span> {m.t2}
+                    {m.t1} <span className="text-gray-500 font-400">{t('esports.vs')}</span> {m.t2}
                   </p>
                   <p className="text-gray-600 text-[10px] mt-0.5">{m.event}</p>
                 </div>
@@ -278,7 +280,7 @@ export default function EsportPage() {
 
           {esportsNews.length > 0 && (
             <div className="gnewz-card p-4">
-              <h3 className="font-800 text-sm uppercase tracking-wider text-white mb-4">Latest Esports News</h3>
+              <h3 className="font-800 text-sm uppercase tracking-wider text-white mb-4">{t('esports.latestNews')}</h3>
               <div className="space-y-3">
                 {esportsNews.map((a) => (
                   <Link

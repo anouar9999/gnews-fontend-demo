@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 
 const FALLBACK = [
@@ -6,6 +7,7 @@ const FALLBACK = [
 ];
 
 export default function BreakingTicker() {
+  const { t } = useTranslation();
   const [items, setItems] = useState(FALLBACK);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function BreakingTicker() {
         className="bg-black text-orange font-black text-[10px] sm:text-xs uppercase tracking-widest px-2 sm:px-3 h-full flex items-center shrink-0 z-10"
         style={{ minWidth: 'max-content' }}
       >
-        BREAKING
+        {t('public.breaking')}
       </div>
       <div className="overflow-hidden flex-1">
         <div className="ticker-track">

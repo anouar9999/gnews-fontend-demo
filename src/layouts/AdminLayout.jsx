@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Bell, ExternalLink, Menu, LogOut } from 'lucide-react';
+import { Calendar, Bell, ExternalLink, Menu, LogOut, Sun, Moon } from 'lucide-react';
 import AdminSidebar from '../components/AdminSidebar';
 import LanguageSwitch from '../components/LanguageSwitch';
 import { useAuth } from '../context/AuthContext';
@@ -18,6 +18,7 @@ const ROUTE_TITLES = {
   users:          { label: 'Users',         sub: 'Accounts' },
   settings:       { label: 'Settings',      sub: 'Configuration' },
   'ai-orchestration': { label: 'AI Orchestration', sub: 'Automation' },
+  'site-pages':       { label: 'Site Pages',       sub: 'Public page content' },
 };
 
 function usePageTitle() {
@@ -37,9 +38,17 @@ function usePageTitle() {
 export default function AdminLayout() {
   const [collapsed, setCollapsed]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('gnewz-theme') || 'dark');
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('gnewz-theme', next);
+    document.documentElement.classList.toggle('light', next === 'light');
+  };
 
   const handleLogout = () => {
     logout();
@@ -80,7 +89,7 @@ export default function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Top bar */}
-        <header className="h-14 sm:h-16 px-3 sm:px-6 flex items-center justify-between shrink-0 gap-2" style={{ background: 'var(--color-surface)', borderBottom: '1px solid rgba(255,107,0,0.10)' }}>
+        <header className="gnewz-admin-chrome h-14 sm:h-16 px-3 sm:px-6 flex items-center justify-between shrink-0 gap-2" style={{ background: 'var(--color-surface)', borderBottom: '1px solid rgba(255,107,0,0.10)' }}>
 
           {/* Left: burger (mobile) + breadcrumb */}
           <div className="flex items-center gap-3 min-w-0">
@@ -137,6 +146,16 @@ export default function AdminLayout() {
               <ExternalLink size={13} />
               View Site
             </Link>
+
+            {/* Theme toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="text-gray-400 hover:text-orange transition-colors p-1"
+            >
+              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
 
             {/* Profile avatar */}
             {/* <div className="flex items-center gap-2">

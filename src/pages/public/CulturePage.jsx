@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, ArrowRight, User } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
@@ -13,6 +14,7 @@ const VOICES = [
 ];
 
 export default function CulturePage() {
+  const { t } = useTranslation();
   const [editorialHero, setEditorialHero] = useState(null);
   const [features, setFeatures] = useState([]);
   const [longReads, setLongReads] = useState([]);
@@ -34,8 +36,8 @@ export default function CulturePage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">Culture</h1>
-        <span className="gnewz-tag ml-2">Editorial & Features</span>
+        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">{t('culture.title')}</h1>
+        <span className="gnewz-tag ml-2">{t('culture.tag')}</span>
       </div>
 
       {loading ? (
@@ -54,7 +56,7 @@ export default function CulturePage() {
             <section className="mb-10">
               <div className="flex items-center gap-3 mb-5">
                 <BookOpen size={18} className="text-orange" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">Featured Stories</h2>
+                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.featuredStories')}</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {features.map((a) => (
@@ -96,7 +98,7 @@ export default function CulturePage() {
                 <>
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-1 h-6 bg-orange rounded-full" />
-                    <h2 className="text-xl font-900 text-white uppercase tracking-wide">Long Reads</h2>
+                    <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.longReads')}</h2>
                   </div>
                   <div className="space-y-4">
                     {longReads.map((a) => (
@@ -130,7 +132,7 @@ export default function CulturePage() {
             <aside>
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-1 h-6 bg-orange rounded-full" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">Our Voices</h2>
+                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.ourVoices')}</h2>
               </div>
               <div className="gnewz-card p-4 space-y-4">
                 {VOICES.map((v) => (
@@ -142,18 +144,18 @@ export default function CulturePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-orange font-800 text-sm">{v.articles}</p>
-                      <p className="text-gray-600 text-[10px]">articles</p>
+                      <p className="text-gray-600 text-[10px]">{t('culture.articles')}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
               <div className="gnewz-card p-5 mt-4 text-center border border-orange/30">
-                <p className="text-orange text-xs font-700 uppercase tracking-widest mb-2">Write for Us</p>
-                <h3 className="text-white font-800 text-base mb-2">Share Your Voice</h3>
-                <p className="text-gray-400 text-xs mb-4">Got a hot take? We want to hear it. Submit your gaming opinion piece to GNEWZ Culture.</p>
+                <p className="text-orange text-xs font-700 uppercase tracking-widest mb-2">{t('culture.writeForUs')}</p>
+                <h3 className="text-white font-800 text-base mb-2">{t('culture.shareYourVoice')}</h3>
+                <p className="text-gray-400 text-xs mb-4">{t('culture.shareDesc')}</p>
                 <button className="w-full bg-transparent border border-orange text-orange hover:bg-orange hover:text-white text-xs font-700 uppercase py-2.5 rounded transition-colors tracking-wider">
-                  Submit Article
+                  {t('culture.submitArticle')}
                 </button>
               </div>
             </aside>

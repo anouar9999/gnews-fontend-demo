@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, Sun, Moon } from 'lucide-react';
 import GnewzLogo from './GnewzLogo';
 import LanguageSwitch from '../LanguageSwitch';
 
@@ -12,6 +12,14 @@ export default function Navbar({ basePath = '' }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [theme, setTheme] = useState(() => localStorage.getItem('gnewz-theme') || 'dark');
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('gnewz-theme', next);
+    document.documentElement.classList.toggle('light', next === 'light');
+  };
 
   const navLinks = [
     { label: t('nav.home'),     to: basePath === '' ? '/' : basePath },
@@ -32,11 +40,12 @@ export default function Navbar({ basePath = '' }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-black border-b border-[#1A1A1A]">
+    <header className="gnewz-nav sticky top-0 z-50 bg-black border-b border-[#1A1A1A]">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="shrink-0">
-          <GnewzLogo size={100} variant="dark" />
+          <span className="logo-for-dark"><GnewzLogo size={100} variant="dark" /></span>
+          <span className="logo-for-light"><GnewzLogo size={100} variant="light" /></span>
         </Link>
 
         {/* Desktop nav */}
@@ -76,7 +85,7 @@ export default function Navbar({ basePath = '' }) {
                 />
               </div>
               <button type="submit" className="px-3 py-1.5 bg-orange hover:bg-orange-dim text-white text-xs font-bold rounded-lg transition-colors">
-                Go
+                {t('nav.go')}
               </button>
               <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-gray-400 hover:text-white transition-colors">
                 <X size={18} />
@@ -91,6 +100,16 @@ export default function Navbar({ basePath = '' }) {
               <Search size={18} />
             </button>
           )}
+
+          {/* Theme toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className="text-white hover:text-orange transition-colors p-1"
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           {/* Language switch */}
           <LanguageSwitch />
@@ -147,9 +166,17 @@ export default function Navbar({ basePath = '' }) {
             </button>
           </form>
 
-          {/* Mobile lang switch */}
-          <div className="flex items-center gap-2 mt-2">
+          {/* Mobile lang + theme */}
+          <div className="flex items-center gap-3 mt-2">
             <LanguageSwitch />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="text-white hover:text-orange transition-colors p-1"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
           </div>
 
           <Link

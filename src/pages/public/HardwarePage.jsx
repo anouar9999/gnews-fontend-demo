@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star, CheckCircle, XCircle, Cpu, Monitor, HardDrive, Zap } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
 
-const FILTERS = ['All', 'GPUs', 'CPUs', 'Monitors', 'Memory', 'Storage', 'Peripherals', 'Cooling'];
+const FILTER_KEYS = ['all', 'gpus', 'cpus', 'monitors', 'memory', 'storage', 'peripherals', 'cooling'];
 
 const SPEC_COMPARISON = {
   title: 'GPU Comparison 2025',
@@ -29,14 +30,15 @@ const SCORED_REVIEW = {
 };
 
 const CATEGORY_ICONS = [
-  { icon: Cpu, label: 'CPUs' },
-  { icon: Monitor, label: 'Monitors' },
-  { icon: HardDrive, label: 'Storage' },
-  { icon: Zap, label: 'GPUs' },
+  { icon: Cpu,       key: 'cpus' },
+  { icon: Monitor,   key: 'monitors' },
+  { icon: HardDrive, key: 'storage' },
+  { icon: Zap,       key: 'gpus' },
 ];
 
 export default function HardwarePage() {
-  const [active, setActive] = useState('All');
+  const { t } = useTranslation();
+  const [activeIdx, setActiveIdx] = useState(0);
   const [hero, setHero] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,20 +58,20 @@ export default function HardwarePage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">Hardware</h1>
-        <span className="gnewz-tag ml-2">Reviews & News</span>
+        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">{t('hardware.title')}</h1>
+        <span className="gnewz-tag ml-2">{t('hardware.tag')}</span>
       </div>
 
       <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2">
-        {FILTERS.map((f) => (
+        {FILTER_KEYS.map((key, idx) => (
           <button
-            key={f}
-            onClick={() => setActive(f)}
+            key={key}
+            onClick={() => setActiveIdx(idx)}
             className={`shrink-0 px-4 py-1.5 rounded text-xs font-700 uppercase tracking-wider transition-colors ${
-              active === f ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
+              activeIdx === idx ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
             }`}
           >
-            {f}
+            {t(`hardware.filters.${key}`)}
           </button>
         ))}
       </div>
@@ -88,7 +90,7 @@ export default function HardwarePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             <div className="gnewz-card p-6 flex flex-col gap-4">
-              <p className="text-orange text-xs font-700 uppercase tracking-widest">Editor's Score</p>
+              <p className="text-orange text-xs font-700 uppercase tracking-widest">{t('hardware.editorScore')}</p>
               <div>
                 <p className="text-white font-900 text-xl leading-tight mb-1">{SCORED_REVIEW.product}</p>
                 <div className="flex items-center gap-2 mt-2">
@@ -103,7 +105,7 @@ export default function HardwarePage() {
               </div>
               <div>
                 <p className="text-white text-xs font-700 uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <CheckCircle size={12} className="text-green-400" /> Pros
+                  <CheckCircle size={12} className="text-green-400" /> {t('hardware.pros')}
                 </p>
                 <ul className="space-y-1">
                   {SCORED_REVIEW.pros.map((p) => (
@@ -115,7 +117,7 @@ export default function HardwarePage() {
               </div>
               <div>
                 <p className="text-white text-xs font-700 uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <XCircle size={12} className="text-red-400" /> Cons
+                  <XCircle size={12} className="text-red-400" /> {t('hardware.cons')}
                 </p>
                 <ul className="space-y-1">
                   {SCORED_REVIEW.cons.map((c) => (
@@ -126,7 +128,7 @@ export default function HardwarePage() {
                 </ul>
               </div>
               <button className="mt-auto bg-orange hover:bg-orange-dim text-white text-xs font-700 uppercase py-2.5 rounded transition-colors tracking-wider">
-                Read Full Review
+                {t('hardware.readFullReview')}
               </button>
             </div>
 
@@ -143,7 +145,7 @@ export default function HardwarePage() {
                         <th key={h} className={`px-4 py-3 text-left text-xs font-700 uppercase tracking-wide ${
                           i === 0 ? 'text-gray-500' : i === SPEC_COMPARISON.winner + 1 ? 'text-orange' : 'text-gray-300'
                         }`}>
-                          {h} {i === SPEC_COMPARISON.winner + 1 && <span className="text-[10px]">★ BEST</span>}
+                          {h} {i === SPEC_COMPARISON.winner + 1 && <span className="text-[10px]">{t('hardware.best')}</span>}
                         </th>
                       ))}
                     </tr>
@@ -170,7 +172,7 @@ export default function HardwarePage() {
             <div className="mb-10">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-1 h-6 bg-orange rounded-full" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">Latest Reviews</h2>
+                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('hardware.latestReviews')}</h2>
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => <Star key={i} size={12} className="text-orange fill-orange" />)}
                 </div>
@@ -182,12 +184,12 @@ export default function HardwarePage() {
           )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {CATEGORY_ICONS.map(({ icon: Icon, label }) => (
-              <button key={label} className="gnewz-card flex flex-col items-center gap-3 p-6 group">
+            {CATEGORY_ICONS.map(({ icon: Icon, key }) => (
+              <button key={key} className="gnewz-card flex flex-col items-center gap-3 p-6 group">
                 <div className="w-12 h-12 rounded-xl bg-orange/10 group-hover:bg-orange flex items-center justify-center transition-colors">
                   <Icon size={22} className="text-orange group-hover:text-white transition-colors" />
                 </div>
-                <p className="text-white font-800 text-sm">{label}</p>
+                <p className="text-white font-800 text-sm">{t(`hardware.filters.${key}`)}</p>
               </button>
             ))}
           </div>

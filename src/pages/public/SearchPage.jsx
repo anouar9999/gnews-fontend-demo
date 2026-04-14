@@ -82,7 +82,7 @@ export default function SearchPage() {
               type="submit"
               className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-orange hover:bg-orange-dim text-white text-sm font-bold rounded-lg transition-colors"
             >
-              Search
+              {t('search.button')}
             </button>
           </div>
         </form>
@@ -91,8 +91,8 @@ export default function SearchPage() {
         {q && (
           <p className="text-gray-500 text-sm mb-6">
             {loading
-              ? 'Searching…'
-              : <>{total} result{total !== 1 ? 's' : ''} for <span className="text-white font-semibold">"{q}"</span></>
+              ? t('search.searching')
+              : <>{t('search.resultsFor', { count: total, plural: total !== 1 ? 's' : '' })} <span className="text-white font-semibold">"{q}"</span></>
             }
           </p>
         )}
@@ -146,13 +146,13 @@ export default function SearchPage() {
         ) : q && !loading ? (
           <div className="text-center py-16">
             <Search size={40} className="text-gray-700 mx-auto mb-4" />
-            <p className="text-gray-400 text-lg font-semibold">No results found</p>
-            <p className="text-gray-600 text-sm mt-2">Try a different search term</p>
+            <p className="text-gray-400 text-lg font-semibold">{t('search.noResults')}</p>
+            <p className="text-gray-600 text-sm mt-2">{t('search.tryDifferent')}</p>
           </div>
         ) : (
           <div className="text-center py-16">
             <Search size={40} className="text-gray-700 mx-auto mb-4" />
-            <p className="text-gray-500">Enter a search term above</p>
+            <p className="text-gray-500">{t('search.enterTerm')}</p>
           </div>
         )}
       </div>
