@@ -61,7 +61,7 @@ body {
 
 /* ── Global CSS custom properties (for inline-style usage) ── */
 :root {
-  --color-orange: #ff6b00;
+  --color-orange: #D5451B;
   --color-orange-dim: rgba(255, 107, 0, 0.35);
   --color-orange-floor: #a33a00;
   --color-dark: #0d0d0d;

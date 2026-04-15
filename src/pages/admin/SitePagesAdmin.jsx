@@ -1,42 +1,217 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FileText, Info, Mail, Shield, BookOpen, Cookie, Plus, Trash2, Save, ChevronDown, ChevronUp, Check, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  FileText, Info, Mail, Shield, BookOpen, Cookie,
+  Plus, Trash2, Save, ChevronDown, ChevronUp, AlertCircle,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
 
-// ─── Page registry ───────────────────────────────────────────────────────────
+// ─── Page registry ────────────────────────────────────────────────────────────
 
 const PAGE_META = [
-  { slug: 'about',          label: 'About Us',       icon: Info,     desc: 'Team stats, story, and values' },
-  { slug: 'contact',        label: 'Contact',        icon: Mail,     desc: 'Contact info and form topics' },
-  { slug: 'privacy-policy', label: 'Privacy Policy', icon: Shield,   desc: 'Privacy sections (GDPR etc.)' },
-  { slug: 'terms-of-use',   label: 'Terms of Use',   icon: BookOpen, desc: 'Terms and conditions sections' },
-  { slug: 'cookie-policy',  label: 'Cookie Policy',  icon: Cookie,   desc: 'Cookie types and descriptions' },
+  { slug: 'about',          label: 'About Us',       icon: Info,     desc: 'Team stats, story & values',      color: '96,165,250' },
+  { slug: 'contact',        label: 'Contact',        icon: Mail,     desc: 'Contact info & form topics',      color: '52,211,153' },
+  { slug: 'privacy-policy', label: 'Privacy Policy', icon: Shield,   desc: 'Privacy sections (GDPR etc.)',    color: '251,191,36' },
+  { slug: 'terms-of-use',   label: 'Terms of Use',   icon: BookOpen, desc: 'Terms & conditions sections',     color: '167,139,250' },
+  { slug: 'cookie-policy',  label: 'Cookie Policy',  icon: Cookie,   desc: 'Cookie types & descriptions',     color: '251,113,133' },
 ];
 
-// ─── Shared primitives ────────────────────────────────────────────────────────
+// ─── Input primitives ─────────────────────────────────────────────────────────
 
-const inputCls = 'w-full bg-[#0d0d0d] border border-[#2a2a2a] text-white text-sm rounded-xl px-4 py-2.5 outline-none focus:border-[#FF6B00] transition-colors placeholder-gray-600 resize-none';
-const labelCls = 'text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5 block';
+const baseInputStyle = {
+  width: '100%',
+  padding: '10px 13px',
+  background: '#0d0d0d',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: 10,
+  color: '#fff',
+  fontSize: 13,
+  outline: 'none',
+  caretColor: '#FF6B00',
+  transition: 'border-color .15s, box-shadow .15s',
+  boxSizing: 'border-box',
+};
+
+function DarkInput({ style, ...props }) {
+  return (
+    <input
+      {...props}
+      style={{ ...baseInputStyle, ...style }}
+      onFocus={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)';
+        e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(255,107,0,0.07)';
+      }}
+      onBlur={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+        e.currentTarget.style.boxShadow   = 'none';
+      }}
+    />
+  );
+}
+
+function DarkTextarea({ style, ...props }) {
+  return (
+    <textarea
+      {...props}
+      style={{ ...baseInputStyle, resize: 'vertical', ...style }}
+      onFocus={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,107,0,0.5)';
+        e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(255,107,0,0.07)';
+      }}
+      onBlur={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+        e.currentTarget.style.boxShadow   = 'none';
+      }}
+    />
+  );
+}
+
+// ─── Field wrapper ────────────────────────────────────────────────────────────
 
 function Field({ label, children }) {
   return (
-    <div>
-      <label className={labelCls}>{label}</label>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>
+        {label}
+      </label>
       {children}
     </div>
+  );
+}
+
+// ─── Sub-section header ────────────────────────────────────────────────────────
+
+function SubSection({ title, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 3, height: 18, borderRadius: 2,
+          background: 'linear-gradient(180deg, #FF6B00, rgba(255,107,0,0))',
+        }} />
+        <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)' }}>
+          {title}
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ─── Item card (reusable wrapper for editors) ─────────────────────────────────
+
+function ItemCard({ index, label, onMoveUp, onMoveDown, onRemove, canUp, canDown, children }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.2 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'relative',
+        background: hovered ? 'rgba(255,255,255,0.03)' : '#0d0d0d',
+        border: '1px solid rgba(255,255,255,0.07)',
+        borderRadius: 12,
+        padding: '14px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        transition: 'background .15s, border-color .15s',
+        borderColor: hovered ? 'rgba(255,107,0,0.2)' : 'rgba(255,255,255,0.07)',
+      }}
+    >
+      {/* Left accent bar */}
+      <div style={{
+        position: 'absolute', left: 0, top: 10, bottom: 10, width: 3,
+        borderRadius: '0 2px 2px 0',
+        background: hovered ? 'rgba(255,107,0,0.4)' : 'transparent',
+        transition: 'background .15s',
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.2)' }}>
+          {label} {index + 1}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {onMoveUp && (
+            <button
+              onClick={onMoveUp} disabled={!canUp}
+              style={{ padding: '4px 6px', borderRadius: 7, border: 'none', cursor: canUp ? 'pointer' : 'not-allowed', background: 'rgba(255,255,255,0.05)', color: canUp ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)', transition: 'all .12s' }}
+              onMouseEnter={e => { if (canUp) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            >
+              <ChevronUp size={13} />
+            </button>
+          )}
+          {onMoveDown && (
+            <button
+              onClick={onMoveDown} disabled={!canDown}
+              style={{ padding: '4px 6px', borderRadius: 7, border: 'none', cursor: canDown ? 'pointer' : 'not-allowed', background: 'rgba(255,255,255,0.05)', color: canDown ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)', transition: 'all .12s' }}
+              onMouseEnter={e => { if (canDown) e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            >
+              <ChevronDown size={13} />
+            </button>
+          )}
+          <button
+            onClick={onRemove}
+            style={{ padding: '4px 6px', borderRadius: 7, border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)', transition: 'all .12s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#f87171'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Add button ───────────────────────────────────────────────────────────────
+
+function AddButton({ onClick, label }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        width: '100%', padding: '10px 16px',
+        background: 'transparent',
+        border: '1px dashed rgba(255,107,0,0.3)',
+        borderRadius: 10, cursor: 'pointer',
+        color: 'rgba(255,107,0,0.6)',
+        fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
+        transition: 'all .15s',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,107,0,0.7)';
+        e.currentTarget.style.color = '#FF6B00';
+        e.currentTarget.style.background = 'rgba(255,107,0,0.05)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = 'rgba(255,107,0,0.3)';
+        e.currentTarget.style.color = 'rgba(255,107,0,0.6)';
+        e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      <Plus size={14} strokeWidth={2.5} />
+      {label}
+    </button>
   );
 }
 
 // ─── Sections editor (Privacy Policy & Terms of Use) ─────────────────────────
 
 function SectionsEditor({ sections, onChange }) {
-  const update = (i, key, val) => {
-    const next = sections.map((s, idx) => idx === i ? { ...s, [key]: val } : s);
-    onChange(next);
-  };
+  const update = (i, key, val) => onChange(sections.map((s, idx) => idx === i ? { ...s, [key]: val } : s));
   const remove = (i) => onChange(sections.filter((_, idx) => idx !== i));
-  const add = () => onChange([...sections, { title: '', body: '' }]);
-  const move = (i, dir) => {
+  const add    = () => onChange([...sections, { title: '', body: '' }]);
+  const move   = (i, dir) => {
     const next = [...sections];
     const j = i + dir;
     if (j < 0 || j >= next.length) return;
@@ -45,38 +220,25 @@ function SectionsEditor({ sections, onChange }) {
   };
 
   return (
-    <div className="space-y-4">
-      {sections.map((s, i) => (
-        <div key={i} className="bg-[#111] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Section {i + 1}</span>
-            <div className="flex items-center gap-1">
-              <button onClick={() => move(i, -1)} disabled={i === 0}
-                className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-[#222] disabled:opacity-30 transition-colors">
-                <ChevronUp size={14} />
-              </button>
-              <button onClick={() => move(i, 1)} disabled={i === sections.length - 1}
-                className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-[#222] disabled:opacity-30 transition-colors">
-                <ChevronDown size={14} />
-              </button>
-              <button onClick={() => remove(i)}
-                className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-900/20 transition-colors">
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </div>
-          <Field label="Title">
-            <input value={s.title} onChange={e => update(i, 'title', e.target.value)} className={inputCls} placeholder="Section title…" />
-          </Field>
-          <Field label="Body">
-            <textarea value={s.body} onChange={e => update(i, 'body', e.target.value)} rows={4} className={inputCls} placeholder="Section content…" />
-          </Field>
-        </div>
-      ))}
-      <button onClick={add}
-        className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-        <Plus size={15} /> Add Section
-      </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <AnimatePresence>
+        {sections.map((s, i) => (
+          <ItemCard
+            key={i} index={i} label="Section"
+            onMoveUp={() => move(i, -1)} canUp={i > 0}
+            onMoveDown={() => move(i, 1)} canDown={i < sections.length - 1}
+            onRemove={() => remove(i)}
+          >
+            <Field label="Title">
+              <DarkInput value={s.title} onChange={e => update(i, 'title', e.target.value)} placeholder="Section title…" />
+            </Field>
+            <Field label="Body">
+              <DarkTextarea value={s.body} onChange={e => update(i, 'body', e.target.value)} rows={4} placeholder="Section content…" />
+            </Field>
+          </ItemCard>
+        ))}
+      </AnimatePresence>
+      <AddButton onClick={add} label="Add Section" />
     </div>
   );
 }
@@ -88,85 +250,68 @@ function AboutEditor({ content, onChange }) {
   const story  = content.story  ?? [];
   const values = content.values ?? [];
 
-  const updStats  = (v) => onChange({ ...content, stats: v });
-  const updStory  = (v) => onChange({ ...content, story: v });
-  const updValues = (v) => onChange({ ...content, values: v });
-
-  const updateStat = (i, key, val) => updStats(stats.map((s, idx) => idx === i ? { ...s, [key]: val } : s));
-  const removeStat = (i) => updStats(stats.filter((_, idx) => idx !== i));
-  const addStat    = () => updStats([...stats, { label: '', value: '' }]);
-
-  const updateStory = (i, val) => updStory(story.map((s, idx) => idx === i ? val : s));
-  const removeStory = (i) => updStory(story.filter((_, idx) => idx !== i));
-  const addStory    = () => updStory([...story, '']);
-
-  const updateValue = (i, key, val) => updValues(values.map((v, idx) => idx === i ? { ...v, [key]: val } : v));
-  const removeValue = (i) => updValues(values.filter((_, idx) => idx !== i));
-  const addValue    = () => updValues([...values, { title: '', desc: '' }]);
+  const updStats  = v => onChange({ ...content, stats: v });
+  const updStory  = v => onChange({ ...content, story: v });
+  const updValues = v => onChange({ ...content, values: v });
 
   return (
-    <div className="space-y-8">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
       {/* Stats */}
-      <section>
-        <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> Stats
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {stats.map((s, i) => (
-            <div key={i} className="bg-[#111] border border-[#2a2a2a] rounded-xl p-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Stat {i + 1}</span>
-                <button onClick={() => removeStat(i)} className="text-gray-600 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
-              </div>
-              <input value={s.value} onChange={e => updateStat(i, 'value', e.target.value)} className={inputCls} placeholder="2.4M+" />
-              <input value={s.label} onChange={e => updateStat(i, 'label', e.target.value)} className={inputCls} placeholder="Monthly Readers" />
-            </div>
-          ))}
+      <SubSection title="Stats">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
+          <AnimatePresence>
+            {stats.map((s, i) => (
+              <ItemCard key={i} index={i} label="Stat" onRemove={() => updStats(stats.filter((_, idx) => idx !== i))}>
+                <Field label="Value">
+                  <DarkInput value={s.value} onChange={e => updStats(stats.map((x, idx) => idx === i ? { ...x, value: e.target.value } : x))} placeholder="2.4M+" />
+                </Field>
+                <Field label="Label">
+                  <DarkInput value={s.label} onChange={e => updStats(stats.map((x, idx) => idx === i ? { ...x, label: e.target.value } : x))} placeholder="Monthly Readers" />
+                </Field>
+              </ItemCard>
+            ))}
+          </AnimatePresence>
         </div>
-        <button onClick={addStat} className="mt-3 flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-          <Plus size={15} /> Add Stat
-        </button>
-      </section>
+        <AddButton onClick={() => updStats([...stats, { label: '', value: '' }])} label="Add Stat" />
+      </SubSection>
 
       {/* Story */}
-      <section>
-        <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> Our Story (paragraphs)
-        </h3>
-        <div className="space-y-3">
-          {story.map((para, i) => (
-            <div key={i} className="flex gap-2">
-              <textarea value={para} onChange={e => updateStory(i, e.target.value)} rows={3} className={`${inputCls} flex-1`} placeholder={`Paragraph ${i + 1}…`} />
-              <button onClick={() => removeStory(i)} className="text-gray-600 hover:text-red-400 transition-colors self-start mt-2"><Trash2 size={14} /></button>
-            </div>
-          ))}
-          <button onClick={addStory} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-            <Plus size={15} /> Add Paragraph
-          </button>
+      <SubSection title="Our Story — Paragraphs">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatePresence>
+            {story.map((para, i) => (
+              <ItemCard key={i} index={i} label="Paragraph" onRemove={() => updStory(story.filter((_, idx) => idx !== i))}>
+                <DarkTextarea
+                  value={para}
+                  onChange={e => updStory(story.map((p, idx) => idx === i ? e.target.value : p))}
+                  rows={3} placeholder={`Paragraph ${i + 1}…`}
+                />
+              </ItemCard>
+            ))}
+          </AnimatePresence>
+          <AddButton onClick={() => updStory([...story, ''])} label="Add Paragraph" />
         </div>
-      </section>
+      </SubSection>
 
       {/* Values */}
-      <section>
-        <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> What We Stand For
-        </h3>
-        <div className="space-y-3">
-          {values.map((v, i) => (
-            <div key={i} className="bg-[#111] border border-[#2a2a2a] rounded-xl p-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Value {i + 1}</span>
-                <button onClick={() => removeValue(i)} className="text-gray-600 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
-              </div>
-              <input value={v.title} onChange={e => updateValue(i, 'title', e.target.value)} className={inputCls} placeholder="Speed" />
-              <textarea value={v.desc} onChange={e => updateValue(i, 'desc', e.target.value)} rows={2} className={inputCls} placeholder="Description…" />
-            </div>
-          ))}
-          <button onClick={addValue} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-            <Plus size={15} /> Add Value
-          </button>
+      <SubSection title="What We Stand For">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatePresence>
+            {values.map((v, i) => (
+              <ItemCard key={i} index={i} label="Value" onRemove={() => updValues(values.filter((_, idx) => idx !== i))}>
+                <Field label="Title">
+                  <DarkInput value={v.title} onChange={e => updValues(values.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} placeholder="Speed" />
+                </Field>
+                <Field label="Description">
+                  <DarkTextarea value={v.desc} onChange={e => updValues(values.map((x, idx) => idx === i ? { ...x, desc: e.target.value } : x))} rows={2} placeholder="Description…" />
+                </Field>
+              </ItemCard>
+            ))}
+          </AnimatePresence>
+          <AddButton onClick={() => updValues([...values, { title: '', desc: '' }])} label="Add Value" />
         </div>
-      </section>
+      </SubSection>
     </div>
   );
 }
@@ -177,57 +322,61 @@ function ContactEditor({ content, onChange }) {
   const info   = content.info   ?? [];
   const topics = content.topics ?? [];
 
-  const updateInfo  = (i, key, val) => onChange({ ...content, info: info.map((x, idx) => idx === i ? { ...x, [key]: val } : x) });
-  const removeInfo  = (i) => onChange({ ...content, info: info.filter((_, idx) => idx !== i) });
-  const addInfo     = () => onChange({ ...content, info: [...info, { title: '', val: '' }] });
-
-  const updateTopic = (i, val) => onChange({ ...content, topics: topics.map((t, idx) => idx === i ? val : t) });
-  const removeTopic = (i) => onChange({ ...content, topics: topics.filter((_, idx) => idx !== i) });
-  const addTopic    = () => onChange({ ...content, topics: [...topics, ''] });
-
   return (
-    <div className="space-y-8">
-      {/* Info cards */}
-      <section>
-        <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> Info Cards
-        </h3>
-        <div className="space-y-3">
-          {info.map((c, i) => (
-            <div key={i} className="bg-[#111] border border-[#2a2a2a] rounded-xl p-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Card {i + 1}</span>
-                <button onClick={() => removeInfo(i)} className="text-gray-600 hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <input value={c.title} onChange={e => updateInfo(i, 'title', e.target.value)} className={inputCls} placeholder="Label (e.g. Email)" />
-                <input value={c.val} onChange={e => updateInfo(i, 'val', e.target.value)} className={inputCls} placeholder="Value (e.g. hello@gnewz.com)" />
-              </div>
-            </div>
-          ))}
-          <button onClick={addInfo} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-            <Plus size={15} /> Add Info Card
-          </button>
-        </div>
-      </section>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-      {/* Topics */}
-      <section>
-        <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00]" /> Contact Form Topics
-        </h3>
-        <div className="space-y-2">
-          {topics.map((t, i) => (
-            <div key={i} className="flex gap-2">
-              <input value={t} onChange={e => updateTopic(i, e.target.value)} className={`${inputCls} flex-1`} placeholder={`Topic ${i + 1}`} />
-              <button onClick={() => removeTopic(i)} className="text-gray-600 hover:text-red-400 transition-colors p-2"><Trash2 size={14} /></button>
-            </div>
-          ))}
-          <button onClick={addTopic} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-            <Plus size={15} /> Add Topic
-          </button>
+      <SubSection title="Info Cards">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatePresence>
+            {info.map((c, i) => (
+              <ItemCard key={i} index={i} label="Card" onRemove={() => onChange({ ...content, info: info.filter((_, idx) => idx !== i) })}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Label">
+                    <DarkInput value={c.title} onChange={e => onChange({ ...content, info: info.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x) })} placeholder="Email" />
+                  </Field>
+                  <Field label="Value">
+                    <DarkInput value={c.val} onChange={e => onChange({ ...content, info: info.map((x, idx) => idx === i ? { ...x, val: e.target.value } : x) })} placeholder="hello@gnewz.com" />
+                  </Field>
+                </div>
+              </ItemCard>
+            ))}
+          </AnimatePresence>
+          <AddButton onClick={() => onChange({ ...content, info: [...info, { title: '', val: '' }] })} label="Add Info Card" />
         </div>
-      </section>
+      </SubSection>
+
+      <SubSection title="Contact Form Topics">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <AnimatePresence>
+            {topics.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.18 }}
+                style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+              >
+                <DarkInput
+                  value={t}
+                  onChange={e => onChange({ ...content, topics: topics.map((x, idx) => idx === i ? e.target.value : x) })}
+                  placeholder={`Topic ${i + 1}`}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  onClick={() => onChange({ ...content, topics: topics.filter((_, idx) => idx !== i) })}
+                  style={{ padding: '8px 10px', borderRadius: 9, border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.35)', flexShrink: 0, transition: 'all .12s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#f87171'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          <AddButton onClick={() => onChange({ ...content, topics: [...topics, ''] })} label="Add Topic" />
+        </div>
+      </SubSection>
     </div>
   );
 }
@@ -237,37 +386,51 @@ function ContactEditor({ content, onChange }) {
 function CookiePolicyEditor({ content, onChange }) {
   const types = content.cookie_types ?? [];
 
-  const update = (i, key, val) => {
-    const next = types.map((t, idx) => idx === i ? { ...t, [key]: val } : t);
-    onChange({ ...content, cookie_types: next });
-  };
+  const update = (i, key, val) => onChange({ ...content, cookie_types: types.map((t, idx) => idx === i ? { ...t, [key]: val } : t) });
   const remove = (i) => onChange({ ...content, cookie_types: types.filter((_, idx) => idx !== i) });
   const add    = () => onChange({ ...content, cookie_types: [...types, { name: '', required: false, desc: '', examples: '' }] });
 
   return (
-    <div className="space-y-4">
-      {types.map((t, i) => (
-        <div key={i} className="bg-[#111] border border-[#2a2a2a] rounded-2xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Cookie Type {i + 1}</span>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={t.required} onChange={e => update(i, 'required', e.target.checked)}
-                  className="w-4 h-4 accent-[#FF6B00]" />
-                <span className="text-xs text-gray-400">Always Active</span>
-              </label>
-              <button onClick={() => remove(i)} className="text-gray-600 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <AnimatePresence>
+        {types.map((t, i) => (
+          <ItemCard key={i} index={i} label="Cookie Type" onRemove={() => remove(i)}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <Field label="Name" style={{ flex: 1 }}>
+                <DarkInput value={t.name} onChange={e => update(i, 'name', e.target.value)} placeholder="Essential Cookies" />
+              </Field>
+              {/* Always Active toggle */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, paddingTop: 16 }}>
+                <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.25)' }}>Always On</span>
+                <button
+                  type="button"
+                  onClick={() => update(i, 'required', !t.required)}
+                  style={{
+                    position: 'relative', width: 36, height: 20, borderRadius: 10,
+                    border: 'none', cursor: 'pointer', flexShrink: 0,
+                    background: t.required ? '#FF6B00' : 'rgba(255,255,255,0.1)',
+                    transition: 'background .2s',
+                    boxShadow: t.required ? '0 0 10px rgba(255,107,0,0.4)' : 'none',
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 3, left: t.required ? 18 : 3,
+                    width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                    transition: 'left .2s', display: 'block',
+                  }} />
+                </button>
+              </div>
             </div>
-          </div>
-          <Field label="Name"><input value={t.name} onChange={e => update(i, 'name', e.target.value)} className={inputCls} placeholder="Essential Cookies" /></Field>
-          <Field label="Description"><textarea value={t.desc} onChange={e => update(i, 'desc', e.target.value)} rows={3} className={inputCls} placeholder="What these cookies do…" /></Field>
-          <Field label="Examples"><input value={t.examples} onChange={e => update(i, 'examples', e.target.value)} className={inputCls} placeholder="Session token, consent preference" /></Field>
-        </div>
-      ))}
-      <button onClick={add}
-        className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-[#FF6B00]/40 hover:border-[#FF6B00] text-[#FF6B00]/60 hover:text-[#FF6B00] rounded-xl text-sm font-bold transition-colors w-full justify-center">
-        <Plus size={15} /> Add Cookie Type
-      </button>
+            <Field label="Description">
+              <DarkTextarea value={t.desc} onChange={e => update(i, 'desc', e.target.value)} rows={3} placeholder="What these cookies do…" />
+            </Field>
+            <Field label="Examples">
+              <DarkInput value={t.examples} onChange={e => update(i, 'examples', e.target.value)} placeholder="Session token, consent preference" />
+            </Field>
+          </ItemCard>
+        ))}
+      </AnimatePresence>
+      <AddButton onClick={add} label="Add Cookie Type" />
     </div>
   );
 }
@@ -275,23 +438,22 @@ function CookiePolicyEditor({ content, onChange }) {
 // ─── Editor dispatcher ────────────────────────────────────────────────────────
 
 function PageContentEditor({ slug, content, onChange }) {
-  if (slug === 'about')          return <AboutEditor content={content}      onChange={onChange} />;
-  if (slug === 'contact')        return <ContactEditor content={content}    onChange={onChange} />;
-  if (slug === 'cookie-policy')  return <CookiePolicyEditor content={content} onChange={onChange} />;
+  if (slug === 'about')         return <AboutEditor content={content} onChange={onChange} />;
+  if (slug === 'contact')       return <ContactEditor content={content} onChange={onChange} />;
+  if (slug === 'cookie-policy') return <CookiePolicyEditor content={content} onChange={onChange} />;
   return <SectionsEditor sections={content.sections ?? []} onChange={v => onChange({ ...content, sections: v })} />;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function SitePagesAdmin() {
-  const [pages, setPages] = useState({});          // { slug: content }
+  const [pages,    setPages]    = useState({});
   const [selected, setSelected] = useState('about');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [dirty, setDirty] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading,  setLoading]  = useState(true);
+  const [saving,   setSaving]   = useState(false);
+  const [dirty,    setDirty]    = useState(false);
+  const [error,    setError]    = useState(null);
 
-  // Fetch all pages on mount
   useEffect(() => {
     setLoading(true);
     Promise.all(
@@ -304,7 +466,7 @@ export default function SitePagesAdmin() {
         results.forEach(({ slug, content }) => { map[slug] = content; });
         setPages(map);
       })
-      .catch(() => setError('Failed to load pages from API.'))
+      .catch(() => setError('Failed to load pages from the API.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -327,9 +489,7 @@ export default function SitePagesAdmin() {
   };
 
   const handleSelect = (slug) => {
-    if (dirty) {
-      if (!window.confirm('You have unsaved changes. Discard them?')) return;
-    }
+    if (dirty && !window.confirm('You have unsaved changes. Discard them?')) return;
     setSelected(slug);
     setDirty(false);
   };
@@ -337,81 +497,210 @@ export default function SitePagesAdmin() {
   const meta = PAGE_META.find(p => p.slug === selected);
 
   return (
-    <div className="flex gap-6 h-full min-h-0">
+    <div className="space-y-6">
 
-      {/* ── Left: page list ── */}
-      <aside className="w-64 shrink-0 space-y-2">
-        {PAGE_META.map(({ slug, label, icon: Icon, desc }) => {
-          const active = slug === selected;
-          return (
-            <button
-              key={slug}
-              onClick={() => handleSelect(slug)}
-              className={`w-full text-left rounded-2xl p-4 border transition-all ${
-                active
-                  ? 'border-[#FF6B00]/40 bg-[#FF6B00]/10'
-                  : 'border-[#1f1f1f] bg-[#0d0d0d] hover:border-[#333]'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-1">
-                <Icon size={15} className={active ? 'text-[#FF6B00]' : 'text-gray-500'} />
-                <span className={`text-sm font-bold ${active ? 'text-white' : 'text-gray-400'}`}>{label}</span>
-              </div>
-              <p className="text-xs text-gray-600 pl-6">{desc}</p>
-            </button>
-          );
-        })}
-      </aside>
+      {/* ── Page header ── */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1
+            className="text-[48px] font-black uppercase tracking-tighter text-white leading-none"
+            style={{ letterSpacing: '-0.03em' }}
+          >
+            Site Pages
+          </h1>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>
+            Manage public page content — About, Contact, Privacy, Terms &amp; Cookies
+          </p>
+        </div>
 
-      {/* ── Right: editor ── */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {loading ? (
-          <div className="flex items-center justify-center flex-1 text-gray-600 text-sm">Loading pages…</div>
-        ) : error ? (
-          <div className="flex items-center gap-2 p-4 bg-red-900/20 border border-red-800/40 rounded-2xl text-red-400 text-sm">
-            <AlertCircle size={16} /> {error}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 6, flexShrink: 0 }}>
+          {/* Unsaved badge */}
+          <AnimatePresence>
+            {dirty && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.18 }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '5px 10px', borderRadius: 20,
+                  background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)',
+                  color: '#fbbf24', fontSize: 11, fontWeight: 700,
+                }}
+              >
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 6px rgba(251,191,36,0.6)' }} />
+                Unsaved changes
+              </motion.span>
+            )}
+          </AnimatePresence>
+
+          {/* 3D Save button */}
+          <button
+            onClick={handleSave}
+            disabled={saving || !dirty}
+            className="flex items-center gap-2 px-5 py-3 text-[13px] font-black text-white tracking-wide disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{
+              background: 'linear-gradient(135deg, #FF6B00 0%, #e05500 100%)',
+              boxShadow: (!saving && dirty) ? '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)' : 'none',
+              borderRadius: 10, border: 'none', cursor: (saving || !dirty) ? 'not-allowed' : 'pointer',
+              transform: (!saving && dirty) ? 'translateY(-3px)' : 'none',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease, opacity .2s',
+            }}
+            onMouseEnter={e => { if (!saving && dirty) { e.currentTarget.style.boxShadow = '0 8px 0 #a33a00, 0 12px 24px rgba(255,107,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-5px)'; } }}
+            onMouseLeave={e => { if (!saving && dirty) { e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; } }}
+            onMouseDown={e  => { if (!saving && dirty) { e.currentTarget.style.boxShadow = '0 2px 0 #a33a00, 0 4px 8px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(0px)'; } }}
+            onMouseUp={e    => { if (!saving && dirty) { e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'translateY(-3px)'; } }}
+          >
+            {saving ? (
+              <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+            ) : (
+              <Save size={14} strokeWidth={3} />
+            )}
+            {saving ? 'Saving…' : 'Save Page'}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Body: sidebar + editor ── */}
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+
+        {/* ── Left nav ── */}
+        <nav style={{ width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {/* Nav card */}
+          <div style={{
+            background: 'linear-gradient(160deg,#161618 0%,#111113 100%)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 16, overflow: 'hidden',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          }}>
+            {/* Top accent */}
+            <div style={{ height: 2, background: 'linear-gradient(90deg,rgba(255,107,0,0.7),rgba(255,107,0,0) 60%)' }} />
+
+            <div style={{ padding: '6px 6px' }}>
+              {PAGE_META.map(({ slug, label, icon: Icon, desc, color }) => {
+                const active = slug === selected;
+                return (
+                  <button
+                    key={slug}
+                    onClick={() => handleSelect(slug)}
+                    style={{
+                      width: '100%', textAlign: 'left', display: 'block',
+                      padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                      border: 'none', marginBottom: 2,
+                      background: active ? `rgba(${color},0.1)` : 'transparent',
+                      outline: active ? `1px solid rgba(${color},0.25)` : '1px solid transparent',
+                      transition: 'all .15s',
+                      position: 'relative', overflow: 'hidden',
+                    }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    {/* Active left bar */}
+                    <div style={{
+                      position: 'absolute', left: 0, top: '20%', bottom: '20%', width: 3,
+                      borderRadius: '0 2px 2px 0',
+                      background: active ? `rgb(${color})` : 'transparent',
+                      boxShadow: active ? `0 0 8px rgba(${color},0.6)` : 'none',
+                      transition: 'background .15s',
+                    }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: active ? `rgba(${color},0.15)` : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${active ? `rgba(${color},0.3)` : 'rgba(255,255,255,0.07)'}`,
+                        transition: 'all .15s',
+                      }}>
+                        <Icon size={13} style={{ color: active ? `rgb(${color})` : 'rgba(255,255,255,0.35)', transition: 'color .15s' }} />
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: active ? '#fff' : 'rgba(255,255,255,0.55)', letterSpacing: '-0.01em', transition: 'color .15s' }}>
+                          {label}
+                        </div>
+                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {desc}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          <>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-white font-black text-xl">{meta?.label}</h2>
-                <p className="text-gray-500 text-sm mt-0.5">{meta?.desc}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {dirty && (
-                  <span className="flex items-center gap-1.5 text-amber-400 text-xs font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Unsaved changes
-                  </span>
-                )}
-                <button
-                  onClick={handleSave}
-                  disabled={saving || !dirty}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#FF6B00] hover:bg-[#cc5500] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-black rounded-xl transition-colors"
-                >
-                  {saving ? (
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <Save size={15} />
-                  )}
-                  {saving ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-            </div>
+        </nav>
 
-            {/* Editor body */}
-            <div className="flex-1 overflow-y-auto pr-1">
-              {pages[selected] !== undefined && (
-                <PageContentEditor
-                  slug={selected}
-                  content={pages[selected]}
-                  onChange={handleChange}
-                />
-              )}
+        {/* ── Right editor ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 16, padding: '80px 0',
+              background: 'linear-gradient(160deg,#161618 0%,#111113 100%)',
+              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16,
+            }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '2.5px solid #FF6B00', borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>Loading pages…</span>
             </div>
-          </>
-        )}
+          ) : error ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '18px 20px',
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+              borderRadius: 14, color: '#f87171', fontSize: 13,
+            }}>
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          ) : (
+            <motion.div
+              key={selected}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              style={{
+                background: 'linear-gradient(160deg,#161618 0%,#111113 100%)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 16, overflow: 'hidden',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+              }}
+            >
+              {/* Top accent */}
+              <div style={{ height: 2, background: `linear-gradient(90deg,rgba(${meta?.color},0.8),rgba(${meta?.color},0) 60%)` }} />
+
+              {/* Editor header */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '16px 24px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(255,255,255,0.02)',
+              }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: `rgba(${meta?.color},0.12)`,
+                  border: `1px solid rgba(${meta?.color},0.25)`,
+                }}>
+                  {meta && <meta.icon size={16} style={{ color: `rgb(${meta.color})` }} />}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>{meta?.label}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>{meta?.desc}</div>
+                </div>
+              </div>
+
+              {/* Editor body */}
+              <div style={{ padding: '24px', maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+                {pages[selected] !== undefined && (
+                  <PageContentEditor
+                    slug={selected}
+                    content={pages[selected]}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );

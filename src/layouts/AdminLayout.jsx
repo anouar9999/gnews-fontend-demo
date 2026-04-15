@@ -148,14 +148,14 @@ export default function AdminLayout() {
             </Link>
 
             {/* Theme toggle */}
-            <button
+            {/* <button
               type="button"
               onClick={toggleTheme}
               aria-label="Toggle theme"
               className="text-gray-400 hover:text-orange transition-colors p-1"
             >
               {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
+            </button> */}
 
             {/* Profile avatar */}
             {/* <div className="flex items-center gap-2">

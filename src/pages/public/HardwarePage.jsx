@@ -58,7 +58,7 @@ export default function HardwarePage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-3xl font-900 text-white uppercase tracking-wide">{t('hardware.title')}</h1>
+        <h1 className="text-[48px] font-black uppercase tracking-tighter text-white leading-none">{t('hardware.title')}</h1>
         <span className="gnewz-tag ml-2">{t('hardware.tag')}</span>
       </div>
 

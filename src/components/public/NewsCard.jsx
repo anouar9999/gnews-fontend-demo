@@ -9,7 +9,7 @@ export default function NewsCard({ article, size = 'md', showExcerpt = false, ra
     return (
       <Link
         to={href}
-        className="group relative block w-full rounded-[10px] overflow-hidden border border-[#2a2a2a] hover:border-orange transition-colors"
+        className="group relative block w-full rounded-[10px] overflow-hidden border border-[#2a2a2a]  transition-colors"
         style={{ height: 'clamp(260px, 45vw, 480px)' }}
       >
         <img
