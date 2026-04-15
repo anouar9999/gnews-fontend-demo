@@ -62,7 +62,7 @@ export default function AdminLayout() {
   });
 
   return (
-    <div className="flex h-screen overflow-hidden font-[Montserrat,sans-serif]" style={{ background: 'var(--color-dark)' }}>
+    <div className="admin-root flex h-screen overflow-hidden font-[Montserrat,sans-serif]" style={{ background: 'var(--color-dark)' }}>
 
       {/* Mobile overlay backdrop */}
       {mobileOpen && (

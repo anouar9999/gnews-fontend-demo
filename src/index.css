@@ -87,6 +87,32 @@ body {
   animation-play-state: paused;
 }
 
+/* ── Category cards ── */
+.cat-card {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cat-card:hover {
+  transform: translateY(-10px);
+}
+.cat-card .cat-img {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.cat-card:hover .cat-img {
+  transform: scale(1.08);
+}
+
+/* ── Category card text: visible in both dark and light mode ── */
+.cat-label {
+  color: #ffffff;
+  transition: color 0.2s;
+}
+html.light .cat-label {
+  color: #111111;
+}
+.cat-card:hover .cat-label {
+  color: #ff6b00;
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar {
   width: 4px;
@@ -451,12 +477,12 @@ html.light .article-body blockquote  {
 /* ── Scrollbar ── */
 html.light ::-webkit-scrollbar-track { background: #e0e0e0; }
 
-/* ── Card image gradient overlays: swap black → white in light mode ── */
+/* ── Card image gradient overlays: soft grey in light mode ── */
 html.light .hero-overlay {
-  background: linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.55) 55%, transparent 100%) !important;
+  background: linear-gradient(to top, rgba(190,190,190,0.82) 0%, rgba(190,190,190,0.35) 50%, transparent 100%) !important;
 }
 html.light .card-img-overlay {
-  background: linear-gradient(to top, rgba(255,255,255,0.88) 0%, transparent 100%) !important;
+  background: linear-gradient(to top, rgba(190,190,190,0.65) 0%, transparent 100%) !important;
 }
 
 /* ── Keep white text on orange-background buttons in light mode ── */
@@ -466,6 +492,66 @@ html.light .bg-orange { color: #ffffff !important; }
 .logo-for-light          { display: none; }
 html.light .logo-for-light { display: block; }
 html.light .logo-for-dark  { display: none; }
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN DARK LOCK — entire admin panel stays dark in light mode
+   (.admin-root on the outermost div in AdminLayout)
+   ════════════════════════════════════════════════════════════ */
+html.light .admin-root { color-scheme: dark; }
+
+/* Backgrounds */
+html.light .admin-root .bg-black                          { background-color: #000000 !important; }
+html.light .admin-root .bg-\[\#0A0A0A\],
+html.light .admin-root .bg-\[\#0a0a0a\]                  { background-color: #0a0a0a !important; }
+html.light .admin-root .bg-\[\#0d0d0d\],
+html.light .admin-root .bg-\[\#0D0D0D\]                  { background-color: #0d0d0d !important; }
+html.light .admin-root .bg-\[\#111\]                      { background-color: #111111 !important; }
+html.light .admin-root .bg-\[\#141414\]                   { background-color: #141414 !important; }
+html.light .admin-root .bg-\[\#161616\]                   { background-color: #161616 !important; }
+html.light .admin-root .bg-\[\#181818\]                   { background-color: #181818 !important; }
+html.light .admin-root .bg-\[\#1A1A1A\],
+html.light .admin-root .bg-\[\#1a1a1a\]                  { background-color: #1a1a1a !important; }
+html.light .admin-root .bg-\[\#1c1c1c\]                   { background-color: #1c1c1c !important; }
+html.light .admin-root .bg-\[\#1f1f1f\]                   { background-color: #1f1f1f !important; }
+html.light .admin-root .bg-\[\#222\]                      { background-color: #222222 !important; }
+html.light .admin-root .bg-\[\#242424\]                   { background-color: #242424 !important; }
+html.light .admin-root .bg-\[\#252525\]                   { background-color: #252525 !important; }
+html.light .admin-root .bg-\[\#2a2a2a\]                  { background-color: #2a2a2a !important; }
+
+/* Hover backgrounds */
+html.light .admin-root .hover\:bg-\[\#111\]:hover         { background-color: #111111 !important; }
+html.light .admin-root .hover\:bg-\[\#252525\]:hover      { background-color: #252525 !important; }
+
+/* Text */
+html.light .admin-root .text-white                        { color: #ffffff            !important; }
+html.light .admin-root .text-gray-300                     { color: rgb(209 213 219)   !important; }
+html.light .admin-root .text-gray-400                     { color: rgb(156 163 175)   !important; }
+html.light .admin-root .text-gray-500                     { color: rgb(107 114 128)   !important; }
+html.light .admin-root .text-gray-600                     { color: rgb(75 85 99)      !important; }
+html.light .admin-root .text-gray-700                     { color: rgb(55 65 81)      !important; }
+
+/* Borders */
+html.light .admin-root .border-\[\#1A1A1A\],
+html.light .admin-root .border-\[\#1a1a1a\]              { border-color: #1a1a1a !important; }
+html.light .admin-root .border-\[\#2a2a2a\]              { border-color: #2a2a2a !important; }
+html.light .admin-root .border-\[\#333\]                  { border-color: #333333 !important; }
+html.light .admin-root .border-\[\#1f1f1f\]              { border-color: #1f1f1f !important; }
+html.light .admin-root .border-\[\#222\]                  { border-color: #222222 !important; }
+
+/* Cards */
+html.light .admin-root .gnewz-card                        { background: #1a1a1a; border-color: #2a2a2a; }
+html.light .admin-root .gnewz-card:hover                  { border-color: var(--color-orange); }
+
+/* Form controls */
+html.light .admin-root input,
+html.light .admin-root textarea,
+html.light .admin-root select {
+  background-color: #1a1a1a !important;
+  color: #ffffff            !important;
+  border-color: #2a2a2a    !important;
+}
+html.light .admin-root input::placeholder,
+html.light .admin-root textarea::placeholder              { color: #6b7280 !important; }
 
 /* ── Admin sidebar + topbar always stay dark (.gnewz-admin-chrome) ── */
 /* Backgrounds are already inline CSS-var styles, only text needs locking */

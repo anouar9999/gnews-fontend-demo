@@ -37,6 +37,7 @@ export default function ArticleForm() {
   const [existingImageUrl, setExistingImageUrl] = useState('');
   const [imageFile, setImageFile]               = useState(null);
   const [imagePreview, setImagePreview]         = useState('');
+  const [imageBase64, setImageBase64]           = useState('');
   const [categories, setCategories]             = useState([]);
   const [tags, setTags]                         = useState([]);
   const [mediaItems, setMediaItems]             = useState([]);
@@ -77,7 +78,11 @@ export default function ArticleForm() {
         media_ids:        data.media?.map(m => m.id) || [],
       });
       setBlocks(initBlocksFromContent(data.content));
-      if (data.featured_image) {
+      if (data.featured_image_b64) {
+        // Prefer base64 (stored in DB, visible to all teammates)
+        setImageBase64(data.featured_image_b64);
+        setImagePreview(data.featured_image_b64);
+      } else if (data.featured_image) {
         setExistingImageUrl(data.featured_image);
         setImagePreview(data.featured_image);
       }
@@ -120,12 +125,18 @@ export default function ArticleForm() {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    // Convert to base64 so the image is stored in the shared database,
+    // making it visible to all teammates regardless of whose machine runs Django.
+    const reader = new FileReader();
+    reader.onload = ev => setImageBase64(ev.target.result);
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview('');
     setExistingImageUrl('');
+    setImageBase64('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -152,6 +163,8 @@ export default function ArticleForm() {
       } else if (!imagePreview && existingImageUrl) {
         fd.append('featured_image', '');
       }
+      // Always sync base64 version to DB (empty string clears it)
+      fd.append('featured_image_b64', imageBase64 || '');
       const cfg = { headers: { 'Content-Type': 'multipart/form-data' } };
       if (isEdit) {
         await api.patch(`/articles/${id}/`, fd, cfg);

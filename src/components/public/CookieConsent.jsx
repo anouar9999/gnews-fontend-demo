@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 const STORAGE_KEY = 'gnewz_cookie_consent';
 
-export default function CookieConsent() {
+export default function CookieConsent({ forceOpen = false, onForceClose }) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
 
@@ -12,9 +12,14 @@ export default function CookieConsent() {
     if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
   }, []);
 
+  useEffect(() => {
+    if (forceOpen) setVisible(true);
+  }, [forceOpen]);
+
   const handle = (choice) => {
     localStorage.setItem(STORAGE_KEY, choice);
     setVisible(false);
+    onForceClose?.();
   };
 
   if (!visible) return null;

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, ArrowRight, User } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 const VOICES = [
   { name: 'Amara Chen', role: 'Senior Editor', img: 'https://picsum.photos/seed/amara/80/80', articles: 142 },
@@ -20,7 +21,8 @@ export default function CulturePage() {
   const [longReads, setLongReads] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
+    setLoading(true);
     api.get('/articles/', { params: { status: 'publie', category__slug: 'culture', ordering: '-published_at' } })
       .then(({ data }) => {
         const all = (data.results || []).map(toCard);
@@ -31,6 +33,9 @@ export default function CulturePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRefetchOnFocus(fetchData);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

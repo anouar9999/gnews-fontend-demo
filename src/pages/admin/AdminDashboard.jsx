@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
+import { normalizeMediaUrl } from "../../utils/article";
 
 /* ─── helpers ─────────────────────────────────────────────── */
 
@@ -526,8 +527,9 @@ export default function AdminDashboard() {
                     dot: "#6b7280",
                   };
                   const catName = item.category?.name ?? item.category ?? "—";
-                  const thumbnail =
-                    item.featured_image ?? item.thumbnail ?? null;
+                  const thumbnail = item.featured_image_b64 || normalizeMediaUrl(
+                    item.featured_image ?? item.thumbnail ?? null
+                  );
                   return (
                     <tr
                       key={item.id}

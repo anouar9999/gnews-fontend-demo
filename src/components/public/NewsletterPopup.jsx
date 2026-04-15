@@ -6,7 +6,7 @@ import api from '../../api/axios';
 const STORAGE_KEY = 'gnewz_newsletter';
 const DELAY_MS = 6000;
 
-export default function NewsletterPopup() {
+export default function NewsletterPopup({ forceOpen = false, onForceClose }) {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [email, setEmail] = useState('');
@@ -20,9 +20,14 @@ export default function NewsletterPopup() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (forceOpen) { setVisible(true); setSuccess(false); setEmail(''); setError(''); }
+  }, [forceOpen]);
+
   const handleClose = () => {
     localStorage.setItem(STORAGE_KEY, 'dismissed');
     setVisible(false);
+    onForceClose?.();
   };
 
   const handleSubmit = async (e) => {

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Clock, Eye, MessageSquare, Send, CornerDownRight, ArrowLeft } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
+import { normalizeMediaUrl } from '../../utils/article';
 
 /* ── Mock articles (same as SearchPage) ────────────────── */
 const MOCK_ARTICLES = [
@@ -91,7 +92,12 @@ export default function PublicArticleDetail() {
         if (!found) { setArticle(getMockArticle(slug)); return; }
         return api.get(`/articles/${found.id}/`).then(({ data: full }) => {
           setArticle(full);
-          api.post(`/articles/${full.id}/increment_view/`).catch(() => {});
+          // Increment view and update the displayed count with the real new value
+          api.post(`/articles/${full.id}/increment_view/`)
+            .then(({ data }) => {
+              setArticle(prev => prev ? { ...prev, view_count: data.view_count } : prev);
+            })
+            .catch(() => {});
         });
       })
       .catch(() => setArticle(getMockArticle(slug)))
@@ -165,7 +171,7 @@ export default function PublicArticleDetail() {
         <div className="w-full max-w-4xl mx-auto px-6 pt-8">
           <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: 'clamp(200px, 35vw, 420px)' }}>
             <img
-              src={article.featured_image}
+              src={article.featured_image_b64 || normalizeMediaUrl(article.featured_image)}
               alt={article.title}
               className="w-full h-full object-cover"
             />

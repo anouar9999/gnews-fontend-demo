@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import GnewzLogo from './GnewzLogo';
-import { Twitter, Youtube, Twitch, Instagram, MessageCircle } from 'lucide-react';
+import { Twitter, Youtube, Twitch, Instagram, MessageCircle, Cookie, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
 
@@ -14,7 +14,7 @@ const socials = [
   { icon: MessageCircle, label: 'Discord' },
 ];
 
-export default function Footer() {
+export default function Footer({ onOpenCookie, onOpenNewsletter }) {
   const { t } = useTranslation();
   const [email, setEmail]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,6 +123,24 @@ export default function Footer() {
                 <Icon size={18} />
               </a>
             ))}
+
+            {/* Demo shortcut buttons */}
+            <div className="flex items-center gap-1 ml-2 pl-3 border-l border-[#2a2a2a]">
+              <button
+                onClick={onOpenCookie}
+                title="Cookie Preferences"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-orange hover:bg-orange/10 transition-all"
+              >
+                <Cookie size={15} />
+              </button>
+              <button
+                onClick={onOpenNewsletter}
+                title="Newsletter"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:text-orange hover:bg-orange/10 transition-all"
+              >
+                <Mail size={15} />
+              </button>
+            </div>
           </div>
         </div>
       </div>

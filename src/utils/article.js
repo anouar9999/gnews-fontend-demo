@@ -18,6 +18,30 @@ export function formatViews(n) {
   return String(n);
 }
 
+/**
+ * Normalises media URLs so the Vite proxy (/media → configured backend) always works,
+ * regardless of which machine's IP Django encoded into the URL.
+ *
+ * Handles all formats Django may return:
+ *   "http://192.168.1.50:8000/media/articles/img.jpg" → "/media/articles/img.jpg"
+ *   "/media/articles/img.jpg"                         → "/media/articles/img.jpg"
+ *   "media/articles/img.jpg"                          → "/media/articles/img.jpg"
+ *   "articles/img.jpg"                                → "/media/articles/img.jpg"
+ */
+export function normalizeMediaUrl(url) {
+  if (!url) return null;
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+  if (url.startsWith('/')) return url;          // already a root-relative path
+  try {
+    const { pathname, search } = new URL(url);  // strips origin from absolute URLs
+    return pathname + search;
+  } catch {
+    // Not a valid absolute URL — Django returned a bare relative path
+    if (url.startsWith('media/')) return `/${url}`;   // "media/…" → "/media/…"
+    return `/media/${url}`;                            // "articles/…" → "/media/articles/…"
+  }
+}
+
 export function toCard(article) {
   return {
     slug: article.slug,
@@ -25,7 +49,8 @@ export function toCard(article) {
     excerpt: article.meta_description || '',
     category: article.category?.name || '',
     tag: article.is_breaking ? 'BREAKING' : article.is_featured ? 'FEATURED' : article.category?.name || '',
-    image: article.featured_image || `https://picsum.photos/seed/${article.slug}/800/450`,
+    // Prefer base64 (in DB, visible to all teammates) → fall back to file URL → placeholder
+    image: article.featured_image_b64 || normalizeMediaUrl(article.featured_image) || `https://picsum.photos/seed/${article.slug}/800/450`,
     time: timeAgo(article.published_at),
     views: formatViews(article.view_count),
   };

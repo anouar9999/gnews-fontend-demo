@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { normalizeMediaUrl } from "../../utils/article";
 import {
   Pencil, Trash2, Send, Archive,
   Star, Zap, FileText, X, Plus,
@@ -302,7 +303,7 @@ export default function ArticleTable({ articles, loading, canEdit, canDelete, on
       {!loading && articles.map((row, i) => {
         const isLast    = i === articles.length - 1;
         const isChecked = selected.has(row.id);
-        const thumbnail = row.featured_image ?? row.image ?? row.thumbnail ?? null;
+        const thumbnail = row.featured_image_b64 || normalizeMediaUrl(row.featured_image ?? row.image ?? row.thumbnail ?? null);
         const author    = row.author?.username ?? row.author ?? "—";
         const category  = row.category?.name ?? null;
 

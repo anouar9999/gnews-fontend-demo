@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { normalizeMediaUrl } from "../../utils/article";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -651,8 +652,9 @@ export default function ArticleDetail() {
   if (loading) return <Skeleton />;
   if (!article) return null;
 
-  const thumbnail =
-    article.featured_image ?? article.image ?? article.thumbnail ?? null;
+  const thumbnail = article.featured_image_b64 || normalizeMediaUrl(
+    article.featured_image ?? article.image ?? article.thumbnail ?? null
+  );
   const authorName = article.author?.username ?? article.author ?? null;
   const catName = article.category?.name ?? article.category ?? null;
   const srcName = article.source?.name ?? article.source ?? null;

@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, TrendingUp, Zap, Monitor, Trophy } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 const LIVE_MATCHES = [
   { t1: 'Team Liquid', t2: 'NAVI', s1: 16, s2: 9, game: 'CS2', round: 'grandFinal', map: 'Inferno' },
@@ -20,13 +21,14 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true);
 
   const categories = [
-    { label: t('landing.cats.gamingNews'), icon: Zap,       to: '/gaming',    desc: t('landing.cats.gamingDesc') },
-    { label: t('landing.cats.hardware'),   icon: Monitor,    to: '/hardware',  desc: t('landing.cats.hardwareDesc') },
-    { label: t('landing.cats.esports'),    icon: Trophy,     to: '/esports',   desc: t('landing.cats.esportsDesc') },
-    { label: t('landing.cats.trending'),   icon: TrendingUp, to: '/culture',   desc: t('landing.cats.trendingDesc') },
+    { label: t('landing.cats.gamingNews'), img: '/images/gaming.png',   to: '/gaming',   desc: t('landing.cats.gamingDesc') },
+    { label: t('landing.cats.hardware'),   img: '/images/hardware.png',  to: '/hardware', desc: t('landing.cats.hardwareDesc') },
+    { label: t('landing.cats.esports'),    img: '/images/esports.png',   to: '/esports',  desc: t('landing.cats.esportsDesc') },
+    { label: t('landing.cats.trending'),   img: '/images/trending.png',  to: '/culture',  desc: t('landing.cats.trendingDesc') },
   ];
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
+    setLoading(true);
     Promise.all([
       api.get('/articles/', { params: { status: 'publie', is_featured: true, ordering: '-published_at' } }),
       api.get('/articles/', { params: { status: 'publie', category__slug: 'gaming', ordering: '-published_at' } }),
@@ -40,6 +42,9 @@ export default function LandingPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRefetchOnFocus(fetchData);
 
   const hero = featured[0];
   const sideFeatured = featured.slice(1, 3);
@@ -69,16 +74,40 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Category Quick Links ─────────────────────── */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-        {categories.map(({ label, icon: Icon, to, desc }) => (
-          <Link key={to} to={to} className="gnewz-card flex flex-col gap-2 p-4 group">
-            <div className="w-10 h-10 rounded-lg bg-orange/10 flex items-center justify-center group-hover:bg-orange transition-colors">
-              <Icon size={20} className="text-orange group-hover:text-white transition-colors" />
-            </div>
-            <p className="font-800 text-sm text-white">{label}</p>
-            <p className="text-gray-500 text-xs">{desc}</p>
-          </Link>
-        ))}
+      <section className="mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          {categories.map(({ label, img, to, desc }, i) => (
+            <Link
+              key={to}
+              to={to}
+              className="cat-card group relative flex flex-col items-center text-center py-10 px-6"
+            >
+              {/* Image */}
+              <div className="relative mb-5" style={{ width: '140px', height: '140px' }}>
+                <img
+                  src={img}
+                  alt={label}
+                  className="cat-img w-full h-full object-contain"
+                  style={{ filter: 'brightness(0.92) saturate(0.95)' }}
+                />
+              </div>
+
+              {/* Bold uppercase label */}
+              <p className="cat-label font-900 text-sm uppercase tracking-[0.18em] mb-2">
+                {label}
+              </p>
+
+              {/* Description */}
+              <p className="text-gray-500 text-xs leading-relaxed max-w-[160px]">{desc}</p>
+
+              {/* Explore arrow — fades in on hover */}
+              <div className="flex items-center gap-1.5 mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                <span className="text-orange text-[10px] font-bold uppercase tracking-wider">Explore</span>
+                <ArrowRight size={10} className="text-orange" />
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* ─── Latest Gaming ────────────────────────────── */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Trophy, Calendar, DollarSign,
@@ -7,6 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -486,13 +487,16 @@ export default function EsportPage() {
   const [activeGame, setActiveGame]   = useState('All');
   const [esportsNews, setEsportsNews] = useState([]);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     api.get('/articles/', {
       params: { status: 'publie', category__slug: 'esports', ordering: '-published_at' },
     })
       .then(({ data }) => setEsportsNews((data.results || []).slice(0, 6).map(toCard)))
       .catch(() => {});
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRefetchOnFocus(fetchData);
 
   const featured   = liveMatches[0];
   const otherLive  = liveMatches.slice(1);

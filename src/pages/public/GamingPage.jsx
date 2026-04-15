@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, ChevronDown } from 'lucide-react';
 import NewsCard from '../../components/public/NewsCard';
 import api from '../../api/axios';
 import { toCard } from '../../utils/article';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 const FILTER_KEYS = ['all', 'pc', 'ps', 'xbox', 'nintendo', 'mobile', 'vr'];
 const FILTER_VALUES = ['All', 'PC', 'PlayStation', 'Xbox', 'Nintendo', 'Mobile', 'VR'];
@@ -19,7 +20,7 @@ export default function GamingPage() {
   const [nextPage, setNextPage] = useState(null);
 
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     setLoading(true);
     Promise.all([
       api.get('/articles/', { params: { status: 'publie', category__slug: 'gaming', ordering: '-published_at' } }),
@@ -35,6 +36,9 @@ export default function GamingPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useRefetchOnFocus(fetchData);
 
   const activeValue = FILTER_VALUES[activeIdx];
   const displayed = activeIdx === 0
