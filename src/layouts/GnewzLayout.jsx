@@ -27,8 +27,8 @@ export default function GnewzLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
-      <BreakingTicker />
-      <Navbar />
+      {/* <BreakingTicker /> */}
+      {/* <Navbar /> */}
       <main className="flex-1">
         <Outlet />
       </main>

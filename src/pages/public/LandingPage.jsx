@@ -1,194 +1,84 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
-import NewsCard from '../../components/public/NewsCard';
-import api from '../../api/axios';
-import { toCard } from '../../utils/article';
-import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
-
-const LIVE_MATCHES = [
-  { t1: 'Team Liquid', t2: 'NAVI', s1: 16, s2: 9, game: 'CS2', round: 'grandFinal', map: 'Inferno' },
-  { t1: 'T1', t2: 'Cloud9', s1: 2, s2: 1, game: 'Valorant', round: 'semiFinals', map: 'Bind' },
-  { t1: 'FaZe Clan', t2: 'G2 Esports', s1: 3, s2: 3, game: 'CS2', round: 'quarterFinals', map: 'Mirage' },
-];
+import { Gamepad2 } from "lucide-react";
+import { FontImport } from "../../components/public/landing/shared";
+import Navbar from "../../components/public/landing/Navbar";
+import BreakingTicker from "../../components/public/landing/BreakingTicker";
+import HeroSection from "../../components/public/landing/HeroSection";
+import PromoBanner from "../../components/public/landing/PromoBanner";
+import LatestGrid from "../../components/public/landing/LatestGrid";
+import CategorySection from "../../components/public/landing/CategorySection";
+import TrendingNow from "../../components/public/landing/TrendingNow";
+import GameNewsSection from "../../components/public/landing/GameNewsSection";
+import AnticipatedGames from "../../components/public/landing/AnticipatedGames";
+import PopularGames from "../../components/public/landing/PopularGames";
+import DealsSection from "../../components/public/landing/DealsSection";
+import CultureSection from "../../components/public/landing/CultureSection";
+import HardwareSection from "../../components/public/landing/HardwareSection";
+import EsportsSection from "../../components/public/landing/EsportsSection";
+import { GAMING_ARTICLES } from "../../data/landingMockData";
 
 export default function LandingPage() {
-  const { t } = useTranslation();
-  const [featured, setFeatured] = useState([]);
-  const [gaming, setGaming] = useState([]);
-  const [hardware, setHardware] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const categories = [
-    { label: t('landing.cats.gamingNews'), img: '/images/gaming.png',   to: '/gaming',   desc: t('landing.cats.gamingDesc') },
-    { label: t('landing.cats.hardware'),   img: '/images/hardware.png',  to: '/hardware', desc: t('landing.cats.hardwareDesc') },
-    { label: t('landing.cats.esports'),    img: '/images/esports.png',   to: '/esports',  desc: t('landing.cats.esportsDesc') },
-    { label: t('landing.cats.trending'),   img: '/images/trending.png',  to: '/culture',  desc: t('landing.cats.trendingDesc') },
-  ];
-
-  const fetchData = useCallback(() => {
-    setLoading(true);
-    Promise.all([
-      api.get('/articles/', { params: { status: 'publie', is_featured: true, ordering: '-published_at' } }),
-      api.get('/articles/', { params: { status: 'publie', category__slug: 'gaming', ordering: '-published_at' } }),
-      api.get('/articles/', { params: { status: 'publie', category__slug: 'hardware', ordering: '-published_at' } }),
-    ])
-      .then(([featRes, gamRes, hwRes]) => {
-        setFeatured((featRes.data.results || []).slice(0, 3).map(toCard));
-        setGaming((gamRes.data.results || []).slice(0, 4).map(toCard));
-        setHardware((hwRes.data.results || []).slice(0, 3).map(toCard));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-  useRefetchOnFocus(fetchData);
-
-  const hero = featured[0];
-  const sideFeatured = featured.slice(1, 3);
-
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+    <>
+      <FontImport />
+      <BreakingTicker />
 
-      {/* ─── Hero + Featured Grid ─────────────────────── */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
-        <div className="lg:col-span-2">
-          {loading ? (
-            <div className="rounded-[10px] bg-[#111] animate-pulse" style={{ height: 'clamp(260px, 45vw, 480px)' }} />
-          ) : hero ? (
-            <NewsCard article={hero} size="hero" />
-          ) : null}
-        </div>
-        <div className="flex flex-col gap-4">
-          {loading ? (
-            <>
-              <div className="rounded-[10px] bg-[#111] animate-pulse h-[200px]" />
-              <div className="rounded-[10px] bg-[#111] animate-pulse h-[200px]" />
-            </>
-          ) : (
-            sideFeatured.map((a) => <NewsCard key={a.slug} article={a} size="lg" />)
-          )}
-        </div>
-      </section>
+      <div className="min-h-screen bg-[#0d0d18] text-white px-16">
+        <Navbar />
 
-      {/* ─── Category Quick Links ─────────────────────── */}
-      <section className="mb-12">
-        <div className="grid grid-cols-2 md:grid-cols-4">
-          {categories.map(({ label, img, to, desc }, i) => (
-            <Link
-              key={to}
-              to={to}
-              className="cat-card group relative flex flex-col items-center text-center py-10 px-6"
-            >
-              {/* Image */}
-              <div className="relative mb-5" style={{ width: '140px', height: '140px' }}>
-                <img
-                  src={img}
-                  alt={label}
-                  className="cat-img w-full h-full object-contain"
-                  style={{ filter: 'brightness(0.92) saturate(0.95)' }}
-                />
-              </div>
+        <main>
+          {/* ── Content container ── */}
+          <div className="max-w-[1280px] mx-auto px-6">
 
-              {/* Bold uppercase label */}
-              <p className="cat-label font-900 text-sm uppercase tracking-[0.18em] mb-2">
-                {label}
-              </p>
+            {/* 1. Hero — big featured + side stack */}
+            <HeroSection />
 
-              {/* Description */}
-              <p className="text-gray-500 text-xs leading-relaxed max-w-[160px]">{desc}</p>
+            {/* 2. Trending — horizontal carousel */}
+            <TrendingNow />
 
-              {/* Explore arrow — fades in on hover */}
-              <div className="flex items-center gap-1.5 mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-                <span className="text-orange text-[10px] font-bold uppercase tracking-wider">Explore</span>
-                <ArrowRight size={10} className="text-orange" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+            {/* 3. Latest News — featured + list grid */}
+            <LatestGrid />
 
-      {/* ─── Latest Gaming ────────────────────────────── */}
-      {gaming.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-orange rounded-full" />
-              <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('landing.latestGaming')}</h2>
-            </div>
-            <Link to="/gaming" className="flex items-center gap-1 text-orange text-sm font-700 hover:gap-2 transition-all">
-              {t('public.viewAll')} <ArrowRight size={16} />
-            </Link>
+            {/* 4. Game News — banner + horizontal scroll */}
+            <GameNewsSection />
+
+            {/* 5. Anticipated Games — horizontal carousel */}
+            <AnticipatedGames />
+
+            {/* 6. Jeux Vidéo — 4-col category grid */}
+            <CategorySection
+              title="Jeux Vidéo"
+              icon={Gamepad2}
+              href="/gaming"
+              color="#e8001c"
+              articles={GAMING_ARTICLES}
+            />
+
+            {/* 7. Popular Games — horizontal scroll */}
+            <PopularGames />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {gaming.map((a) => <NewsCard key={a.slug} article={a} size="lg" />)}
-          </div>
-        </section>
-      )}
 
-      {/* ─── Hardware Spotlight ───────────────────────── */}
-      {hardware.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-orange rounded-full" />
-              <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('landing.hardwareSpotlight')}</h2>
-            </div>
-            <Link to="/hardware" className="flex items-center gap-1 text-orange text-sm font-700 hover:gap-2 transition-all">
-              {t('public.viewAll')} <ArrowRight size={16} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {hardware.map((a) => <NewsCard key={a.slug} article={a} size="lg" showExcerpt />)}
-          </div>
-        </section>
-      )}
+          {/* ── Full-width newsletter / promo banner ── */}
+          <PromoBanner />
 
-      {/* ─── Esports Live Strip (static scores) ──────── */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-6 bg-orange rounded-full" />
-            <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('landing.esportsLive')}</h2>
-            <span className="live-badge"><span className="live-dot" />{t('public.live')}</span>
+          {/* ── Content container (continued) ── */}
+          <div className="max-w-[1280px] mx-auto px-6">
+
+            {/* 8. Deals — featured deal + list */}
+            {/* <DealsSection /> */}
+
+            {/* 9. Hardware & Tech — review spotlight layout */}
+            <HardwareSection />
+
+            {/* 10. Esports — live match ticker layout */}
+            <EsportsSection />
+
+            {/* 11. Culture Geek — mixed layout */}
+            <CultureSection />
+
           </div>
-          <Link to="/esports" className="flex items-center gap-1 text-orange text-sm font-700 hover:gap-2 transition-all">
-            {t('landing.fullDashboard')} <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {LIVE_MATCHES.map((m, i) => (
-            <div key={i} className="gnewz-card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="gnewz-tag">{m.game}</span>
-                <span className="text-gray-500 text-xs">{t(`esports.${m.round}`)} · {m.map}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-[#2a2a2a] mx-auto mb-1 flex items-center justify-center text-lg font-900 text-orange">
-                    {m.t1[0]}
-                  </div>
-                  <p className="text-white text-xs font-700 truncate">{m.t1}</p>
-                </div>
-                <div className="px-4 text-center">
-                  <span className="text-2xl font-900 text-white">{m.s1}</span>
-                  <span className="text-orange font-900 mx-1">:</span>
-                  <span className="text-2xl font-900 text-white">{m.s2}</span>
-                  <p className="text-[10px] text-orange font-700 uppercase tracking-wider mt-0.5">{t('public.live')}</p>
-                </div>
-                <div className="text-center flex-1">
-                  <div className="w-10 h-10 rounded-full bg-[#2a2a2a] mx-auto mb-1 flex items-center justify-center text-lg font-900 text-orange">
-                    {m.t2[0]}
-                  </div>
-                  <p className="text-white text-xs font-700 truncate">{m.t2}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+        </main>
+
+      </div>
+    </>
   );
 }

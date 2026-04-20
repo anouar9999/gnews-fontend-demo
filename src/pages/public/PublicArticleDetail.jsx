@@ -1,336 +1,847 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Clock, Eye, MessageSquare, Send, CornerDownRight, ArrowLeft } from 'lucide-react';
-import api from '../../api/axios';
-import toast from 'react-hot-toast';
-import { normalizeMediaUrl } from '../../utils/article';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ChevronRight,
+  Clock,
+  Eye,
+  MessageSquare,
+  Share2,
+  Facebook,
+  Twitter,
+  Bookmark,
+  ThumbsUp,
+  ThumbsDown,
+  Flag,
+  CornerDownRight,
+  Search,
+  Bell,
+  User,
+  Gamepad2,
+  Menu,
+  X,
+  Zap,
+} from "lucide-react";
 
-/* ── Mock articles (same as SearchPage) ────────────────── */
-const MOCK_ARTICLES = [
-  { id: 1, slug: 'gta-vi-pc-date', title: 'GTA VI PC Release Date Officially Confirmed — Everything You Need to Know', content: 'Rockstar Games finally breaks the silence with a full reveal of GTA VI coming to PC, along with system requirements and exclusive content. The highly anticipated title is set to launch later this year with stunning graphics and an expansive open world set in Vice City.\n\nThe PC version will support ray tracing, DLSS 4, and AMD FSR 3, ensuring the best visual experience possible. System requirements have been officially revealed, and the game will require at least an RTX 3070 for optimal performance at 1440p.\n\nRockstar has also confirmed exclusive PC features including a photo mode, mod support at launch, and ultra-wide monitor compatibility.', category: { name: 'Gaming' }, published_at: '2025-01-15T10:00:00Z', view_count: 142000, featured_image: 'https://picsum.photos/seed/gtavi/1200/600', author: { username: 'gnewz_editorial' } },
-  { id: 2, slug: 'rtx-5090-review', title: 'RTX 5090 Review: The Monster GPU That Redefines 4K Gaming', content: "NVIDIA's flagship pushes every boundary. We tested it for 3 weeks across dozens of titles and benchmarks.\n\nThe RTX 5090 delivers a massive 60% performance uplift over the previous generation at 4K resolution. With 32GB of GDDR7 memory and a 512-bit memory bus, this card handles even the most demanding titles with ease.\n\nAt $1,999 MSRP, it's not cheap — but for those who demand the absolute best, the RTX 5090 is the undisputed king of gaming GPUs.", category: { name: 'Hardware' }, published_at: '2025-01-15T06:00:00Z', view_count: 98000, featured_image: 'https://picsum.photos/seed/rtx5090/1200/600', author: { username: 'hardware_review' } },
-  { id: 3, slug: 'esl-pro-league-s22', title: 'ESL Pro League S22 — Team Liquid Dominates Opening Week', content: 'The CS2 season opens with jaw-dropping performances and major upsets as Team Liquid storms through the group stage with a perfect record.\n\nTeam Liquid went 5-0 in the opening week, defeating top-seeded teams with a combination of flawless strategy and individual brilliance. Star player "EliGE" posted a 1.45 rating across all matches.\n\nNAVI and FaZe Clan both struggled in the early rounds, raising questions about their form heading into the knockout stage.', category: { name: 'Esports' }, published_at: '2025-01-15T09:00:00Z', view_count: 67000, featured_image: 'https://picsum.photos/seed/esports22/1200/600', author: { username: 'esports_desk' } },
-  { id: 4, slug: 'ai-npcs-gaming', title: 'How AI-Driven NPCs Are About to Change Everything in Open-World Games', content: 'From Starfield to Skyrim — the next generation of AI companions is here, and they are fundamentally changing how we interact with game worlds.\n\nDevelopers are now using large language models to power NPCs that can hold dynamic, contextual conversations, remember past interactions, and adapt their behavior based on player choices.\n\nInXile Entertainment recently showcased their new AI NPC system where every character in a town could be spoken to freely — no dialogue trees, just natural conversation.', category: { name: 'Culture' }, published_at: '2025-01-14T14:00:00Z', view_count: 51000, featured_image: 'https://picsum.photos/seed/ainpc/1200/600', author: { username: 'culture_team' } },
-  { id: 5, slug: 'ps6-specs', title: 'PS6 Dev Kit Specs Surface Online — 4nm Chip and 32GB VRAM', content: "Sony's next-gen console is shaping up to be an absolute powerhouse. Leaked dev kit specifications reveal a custom 4nm AMD chip paired with 32GB of unified GDDR7 memory.\n\nThe console reportedly targets native 4K at 120fps for most titles and can push 8K output for supported content. A custom SSD with 14GB/s read speeds eliminates load times entirely.\n\nSony is expected to officially announce the PS6 at a special event early next year, with a late 2026 release window.", category: { name: 'Gaming' }, published_at: '2025-01-15T08:00:00Z', view_count: 88000, featured_image: 'https://picsum.photos/seed/ps6/1200/600', author: { username: 'gnewz_editorial' } },
-  { id: 6, slug: 'xbox-handheld', title: 'Xbox Handheld: Microsoft Confirms Portable Console Is in Development', content: 'Phil Spencer officially acknowledges the handheld project in a wide-ranging interview, confirming what leakers have been saying for months.\n\n"We are working on a handheld device," Spencer said. "We want to bring the Xbox ecosystem to portable form." The device is expected to run full Xbox games natively and support Xbox Game Pass.\n\nBased on leaked documents, the Xbox handheld will feature a 7-inch OLED display, AMD APU, and up to 10 hours of battery life.', category: { name: 'Gaming' }, published_at: '2025-01-15T05:00:00Z', view_count: 110000, featured_image: 'https://picsum.photos/seed/xboxhand/1200/600', author: { username: 'gnewz_editorial' } },
-  { id: 7, slug: 'ryzen-9950x3d', title: 'AMD Ryzen 9 9950X3D: The CPU King Returns with 3D V-Cache', content: "AMD's latest flagship processor combines the raw power of Zen 5 with the gaming magic of 3D V-Cache technology. The result is a CPU that dominates both productivity and gaming workloads.\n\nIn our testing, the 9950X3D posted 18% better 1% lows in CPU-limited games compared to Intel's Core Ultra 9 285K, while also beating it in multi-threaded workloads like rendering and compilation.\n\nAt $699, it's expensive — but it's the most complete high-end desktop processor ever made.", category: { name: 'Hardware' }, published_at: '2025-01-14T08:00:00Z', view_count: 35000, featured_image: 'https://picsum.photos/seed/9950x3d/1200/600', author: { username: 'hardware_review' } },
+/* ─── FONT ─────────────────────────────────────────────────────────────────── */
+const FontImport = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .ticker-wrap { overflow: hidden; }
+    .ticker-inner { display: flex; gap: 48px; animation: ticker 28s linear infinite; white-space: nowrap; }
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .prose p { margin-bottom: 1.1rem; line-height: 1.8; color: #ccccd8; font-size: 15px; }
+    .prose h2 { font-size: 20px; font-weight: 800; color: #fff; margin: 1.8rem 0 0.7rem; line-height: 1.3; }
+    .prose h3 { font-size: 16px; font-weight: 700; color: #e0e0ee; margin: 1.4rem 0 0.5rem; }
+    .prose strong { color: #fff; font-weight: 700; }
+    ::-webkit-scrollbar { width: 5px; background: #0a0a14; }
+    ::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 3px; }
+  `}</style>
+);
+
+/* ─── MOCK DATA ─────────────────────────────────────────────────────────────── */
+const ARTICLE = {
+  category: "CINÉMA",
+  categoryColor: "#22c55e",
+  tag: "NEWS",
+  title:
+    "Mauvaise nouvelle pour Avatar 4 et 5 : Disney sonne la fin de la récré pour James Cameron",
+  subtitle:
+    "James Cameron voulait tourner Avatar 4 et 5 en même temps. Disney en a décidé autrement.",
+  author: {
+    name: "Maxime Chao",
+    avatar: "https://placehold.co/36x36/1a1a2e/ffffff?text=MC",
+  },
+  date: "16 avril 2026 à 22h15",
+  readTime: "4 min",
+  views: "24 817",
+  comments: 143,
+  image: "https://placehold.co/860x480/010b18/22d3ee?text=AVATAR+4+%26+5",
+  tags: ["James Cameron", "Avatar", "Disney", "Cinéma", "Science-Fiction"],
+};
+
+const BODY_SECTIONS = [
+  {
+    type: "p",
+    text: "Ce n'est pas une bonne nouvelle pour les fans d'Avatar. Alors que James Cameron espérait tourner Avatar 4 et Avatar 5 simultanément — comme il l'avait fait avec les deux premiers films de la franchise — Disney aurait mis le holà. Le studio souhaite d'abord s'assurer qu'Avatar 3 rencontre le succès escompté avant d'engager des dépenses supplémentaires colossales pour les suites.",
+  },
+  {
+    type: "p",
+    text: "Selon les informations rapportées par plusieurs sources proches du dossier, la direction de Disney a exprimé des réserves importantes quant à la stratégie de production en tandem. Après le résultat décevant d'Avatar : La Voie de l'eau par rapport à ses coûts de production astronomiques — estimés à plus de 350 millions de dollars —, le studio se veut plus prudent.",
+  },
+  {
+    type: "h2",
+    text: "Vers un tournage en deux temps pour Avatar 4 et 5 ?",
+  },
+  {
+    type: "img",
+    src: "https://placehold.co/820x420/010b18/06b6d4?text=Avatar+The+Way+of+Water",
+    caption:
+      "Avatar : La Voie de l'eau a été un succès commercial, mais ses coûts ont largement tempéré les ardeurs de Disney.",
+  },
+  {
+    type: "p",
+    text: "James Cameron, connu pour son perfectionnisme et ses budgets hors norme, avait prévu un tournage simultané afin d'optimiser la logistique — notamment l'utilisation des plateaux de capture de mouvement et des équipes techniques déjà mobilisées. Cette méthode lui avait permis de gagner un temps précieux lors de la production d'Avatar 2.",
+  },
+  {
+    type: "p",
+    text: "Mais Disney semble vouloir limiter les risques financiers. En exigeant un tournage séquentiel, le studio se donne le temps d'évaluer les performances d'Avatar 3 — attendu pour décembre 2025 — avant de lancer la machine pour les deux derniers volets de la saga Pandora.",
+  },
+  {
+    type: "h2",
+    text: "Disney joue la carte de la prudence",
+  },
+  {
+    type: "p",
+    text: "Cette décision n'est pas anodine. Elle témoigne d'un changement d'état d'esprit au sein du studio, qui a dû revoir sa politique en matière de blockbusters après plusieurs semi-échecs commerciaux. La franchise Avatar reste pourtant l'une des plus lucratives de l'histoire du cinéma : le premier film demeure le plus gros succès au box-office mondial avec plus de 2,9 milliards de dollars de recettes.",
+  },
+  {
+    type: "aside",
+    title: "À LIRE AUSSI",
+    articles: [
+      {
+        id: "a1",
+        tag: "NEWS",
+        title:
+          "Avatar 3 : la date de sortie officielle confirmée par Disney pour décembre 2025",
+        image: "https://placehold.co/80x56/010b18/22d3ee?text=AV3",
+      },
+      {
+        id: "a2",
+        tag: "DOSSIER",
+        title:
+          "James Cameron : retour sur 40 ans de cinéma qui a repoussé les limites du possible",
+        image: "https://placehold.co/80x56/010b18/f59e0b?text=JC",
+      },
+    ],
+  },
+  {
+    type: "p",
+    text: "Pour l'heure, James Cameron n'a pas commenté publiquement cette décision. Mais le réalisateur de Titanic et Terminator est connu pour ne jamais renoncer facilement à sa vision artistique. Il est probable que des négociations soient encore en cours entre le cinéaste et les dirigeants de Disney pour trouver un compromis acceptable.",
+  },
+  {
+    type: "img",
+    src: "https://placehold.co/820x380/010b18/3b82f6?text=James+Cameron+sur+le+plateau",
+    caption:
+      "James Cameron sur le plateau d'Avatar 2. Son perfectionnisme légendaire est à la fois sa force et sa contrainte.",
+  },
+  {
+    type: "p",
+    text: "En attendant, les fans d'Avatar devront patienter encore quelques années avant de retrouver les paysages lumineux de Pandora. Avatar 3, dont le titre officiel n'a pas encore été révélé, est prévu pour les fêtes de fin d'année 2025. Son succès sera déterminant pour la suite de la saga.",
+  },
+  {
+    type: "h2",
+    text: "Quelles conséquences sur le calendrier de la saga ?",
+  },
+  {
+    type: "p",
+    text: "Si le tournage d'Avatar 4 et 5 devait se faire en deux temps distincts, cela repousserait mécaniquement la sortie des deux derniers films. On pourrait envisager Avatar 4 pour 2028 ou 2029, et Avatar 5 pour 2031 ou 2032. Une attente considérable pour une franchise qui mise tout sur l'émerveillement visuel et les avancées technologiques.",
+  },
 ];
 
-function getMockArticle(slug) {
-  return MOCK_ARTICLES.find((a) => a.slug === slug || String(a.id) === String(slug)) ?? null;
+const RELATED = [
+  {
+    id: "r1",
+    tag: "NEWS",
+    tagColor: "#22c55e",
+    title: "Moana 2 : Disney annonce une suite en live-action pour 2027",
+    image: "https://placehold.co/240x140/010b18/22c55e?text=MOANA+2",
+    time: "Il y a 3h",
+  },
+  {
+    id: "r2",
+    tag: "TEST",
+    tagColor: "#e8001c",
+    title:
+      "Thunderbolts* : Marvel réussit son pari avec ce film d'équipe explosif",
+    image: "https://placehold.co/240x140/010b18/e8001c?text=THUNDERBOLTS",
+    time: "Il y a 5h",
+  },
+  {
+    id: "r3",
+    tag: "DOSSIER",
+    tagColor: "#f59e0b",
+    title: "Les 15 films les plus attendus de 2026 — notre sélection complète",
+    image: "https://placehold.co/240x140/010b18/f59e0b?text=TOP+FILMS+2026",
+    time: "Il y a 8h",
+  },
+  {
+    id: "r4",
+    tag: "NEWS",
+    tagColor: "#22c55e",
+    title: "Zootopie 2 confirmé : premières images et date de sortie dévoilées",
+    image: "https://placehold.co/240x140/010b18/16a34a?text=ZOOTOPIE+2",
+    time: "Il y a 12h",
+  },
+  {
+    id: "r5",
+    tag: "PREVIEW",
+    tagColor: "#8b5cf6",
+    title:
+      "Avengers : Doomsday — le making-of de la scène post-credits expliqué",
+    image: "https://placehold.co/240x140/010b18/8b5cf6?text=AVENGERS",
+    time: "Hier",
+  },
+];
+
+const MOCK_COMMENTS = [
+  {
+    id: 1,
+    author: "PandoraFan2154",
+    avatar: "PF",
+    date: "Il y a 2h",
+    text: "Franchement c'était prévisible. Disney ne prend plus aucun risque depuis quelques années. Cameron va être furieux.",
+    likes: 87,
+    dislikes: 4,
+  },
+  {
+    id: 2,
+    author: "CinephileXL",
+    avatar: "CX",
+    date: "Il y a 3h",
+    text: "Je comprends la position de Disney. Même si AV2 a fait 2,3 Mds, les coûts étaient dingues. Leur marge nette était quasi nulle.",
+    likes: 134,
+    dislikes: 12,
+  },
+  {
+    id: 3,
+    author: "NaViQueen",
+    avatar: "NQ",
+    date: "Il y a 4h",
+    text: "En attendant Avatar 4 et 5 on va avoir le temps de mourir... 2032 ??",
+    likes: 203,
+    dislikes: 3,
+  },
+];
+
+const TICKER = [
+  "🟢 Cinéma — Avatar 3 : James Cameron et Disney en désaccord sur la production",
+  "Disney valide Marvel Phase 6 : les titres officiels révélés",
+  "Thunderbolts* explose le box-office américain en première semaine",
+  "Moana 2 live-action : casting confirmé",
+  "James Cameron : 'Avatar 3 sera le film le plus ambitieux de ma carrière'",
+];
+const NAV_CATS = [
+  "JEUX",
+  "VIDÉOS",
+  "FORUMS",
+  "WIKI",
+  "PREVIEWS",
+  "TESTS",
+  "NEWS",
+  "DOSSIERS",
+  "HARDWARE",
+];
+
+/* ─── HELPERS ───────────────────────────────────────────────────────────────── */
+function Tag({ label, color }) {
+  return (
+    <span
+      className="text-[10px] font-black uppercase tracking-widest px-2 py-[3px] text-white inline-block"
+      style={{ background: color || "#e8001c" }}
+    >
+      {label}
+    </span>
+  );
 }
 
-/* ── Comment component ───────────────────────────────────── */
-function Comment({ comment, onReply, t }) {
+/* ─── TOPBAR ────────────────────────────────────────────────────────────────── */
+function Topbar() {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="bg-[#111] border border-[#1A1A1A] rounded-xl p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-white text-sm font-bold">
-            {comment.author_name || comment.author?.username || t('article.anonymous')}
+    <div className="bg-[#080810] border-b border-[#1a1a28] text-[11px] text-[#888899] flex items-center justify-between px-4 py-1">
+      <div className="flex items-center gap-3">
+        {["Jeux vidéo", "Cinéma", "Séries", "Tech", "Manga"].map((s, i) => (
+          <span key={s} className="flex items-center gap-3">
+            {i > 0 && <span className="text-[#2a2a38]">•</span>}
+            <a href="#" className="hover:text-white transition-colors">
+              {s}
+            </a>
           </span>
-          <span className="text-gray-600 text-xs">
-            {new Date(comment.created_at).toLocaleDateString()}
-          </span>
-        </div>
-        <p className="text-gray-300 text-sm leading-relaxed">{comment.content}</p>
-        <button
-          onClick={() => onReply(comment.id)}
-          className="mt-2 flex items-center gap-1 text-xs text-gray-500 hover:text-[#FF6B00] transition-colors"
-        >
-          <CornerDownRight size={12} /> {t('article.reply')}
-        </button>
+        ))}
       </div>
-      {/* Nested replies */}
-      {comment.replies?.length > 0 && (
-        <div className="ml-6 flex flex-col gap-2">
-          {comment.replies.map((reply) => (
-            <div key={reply.id} className="bg-[#0D0D0D] border border-[#1A1A1A] rounded-xl p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-white text-sm font-bold">
-                  {reply.author_name || reply.author?.username || t('article.anonymous')}
-                </span>
-                <span className="text-gray-600 text-xs">
-                  {new Date(reply.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="text-gray-300 text-sm leading-relaxed">{reply.content}</p>
-            </div>
+      <div className="hidden md:flex items-center gap-4">
+        {["Newsletter", "Application", "Communauté"].map((s) => (
+          <a key={s} href="#" className="hover:text-white transition-colors">
+            {s}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── NAVBAR ────────────────────────────────────────────────────────────────── */
+function Navbar() {
+  const [open, setOpen] = useState(false);
+  return (
+    <nav className="bg-[#0e0e18] border-b border-[#1e1e2e] sticky top-0 z-50">
+      <div className="max-w-[1280px] mx-auto px-4 flex items-center justify-between h-[52px]">
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <div className="w-8 h-8 bg-orange flex items-center justify-center rounded-sm">
+            <Gamepad2 size={18} className="text-white" />
+          </div>
+          <span className="text-white font-black text-[17px] tracking-tight">
+            jeux<span className="text-orange">video</span>.com
+          </span>
+        </Link>
+        <div className="hidden lg:flex items-center gap-0">
+          {NAV_CATS.map((c) => (
+            <Link
+              key={c}
+              to="/"
+              className="text-[11.5px] font-bold text-[#aaaabc] hover:text-white px-3 py-1.5 hover:bg-[#1a1a28] transition-colors tracking-wider"
+            >
+              {c}
+            </Link>
+          ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <button className="w-8 h-8 flex items-center justify-center text-[#888899] hover:text-white hover:bg-[#1a1a28] rounded transition-colors">
+            <Search size={15} />
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center text-[#888899] hover:text-white hover:bg-[#1a1a28] rounded transition-colors relative">
+            <Bell size={15} />
+            <span className="absolute top-1 right-1 w-[6px] h-[6px] bg-orange rounded-full" />
+          </button>
+          <button className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold text-[#aaaabc] hover:text-white hover:bg-[#1a1a28] rounded transition-colors">
+            <User size={13} />
+            <span className="hidden sm:inline">Connexion</span>
+          </button>
+          <button
+            className="lg:hidden w-8 h-8 flex items-center justify-center text-[#888899]"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div className="lg:hidden bg-[#0e0e18] border-t border-[#1e1e2e] px-4 py-3 flex flex-col gap-1">
+          {NAV_CATS.map((c) => (
+            <Link
+              key={c}
+              to="/"
+              className="text-[12px] font-bold text-[#aaaabc] py-2 border-b border-[#1a1a28]"
+            >
+              {c}
+            </Link>
           ))}
         </div>
       )}
-    </div>
+    </nav>
   );
 }
 
-/* ── Main page ───────────────────────────────────────────── */
-export default function PublicArticleDetail() {
-  const { slug } = useParams();
-  const { t } = useTranslation();
-
-  const [article, setArticle]   = useState(null);
-  const [artLoading, setArtLoading] = useState(true);
-
-  const [comments, setComments] = useState([]);
-  const [cmtLoading, setCmtLoading] = useState(false);
-
-  const [replyTo, setReplyTo]   = useState(null);
-
-  const [form, setForm] = useState({
-    content: '',
-    author_name: '',
-    author_email: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setArtLoading(true);
-    api.get('/articles/', { params: { slug } })
-      .then(({ data }) => {
-        const found = data.results?.[0];
-        if (!found) { setArticle(getMockArticle(slug)); return; }
-        return api.get(`/articles/${found.id}/`).then(({ data: full }) => {
-          setArticle(full);
-          // Increment view and update the displayed count with the real new value
-          api.post(`/articles/${full.id}/increment_view/`)
-            .then(({ data }) => {
-              setArticle(prev => prev ? { ...prev, view_count: data.view_count } : prev);
-            })
-            .catch(() => {});
-        });
-      })
-      .catch(() => setArticle(getMockArticle(slug)))
-      .finally(() => setArtLoading(false));
-  }, [slug]);
-
-  useEffect(() => {
-    if (!article?.id) return;
-    setCmtLoading(true);
-    api.get(`/articles/${article.id}/comments/`)
-      .then(({ data }) => setComments(data.comments ?? data.results ?? []))
-      .catch(() => setComments([]))
-      .finally(() => setCmtLoading(false));
-  }, [article?.id]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.content.trim()) return;
-    setSubmitting(true);
-    try {
-      const payload = { content: form.content };
-      if (replyTo) payload.parent = replyTo;
-      if (form.author_name.trim()) payload.author_name = form.author_name.trim();
-      if (form.author_email.trim()) payload.author_email = form.author_email.trim();
-
-      const { data } = await api.post(`/articles/${article.id}/comments/`, payload);
-
-      if (replyTo) {
-        setComments((prev) =>
-          prev.map((c) =>
-            c.id === replyTo
-              ? { ...c, replies: [...(c.replies ?? []), data] }
-              : c
-          )
-        );
-      } else {
-        setComments((prev) => [data, ...prev]);
-      }
-      setForm({ content: '', author_name: '', author_email: '' });
-      setReplyTo(null);
-      toast.success(t('article.commentPosted'));
-    } catch {
-      toast.error(t('article.commentError'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (artLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!article) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4">
-        <p className="text-white text-xl font-bold">{t('article.notFound')}</p>
-        <Link to="/" className="text-[#FF6B00] hover:underline text-sm">← {t('article.back')}</Link>
-      </div>
-    );
-  }
-
+/* ─── BREAKING TICKER ───────────────────────────────────────────────────────── */
+function BreakingTicker() {
+  const doubled = [...TICKER, ...TICKER];
   return (
-    <div className="min-h-screen bg-black pb-16">
-
-      {/* Hero image */}
-      {article.featured_image && (
-        <div className="w-full max-w-4xl mx-auto px-6 pt-8">
-          <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: 'clamp(200px, 35vw, 420px)' }}>
-            <img
-              src={article.featured_image_b64 || normalizeMediaUrl(article.featured_image)}
-              alt={article.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        </div>
-      )}
-
-      {/* Three-column layout: left ad | content | right ad */}
-      <div className="flex gap-6 max-w-7xl mx-auto px-4 mt-10 items-start">
-
-        {/* ── Left ad column ── */}
-        <aside className="hidden xl:flex flex-col gap-4 w-48 flex-shrink-0 sticky top-24">
-          <AdSlot label={t('article.sponsor')} width={192} height={400} seed="left-tall" />
-          <AdSlot label={t('article.sponsor')} width={192} height={200} seed="left-small" />
-        </aside>
-
-        {/* ── Main content column ── */}
-        <div className="flex-1 min-w-0 max-w-2xl mx-auto px-2 sm:px-6 relative">
-
-        {/* Back */}
-        <Link
-          to="/"
-          className="flex items-center gap-1 text-gray-500 hover:text-white text-sm mb-6 transition-colors w-fit"
-        >
-          <ArrowLeft size={14} /> {t('article.back')}
-        </Link>
-
-        {/* Title */}
-        <h1 className="text-white text-2xl sm:text-3xl font-black leading-tight mb-5">
-          {article.title}
-        </h1>
-
-        {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-gray-500 text-xs mb-8 pb-8 border-b border-[#1A1A1A]">
-          {article.author?.username && (
-            <span className="text-gray-400 font-semibold">{t('article.by')} {article.author.username}</span>
-          )}
-          <span className="flex items-center gap-1">
-            <Clock size={12} />
-            {new Date(article.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye size={12} />
-            {article.view_count?.toLocaleString()} {t('article.views')}
-          </span>
-          <span className="flex items-center gap-1">
-            <MessageSquare size={12} />
-            {comments.length} {t('article.commentsHeading')}
-          </span>
-        </div>
-
-        {/* Body */}
-        <div
-          className="article-body mb-12"
-          dangerouslySetInnerHTML={{ __html: article.content ?? article.excerpt ?? '' }}
-        />
-
-        {/* ── Comments section ────────────────────────────── */}
-        <div>
-          <h2 className="text-white text-xl font-bold mb-6 flex items-center gap-2">
-            <MessageSquare size={20} className="text-[#FF6B00]" />
-            {t('article.commentsHeading')} {comments.length > 0 && <span className="text-gray-500 text-base font-normal">({comments.length})</span>}
-          </h2>
-
-          {/* Comment form */}
-          <form onSubmit={handleSubmit} className="bg-[#111] border border-[#1A1A1A] rounded-xl p-5 mb-8">
-            {replyTo && (
-              <div className="flex items-center justify-between mb-3 text-xs text-[#FF6B00] bg-[#FF6B00]/10 rounded-lg px-3 py-2">
-                <span className="flex items-center gap-1"><CornerDownRight size={12} /> {t('article.replyingTo')}</span>
-                <button type="button" onClick={() => setReplyTo(null)} className="text-gray-400 hover:text-white transition-colors">✕</button>
-              </div>
-            )}
-
-            <div className="flex gap-3 mb-3">
-              <input
-                value={form.author_name}
-                onChange={(e) => setForm({ ...form, author_name: e.target.value })}
-                placeholder={t('article.namePlaceholder')}
-                className="flex-1 bg-[#1A1A1A] border border-[#333] focus:border-[#FF6B00] text-white text-sm rounded-lg px-3 py-2 outline-none transition-colors"
-              />
-              <input
-                type="email"
-                value={form.author_email}
-                onChange={(e) => setForm({ ...form, author_email: e.target.value })}
-                placeholder={t('article.emailPlaceholder')}
-                className="flex-1 bg-[#1A1A1A] border border-[#333] focus:border-[#FF6B00] text-white text-sm rounded-lg px-3 py-2 outline-none transition-colors"
-              />
-            </div>
-
-            <div className="relative">
-              <textarea
-                value={form.content}
-                onChange={(e) => setForm({ ...form, content: e.target.value })}
-                placeholder={t('article.commentPlaceholder')}
-                required
-                rows={3}
-                className="w-full bg-[#1A1A1A] border border-[#333] focus:border-[#FF6B00] text-white text-sm rounded-lg px-3 py-2 pr-12 outline-none resize-none transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={submitting || !form.content.trim()}
-                className="absolute bottom-3 right-3 p-2 bg-[#FF6B00] hover:bg-[#cc5500] disabled:opacity-40 text-white rounded-lg transition-colors"
-              >
-                <Send size={14} />
-              </button>
-            </div>
-          </form>
-
-          {/* Comments list */}
-          {cmtLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[#FF6B00] border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : comments.length > 0 ? (
-            <div className="flex flex-col gap-4">
-              {comments.map((c) => (
-                <Comment key={c.id} comment={c} onReply={setReplyTo} t={t} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10">
-              <MessageSquare size={32} className="text-gray-700 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">{t('article.noComments')}</p>
-            </div>
-          )}
-        </div>
-        </div>{/* end main content column */}
-
-        {/* ── Right ad column ── */}
-        <aside className="hidden xl:flex flex-col gap-4 w-48 flex-shrink-0 sticky top-24">
-          <AdSlot label={t('article.advertisement')} width={192} height={300} seed="right-tall" />
-          <AdSlot label={t('article.advertisement')} width={192} height={250} seed="right-mid" />
-          <AdSlot label={t('article.advertisement')} width={192} height={150} seed="right-small" />
-        </aside>
-
-      </div>{/* end three-column wrapper */}
-    </div>
-  );
-}
-
-/* ── Ad placeholder component ── */
-function AdSlot({ label, width, height, seed }) {
-  return (
-    <div
-      style={{ width, height }}
-      className="rounded-xl overflow-hidden border border-[#1f1f1f] bg-[#0d0d0d] flex flex-col relative"
-    >
-      <img
-        src={`https://picsum.photos/seed/${seed}/${width}/${height}`}
-        alt="ad"
-        className="w-full h-full object-cover opacity-40"
-      />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-gray-600 border border-gray-700 rounded px-2 py-0.5">
-          {label}
+    <div className="bg-[#0a0a14] border-b border-[#1a1a28] flex items-center overflow-hidden h-[34px]">
+      <div className="shrink-0 bg-orange h-full flex items-center px-4">
+        <span className="text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+          <Zap size={10} fill="white" /> ACTU
         </span>
-        <span className="text-[8px] text-gray-700">{width}×{height}</span>
+      </div>
+      <div className="ticker-wrap flex-1 overflow-hidden">
+        <div className="ticker-inner">
+          {doubled.map((item, i) => (
+            <span
+              key={i}
+              className="text-[11.5px] text-[#ccccdd] whitespace-nowrap cursor-pointer hover:text-white"
+            >
+              {item}
+              <span className="mx-6 text-[#333344]">◆</span>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
+  );
+}
+
+/* ─── BREADCRUMB ────────────────────────────────────────────────────────────── */
+function Breadcrumb() {
+  return (
+    <nav className="flex items-center gap-1.5 text-[11px] text-[#555566] mb-4 flex-wrap">
+      {[
+        ["Accueil", "/"],
+        ["Cinéma", "/cinema"],
+        ["News", "/news"],
+      ].map(([label, href]) => (
+        <span key={label} className="flex items-center gap-1.5">
+          <Link to={href} className="hover:text-white transition-colors">
+            {label}
+          </Link>
+          <ChevronRight size={10} className="text-[#333344]" />
+        </span>
+      ))}
+      <span className="text-[#888899] truncate max-w-[300px]">
+        Mauvaise nouvelle pour Avatar 4 et 5...
+      </span>
+    </nav>
+  );
+}
+
+/* ─── ARTICLE BODY RENDERER ─────────────────────────────────────────────────── */
+function ArticleBody({ sections }) {
+  return (
+    <div className="prose">
+      {sections.map((s, i) => {
+        if (s.type === "p") return <p key={i}>{s.text}</p>;
+
+        if (s.type === "h2")
+          return (
+            <h2 key={i} className="flex items-start gap-3">
+              <span className="mt-1 shrink-0 w-[3px] h-5 bg-orange rounded-full inline-block" />
+              {s.text}
+            </h2>
+          );
+
+        if (s.type === "img")
+          return (
+            <figure key={i} className="my-6">
+              <img
+                src={s.src}
+                alt={s.caption}
+                className="w-full rounded-sm object-cover"
+              />
+              {s.caption && (
+                <figcaption className="text-[11px] text-[#555566] text-center mt-2 italic">
+                  {s.caption}
+                </figcaption>
+              )}
+            </figure>
+          );
+
+        if (s.type === "aside")
+          return (
+            <aside
+              key={i}
+              className="my-6 bg-[#111118] border-l-[3px] border-orange rounded-r-md overflow-hidden"
+            >
+              <div className="px-4 py-2 border-b border-[#1a1a28]">
+                <span className="text-[10px] font-black uppercase tracking-widest text-orange">
+                  {s.title}
+                </span>
+              </div>
+              <div className="divide-y divide-[#1a1a28]">
+                {s.articles.map((a) => (
+                  <Link
+                    key={a.id}
+                    to={`/articles/${a.id}`}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#1a1a28] transition-colors group"
+                  >
+                    <img
+                      src={a.image}
+                      alt={a.title}
+                      className="w-16 h-11 object-cover shrink-0 rounded-sm"
+                    />
+                    <div>
+                      <Tag label={a.tag} color="#22c55e" />
+                      <p className="text-[12px] font-semibold text-[#ccccdd] leading-snug mt-1 line-clamp-2 group-hover:text-white transition-colors">
+                        {a.title}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </aside>
+          );
+
+        return null;
+      })}
+    </div>
+  );
+}
+
+/* ─── AUTHOR BOX ────────────────────────────────────────────────────────────── */
+function AuthorBox({ author }) {
+  return (
+    <div className="flex items-start gap-4 p-4 bg-[#1c1c1e] border border-[#2a2a2a] rounded-md mt-8">
+      <img
+        src={author.avatar}
+        alt={author.name}
+        className="w-12 h-12 rounded-full object-cover shrink-0"
+      />
+      <div>
+        <p className="text-[11px] text-[#555566] uppercase tracking-widest font-bold mb-0.5">
+          Article rédigé par
+        </p>
+        <p className="text-white font-black text-[15px]">{author.name}</p>
+        <p className="text-[12px] text-[#888899] mt-0.5 leading-snug">
+          Journaliste cinéma & séries · jeuxvideo.com depuis 2019
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── TAGS BAR ──────────────────────────────────────────────────────────────── */
+function TagsBar({ tags }) {
+  return (
+    <div className="flex flex-wrap gap-2 mt-6">
+      {tags.map((t) => (
+        <Link
+          key={t}
+          to={`/tag/${t}`}
+          className="text-[11px] font-semibold text-[#888899] px-3 py-1.5 bg-[#1c1c1e] border border-[#2a2a2a] hover:border-orange hover:text-white transition-colors rounded-sm"
+        >
+          #{t}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/* ─── COMMENT FORM ──────────────────────────────────────────────────────────── */
+function CommentForm() {
+  const [text, setText] = useState("");
+  return (
+    <div className="mt-4">
+      <textarea
+        rows={4}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Partagez votre avis..."
+        className="w-full bg-[#232323] border border-[#2a2a2a] text-[13px] text-white px-4 py-3 outline-none focus:border-orange placeholder-[#555555] resize-none rounded-sm"
+      />
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-[11px] text-[#555566]">
+          Vous devez être connecté pour commenter.
+        </span>
+        <button
+          className="px-5 py-2 text-white font-black text-[12px] uppercase tracking-wider rounded-sm flex items-center gap-2"
+          style={{
+            background: 'linear-gradient(135deg, #FF6B00 0%, #e05500 100%)',
+            boxShadow: '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)',
+            transform: 'translateY(-3px)',
+            transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.boxShadow = '0 8px 0 #a33a00, 0 12px 24px rgba(255,107,0,0.55), inset 0 1px 0 rgba(255,255,255,0.18)';
+            e.currentTarget.style.transform = 'translateY(-5px)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)';
+            e.currentTarget.style.transform = 'translateY(-3px)';
+          }}
+          onMouseDown={e => {
+            e.currentTarget.style.boxShadow = '0 2px 0 #a33a00, 0 4px 8px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)';
+            e.currentTarget.style.transform = 'translateY(0px)';
+          }}
+          onMouseUp={e => {
+            e.currentTarget.style.boxShadow = '0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.45), inset 0 1px 0 rgba(255,255,255,0.18)';
+            e.currentTarget.style.transform = 'translateY(-3px)';
+          }}
+        >
+          Publier
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── COMMENTS ──────────────────────────────────────────────────────────────── */
+function CommentsSection({ comments }) {
+  const [replyTo, setReplyTo] = useState(null);
+
+  return (
+    <section className="mt-10 pt-6 border-t border-[#1a1a28]">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-[3px] h-5 bg-orange rounded-full" />
+        <h2 className="text-[15px] font-black uppercase tracking-widest text-white">
+          Commentaires{" "}
+          <span className="text-[#555566] ml-1">({comments.length})</span>
+        </h2>
+      </div>
+
+      {/* Comment form */}
+      <div className="mb-6 bg-[#1c1c1e] border border-[#2a2a2a] p-4 rounded-sm">
+        <p className="text-[12px] font-bold text-white mb-3">
+          Réagir à l'article
+        </p>
+        <CommentForm />
+      </div>
+
+      {/* Comment list */}
+      <div className="flex flex-col gap-4">
+        {comments.map((c) => (
+          <div
+            key={c.id}
+            className="bg-[#1c1c1e] border border-[#2a2a2a] rounded-sm p-4"
+          >
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 w-9 h-9 rounded-full bg-[#2a2a2a] flex items-center justify-center text-[11px] font-black text-[#888899]">
+                {c.avatar}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-1.5">
+                  <span className="text-[13px] font-bold text-white">
+                    {c.author}
+                  </span>
+                  <span className="text-[11px] text-[#555566]">{c.date}</span>
+                </div>
+                <p className="text-[13px] text-[#bbbbcc] leading-relaxed">
+                  {c.text}
+                </p>
+                <div className="flex items-center gap-4 mt-2.5">
+                  <button className="flex items-center gap-1.5 text-[11px] text-[#555566] hover:text-orange transition-colors">
+                    <ThumbsUp size={12} /> {c.likes}
+                  </button>
+                  <button className="flex items-center gap-1.5 text-[11px] text-[#555566] hover:text-orange transition-colors">
+                    <ThumbsDown size={12} /> {c.dislikes}
+                  </button>
+                  <button
+                    className="flex items-center gap-1.5 text-[11px] text-[#555566] hover:text-white transition-colors"
+                    onClick={() => setReplyTo(replyTo === c.id ? null : c.id)}
+                  >
+                    <CornerDownRight size={12} /> Répondre
+                  </button>
+                  <button className="flex items-center gap-1.5 text-[11px] text-[#555566] hover:text-orange transition-colors ml-auto">
+                    <Flag size={11} />
+                  </button>
+                </div>
+                {replyTo === c.id && (
+                  <div className="mt-3 pl-3 border-l-2 border-[#1e1e2e]">
+                    <CommentForm />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button className="mt-4 w-full py-3 border border-[#1e1e2e] text-[12px] font-bold text-[#555566] hover:text-white hover:border-orange transition-colors rounded-sm">
+        Voir plus de commentaires
+      </button>
+    </section>
+  );
+}
+
+/* ─── SIDEBAR ───────────────────────────────────────────────────────────────── */
+function Sidebar({ related }) {
+  return (
+    <aside className="flex flex-col gap-6">
+      {/* A LIRE section */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-[3px] h-5 bg-orange rounded-full" />
+          <h3 className="text-[12px] font-black uppercase tracking-widest text-white">
+            À lire aussi
+          </h3>
+        </div>
+        <div className="flex flex-col gap-px bg-[#1a1a28]">
+          {related.map((a) => (
+            <Link
+              key={a.id}
+              to={`/articles/${a.id}`}
+              className="flex gap-3 p-3 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group"
+            >
+              <div className="shrink-0 w-[86px] h-[56px] overflow-hidden">
+                <img
+                  src={a.image}
+                  alt={a.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="min-w-0">
+                <Tag label={a.tag} color={a.tagColor} />
+                <p className="text-[11.5px] font-semibold text-[#ccccdd] leading-snug mt-1 line-clamp-2 group-hover:text-white transition-colors">
+                  {a.title}
+                </p>
+                <span className="text-[10px] text-[#555566] flex items-center gap-1 mt-1">
+                  <Clock size={9} /> {a.time}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Ad placeholder */}
+      <div className="bg-[#0d0d18] border border-[#1a1a28] flex items-center justify-center h-[250px] rounded-sm">
+        <span className="text-[10px] text-[#2a2a38] uppercase tracking-widest font-bold">
+          Publicité
+        </span>
+      </div>
+
+      {/* More cinema */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-[3px] h-5 bg-orange rounded-full" />
+            <h3 className="text-[12px] font-black uppercase tracking-widest text-white">
+              Cinéma — à la une
+            </h3>
+          </div>
+          <Link
+            to="/cinema"
+            className="text-[10px] text-[#555566] hover:text-white flex items-center gap-0.5 transition-colors"
+          >
+            Tout <ChevronRight size={10} />
+          </Link>
+        </div>
+        <div className="flex flex-col gap-px bg-[#1a1a28]">
+          {related.slice(0, 3).map((a) => (
+            <Link
+              key={a.id + "_m"}
+              to={`/articles/${a.id}`}
+              className="flex gap-3 p-3 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group"
+            >
+              <div className="shrink-0 w-[72px] h-[48px] overflow-hidden">
+                <img
+                  src={a.image}
+                  alt={a.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-[#ccccdd] leading-snug line-clamp-2 group-hover:text-white transition-colors">
+                  {a.title}
+                </p>
+                <span className="text-[10px] text-[#555566]">{a.time}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Second ad */}
+      <div className="bg-[#0d0d18] border border-[#1a1a28] flex items-center justify-center h-[200px] rounded-sm">
+        <span className="text-[10px] text-[#2a2a38] uppercase tracking-widest font-bold">
+          Publicité
+        </span>
+      </div>
+    </aside>
+  );
+}
+
+/* ─── SHARE BAR ─────────────────────────────────────────────────────────────── */
+function ShareBar({ views, comments }) {
+  return (
+    <div className="flex items-center justify-between py-3 border-y border-[#1a1a28] my-4">
+      <div className="flex items-center gap-4 text-[11px] text-[#555566]">
+        <span className="flex items-center gap-1.5">
+          <Eye size={12} /> {views}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <MessageSquare size={12} /> {comments} commentaires
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1877f2]/10 border border-[#1877f2]/20 text-[#1877f2] text-[11px] font-bold hover:bg-[#1877f2]/20 transition-colors rounded-sm">
+          <Facebook size={12} /> Partager
+        </button>
+        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1da1f2]/10 border border-[#1da1f2]/20 text-[#1da1f2] text-[11px] font-bold hover:bg-[#1da1f2]/20 transition-colors rounded-sm">
+          <Twitter size={12} /> Tweeter
+        </button>
+        <button className="w-7 h-7 flex items-center justify-center border border-[#1e1e2e] text-[#555566] hover:text-white hover:border-[#555566] transition-colors rounded-sm">
+          <Bookmark size={13} />
+        </button>
+        <button className="w-7 h-7 flex items-center justify-center border border-[#1e1e2e] text-[#555566] hover:text-white hover:border-[#555566] transition-colors rounded-sm">
+          <Share2 size={13} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── ROOT ───────────────────────────────────────────────────────────────────── */
+export default function PublicArticleDetail() {
+  return (
+    <>
+      <FontImport />
+      <div className="min-h-screen bg-[#0d0d18] text-white">
+        {/* <Topbar />
+        <Navbar /> */}
+        <BreakingTicker />
+
+        <main className="max-w-[1280px] mx-auto px-22 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
+            {/* ── Main article column ── */}
+            <article>
+              <Breadcrumb />
+
+              {/* Category + title */}
+              <div className="mb-4">
+                <span
+                  className="text-[11px] font-black uppercase tracking-widest px-2 py-1 text-white inline-block mb-3"
+                  style={{ background: ARTICLE.categoryColor }}
+                >
+                  {ARTICLE.category}
+                </span>
+                <h1 className="text-[38px] font-black uppercase tracking-tighter text-white leading-none mb-2">
+                  {ARTICLE.title}
+                </h1>
+                <p className="text-[#888899] text-[15px] leading-relaxed">
+                  {ARTICLE.subtitle}
+                </p>
+              </div>
+
+              {/* Author + date */}
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src={ARTICLE.author.avatar}
+                  alt={ARTICLE.author.name}
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+                <div>
+                  <span className="text-[13px] font-bold text-white">
+                    {ARTICLE.author.name}
+                  </span>
+                  <div className="flex items-center gap-3 text-[11px] text-[#555566]">
+                    <span className="flex items-center gap-1">
+                      <Clock size={10} />
+                      {ARTICLE.date}
+                    </span>
+                    <span>·</span>
+                    <span>{ARTICLE.readTime} de lecture</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share bar */}
+              <ShareBar views={ARTICLE.views} comments={ARTICLE.comments} />
+
+              {/* Featured image */}
+              <figure className="mb-6">
+                <div
+                  className="overflow-hidden"
+                >
+                  <img
+                    src={ARTICLE.image}
+                    alt={ARTICLE.title}
+                    className="w-full aspect-[16/9] object-cover"
+                  />
+                </div>
+              </figure>
+
+              {/* Body */}
+              <ArticleBody sections={BODY_SECTIONS} />
+
+              {/* Bottom share */}
+              <ShareBar views={ARTICLE.views} comments={ARTICLE.comments} />
+
+              {/* Author box */}
+              <AuthorBox author={ARTICLE.author} />
+
+              {/* Tags */}
+              <TagsBar tags={ARTICLE.tags} />
+
+              {/* Comments */}
+              <CommentsSection comments={MOCK_COMMENTS} />
+            </article>
+
+            {/* ── Sidebar ── */}
+            <div className="hidden lg:block">
+              <div className="sticky top-[60px]">
+                <Sidebar related={RELATED} />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
   );
 }
