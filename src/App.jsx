@@ -26,6 +26,7 @@ import SourceList   from './pages/sources/SourceList';
 import MediaList    from './pages/media/MediaList';
 import RawNewsList  from './pages/raw-news/RawNewsList';
 import UserList     from './pages/users/UserList';
+import GamesPage    from './pages/games/GamesPage';
 
 // Public GNEWZ pages
 import LandingPage  from './pages/public/LandingPage';
@@ -39,7 +40,8 @@ import AboutPage        from './pages/public/AboutPage';
 import ContactPage      from './pages/public/ContactPage';
 import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
 import TermsOfUsePage   from './pages/public/TermsOfUsePage';
-import CookiePolicyPage from './pages/public/CookiePolicyPage';
+import CookiePolicyPage  from './pages/public/CookiePolicyPage';
+import GameDetailPage    from './pages/public/GameDetailPage';
 
 export default function App() {
   return (
@@ -56,6 +58,7 @@ export default function App() {
             <Route path="esports"  element={<EsportPage />} />
             <Route path="search"          element={<SearchPage />} />
             <Route path="articles/:slug"  element={<PublicArticleDetail />} />
+            <Route path="games/:slug"     element={<GameDetailPage />} />
             <Route path="about"           element={<AboutPage />} />
             <Route path="contact"         element={<ContactPage />} />
             <Route path="privacy-policy"  element={<PrivacyPolicyPage />} />
@@ -114,6 +117,8 @@ export default function App() {
             <Route path="users" element={<UserList />} />
 
             <Route path="site-pages" element={<SitePagesAdmin />} />
+
+            <Route path="games" element={<GamesPage />} />
           </Route>
 
           {/* Fallback */}

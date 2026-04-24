@@ -1,10 +1,44 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, ChevronRight, Eye, Clock } from "lucide-react";
-import { GAME_NEWS } from "../../../data/landingMockData";
+import { Clock } from "lucide-react";
 import { Tag, Meta } from "./shared";
+import api from '../../../api/axios';
+import { normalizeMediaUrl, timeAgo, formatViews } from '../../../utils/article';
+
+function mapArticle(a) {
+  return {
+    slug:     a.slug,
+    title:    a.title,
+    tag:      a.category?.name || 'GAMING',
+    tagColor: '#e8001c',
+    image:    a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/600/400`,
+    time:     timeAgo(a.published_at),
+    views:    formatViews(a.view_count),
+    excerpt:  a.meta_description || '',
+  };
+}
 
 export default function GameNewsSection() {
-  const [featured, ...rest] = GAME_NEWS;
+  const [articles, setArticles] = useState([]);
+
+  useEffect(() => {
+    api.get('/articles/', {
+      params: { status: 'publie', category__slug: 'gaming', ordering: '-published_at', page_size: 9 },
+    }).then(({ data }) => {
+      setArticles((data.results || []).map(mapArticle));
+    }).catch(() => {
+      // Fallback: fetch any articles if no gaming category
+      api.get('/articles/', {
+        params: { status: 'publie', ordering: '-published_at', page_size: 9 },
+      }).then(({ data }) => {
+        setArticles((data.results || []).map(mapArticle));
+      }).catch(() => {});
+    });
+  }, []);
+
+  if (articles.length === 0) return null;
+
+  const [featured, ...rest] = articles;
 
   return (
     <section className="py-12 border-b border-[#1a1a28]">
@@ -15,67 +49,44 @@ export default function GameNewsSection() {
             <div className="w-[4px] h-[32px] rounded-full bg-orange" />
             <div className="w-[2px] h-[14px] rounded-full bg-orange opacity-40" />
           </div>
-          {/* <Gamepad2 size={16} className="text-orange" strokeWidth={2.5} /> */}
-          <h2 className="text-[35px] font-black uppercase tracking-tighter text-white leading-none">
-            Dernières News Jeux
+          <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tighter text-white leading-none">
+            Gaming News
           </h2>
         </div>
-        {/* <Link
-          to="/gaming"
-          className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest"
-          style={{ color: "rgba(255,255,255,0.3)" }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.color = "rgba(255,255,255,0.8)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.color = "rgba(255,255,255,0.3)")
-          }
-        >
-          Voir tout <ChevronRight size={12} />
-        </Link> */}
       </div>
 
       {/* Featured banner */}
       <Link
-        to={`/articles/${featured.id}`}
+        to={`/articles/${featured.slug}`}
         className="relative block overflow-hidden group mb-4 rounded"
-        // style={{ borderTop: '3px solid #e8001c' }}
       >
         <img
           src={featured.image}
           alt={featured.title}
-          className="w-full object-cover  transition-transform duration-500"
-          style={{ height: 320 }}
+          className="w-full object-cover transition-transform duration-500"
+          style={{ height: 'clamp(200px, 35vw, 320px)' }}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${featured.slug}/1200/640`; }}
         />
         <div
           className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to right, rgba(5,5,15,0.95) 0%, rgba(5,5,15,0.5) 50%, transparent 100%)",
-          }}
+          style={{ background: "linear-gradient(to right, rgba(5,5,15,0.95) 0%, rgba(5,5,15,0.5) 50%, transparent 100%)" }}
         />
-        <div
-          className="absolute inset-0 flex flex-col justify-end p-6"
-          style={{ maxWidth: 600 }}
-        >
+        <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-6" style={{ maxWidth: 600 }}>
           <Tag label={featured.tag} color={featured.tagColor} />
-          <h3 className="text-white font-black text-[28px] leading-tighter mt-2 mb-2 line-clamp-2">
+          <h3 className="text-white font-black text-[18px] sm:text-[22px] md:text-[28px] leading-tighter mt-2 mb-2 line-clamp-2">
             {featured.title}
           </h3>
-          {/* <p className="text-[#9999b0] text-[14px] line-clamp-2 mb-3">
-            {featured.excerpt}
-          </p> */}
           <Meta time={featured.time} views={featured.views} />
         </div>
       </Link>
 
-      {/* 4-column 2-row grid */}
+      {/* 4-column grid */}
       <div>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {rest.map((a) => (
             <Link
-              key={a.id}
-              to={`/articles/${a.id}`}
+              key={a.slug}
+              to={`/articles/${a.slug}`}
               className="group block"
             >
               <div className="overflow-hidden">
@@ -84,6 +95,7 @@ export default function GameNewsSection() {
                   alt={a.title}
                   className="w-full object-cover transition-transform duration-300"
                   style={{ height: 140 }}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${a.slug}/400/280`; }}
                 />
               </div>
               <div className="pt-2">
@@ -92,10 +104,7 @@ export default function GameNewsSection() {
                   {a.title}
                 </p>
                 <div className="flex items-center gap-2 mt-1 text-[10px] text-[#555566]">
-                  <span className="flex items-center gap-1">
-                    <Clock size={9} />
-                    {a.time}
-                  </span>
+                  <span className="flex items-center gap-1"><Clock size={9} />{a.time}</span>
                 </div>
               </div>
             </Link>

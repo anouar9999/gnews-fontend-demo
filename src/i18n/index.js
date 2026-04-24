@@ -68,7 +68,7 @@ const resources = {
         subscribing: '...',
         subscribeSuccess: 'Subscribed successfully!',
         subscribeError: 'Failed to subscribe. Please try again.',
-        copyright: '© 2025 GNEWZ. All rights reserved.',
+        copyright: '© 2026 GNEWZ. All rights reserved.',
         sections: {
           content: 'Content',
           company: 'Company',
@@ -270,6 +270,7 @@ const resources = {
         logout: 'Logout',
         aiOrchestration: 'AI Orchestration',
         sitePages: 'Site Pages',
+        games: 'Games',
         overview: 'Overview',
         adminConsole: 'ADMIN CONSOLE',
         welcome: 'Welcome back',
@@ -392,7 +393,7 @@ const resources = {
         subscribing: '...',
         subscribeSuccess: '!تم الاشتراك بنجاح',
         subscribeError: 'فشل الاشتراك. حاول مجدداً.',
-        copyright: '.© 2025 GNEWZ. جميع الحقوق محفوظة',
+        copyright: '.© 2026 GNEWZ. جميع الحقوق محفوظة',
         sections: {
           content: 'المحتوى',
           company: 'الشركة',

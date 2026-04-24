@@ -1,36 +1,38 @@
-import { useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Eye, Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { TRENDING_NOW } from "../../../data/landingMockData";
+import api from '../../../api/axios';
+import { normalizeMediaUrl, timeAgo, formatViews } from '../../../utils/article';
 
-const CARD_W = 300;
-const GAP = 12;
+const CARD_W  = 300;
+const GAP     = 12;
 const SCROLL_BY = (CARD_W + GAP) * 2;
 
-function RankBadge({ rank }) {
-  const colors = [
-    "#e8001c",
-    "#e8001c",
-    "#f97316",
-    "#f97316",
-    "#555566",
-    "#555566",
-    "#555566",
-  ];
-  return (
-    <span
-      className="text-[11px] font-black w-6 h-6 flex items-center justify-center rounded-sm shrink-0"
-      style={{ background: colors[rank - 1] || "#333", color: "#fff" }}
-    >
-      {String(rank).padStart(2, "0")}
-    </span>
-  );
+function mapArticle(a) {
+  return {
+    slug:     a.slug,
+    title:    a.title,
+    tag:      a.category?.name || 'NEWS',
+    tagColor: '#f59e0b',
+    image:    a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/600/400`,
+    time:     timeAgo(a.published_at),
+    views:    formatViews(a.view_count),
+  };
 }
 
 export default function TrendingNow() {
-  const scrollRef = useRef(null);
-  const [atStart, setAtStart] = useState(true);
-  const [atEnd, setAtEnd] = useState(false);
+  const scrollRef              = useRef(null);
+  const [atStart, setAtStart]  = useState(true);
+  const [atEnd,   setAtEnd]    = useState(false);
+  const [articles, setArticles] = useState([]);
+
+  useEffect(() => {
+    api.get('/articles/', {
+      params: { status: 'publie', ordering: '-view_count,-published_at', page_size: 8 },
+    }).then(({ data }) => {
+      setArticles((data.results || []).map(mapArticle));
+    }).catch(() => {});
+  }, []);
 
   function handleScroll() {
     const el = scrollRef.current;
@@ -39,13 +41,10 @@ export default function TrendingNow() {
     setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 8);
   }
 
-  function scrollLeft() {
-    scrollRef.current?.scrollBy({ left: -SCROLL_BY, behavior: "smooth" });
-  }
+  function scrollLeft()  { scrollRef.current?.scrollBy({ left: -SCROLL_BY, behavior: "smooth" }); }
+  function scrollRight() { scrollRef.current?.scrollBy({ left:  SCROLL_BY, behavior: "smooth" }); }
 
-  function scrollRight() {
-    scrollRef.current?.scrollBy({ left: SCROLL_BY, behavior: "smooth" });
-  }
+  if (articles.length === 0) return null;
 
   return (
     <section className="py-12 border-b border-[#1a1a28]">
@@ -56,16 +55,14 @@ export default function TrendingNow() {
             <div className="w-[4px] h-[32px] rounded-full bg-orange" />
             <div className="w-[2px] h-[16px] rounded-full bg-orange opacity-60" />
           </div>
-          <h2 className="text-[35px] font-black uppercase tracking-tight text-white leading-none">
-            En ce moment
+          <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tight text-white leading-none">
+            Trending
           </h2>
         </div>
-
       </div>
 
-      {/* Carousel wrapper — relative so arrows can sit on the edges */}
+      {/* Carousel wrapper */}
       <div className="relative">
-
         {/* LEFT arrow */}
         <button
           onClick={scrollLeft}
@@ -77,22 +74,10 @@ export default function TrendingNow() {
             transform: "translateY(-50%) translateX(-50%) translateY(-3px)",
             color: "#fff",
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.boxShadow = "0 8px 0 #a33a00, 0 12px 24px rgba(255,107,0,0.6), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-5px)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.boxShadow = "0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-3px)";
-          }}
-          onMouseDown={e => {
-            e.currentTarget.style.boxShadow = "0 2px 0 #a33a00, 0 4px 8px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(0px)";
-          }}
-          onMouseUp={e => {
-            e.currentTarget.style.boxShadow = "0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-3px)";
-          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-5px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-3px)"; }}
+          onMouseDown={e  => { e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(0px)"; }}
+          onMouseUp={e    => { e.currentTarget.style.transform = "translateY(-50%) translateX(-50%) translateY(-3px)"; }}
         >
           <ChevronLeft size={20} strokeWidth={3} />
         </button>
@@ -108,22 +93,10 @@ export default function TrendingNow() {
             transform: "translateY(-50%) translateX(50%) translateY(-3px)",
             color: "#fff",
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.boxShadow = "0 8px 0 #a33a00, 0 12px 24px rgba(255,107,0,0.6), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-5px)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.boxShadow = "0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-3px)";
-          }}
-          onMouseDown={e => {
-            e.currentTarget.style.boxShadow = "0 2px 0 #a33a00, 0 4px 8px rgba(255,107,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(0px)";
-          }}
-          onMouseUp={e => {
-            e.currentTarget.style.boxShadow = "0 6px 0 #a33a00, 0 8px 16px rgba(255,107,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)";
-            e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-3px)";
-          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-5px)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-3px)"; }}
+          onMouseDown={e  => { e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(0px)"; }}
+          onMouseUp={e    => { e.currentTarget.style.transform = "translateY(-50%) translateX(50%) translateY(-3px)"; }}
         >
           <ChevronRight size={20} strokeWidth={3} />
         </button>
@@ -133,74 +106,53 @@ export default function TrendingNow() {
           ref={scrollRef}
           onScroll={handleScroll}
           className="flex gap-3 overflow-x-auto pb-2"
-          style={{
-            scrollSnapType: "x mandatory",
-            msOverflowStyle: "none",
-            scrollbarWidth: "none",
-          }}
+          style={{ scrollSnapType: "x mandatory", msOverflowStyle: "none", scrollbarWidth: "none" }}
         >
-        <style>{`.trending-scroll::-webkit-scrollbar { display: none; }`}</style>
-        {TRENDING_NOW.map((article) => (
-          <Link
-            key={article.id}
-            to={`/articles/${article.id}`}
-            className="trending-scroll group rounded relative shrink-0 overflow-hidden block"
-            style={{
-              width: CARD_W,
-              height: 210,
-              scrollSnapAlign: "start",
-            }}
-          >
-            <img
-              src={article.image}
-              alt={article.title}
-              className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(5,5,15,0.95) 0%, rgba(5,5,15,0.4) 55%, transparent 100%)",
-              }}
-            />
-            {/* <div className="absolute top-3 left-3">
-              <RankBadge rank={article.rank} />
-            </div> */}
-            <span
-              className="absolute rounded top-3 right-3 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5"
-              style={{ background: article.tagColor, color: "#fff" }}
+          <style>{`.trending-scroll::-webkit-scrollbar { display: none; }`}</style>
+          {articles.map((article) => (
+            <Link
+              key={article.slug}
+              to={`/articles/${article.slug}`}
+              className="trending-scroll group rounded relative shrink-0 overflow-hidden block"
+              style={{ width: CARD_W, height: 210, scrollSnapAlign: "start" }}
             >
-              {article.tag}
-            </span>
-            <div className="absolute bottom-0 left-0 right-0 p-3">
-              <p className="text-[16px] font-bold text-white leading-snug line-clamp-2 mb-1.5">
-                {article.title}
-              </p>
-              <div className="flex items-center gap-2.5 text-[10px] text-[#666677]">
-                <span className="flex items-center gap-1">
-                  <Clock size={9} />
-                  {article.time}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Eye size={9} />
-                  {article.views}
-                </span>
+              <img
+                src={article.image}
+                alt={article.title}
+                className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/600/400`; }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{ background: "linear-gradient(to top, rgba(5,5,15,0.95) 0%, rgba(5,5,15,0.4) 55%, transparent 100%)" }}
+              />
+              <span
+                className="absolute rounded top-3 right-3 text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5"
+                style={{ background: article.tagColor, color: "#fff" }}
+              >
+                {article.tag}
+              </span>
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="text-[16px] font-bold text-white leading-snug line-clamp-2 mb-1.5">
+                  {article.title}
+                </p>
+                <div className="flex items-center gap-2.5 text-[10px] text-[#666677]">
+                  <span className="flex items-center gap-1"><Clock size={9} />{article.time}</span>
+                  {article.views && <span className="flex items-center gap-1"><Eye size={9} />{article.views}</span>}
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
-        </div>{/* end scroll track */}
-      </div>{/* end relative wrapper */}
+            </Link>
+          ))}
+        </div>
+      </div>
 
-      {/* Scroll indicator dots */}
+      {/* Scroll dots */}
       <div className="flex items-center justify-center gap-1.5 mt-3">
-        {TRENDING_NOW.map((_, i) => (
+        {articles.map((_, i) => (
           <div
             key={i}
             className="w-1.5 h-1.5 rounded-full"
-            style={{
-              background: i === 0 ? "#FF6B00" : "rgba(255,255,255,0.15)",
-            }}
+            style={{ background: i === 0 ? "#FF6B00" : "rgba(255,255,255,0.15)" }}
           />
         ))}
       </div>

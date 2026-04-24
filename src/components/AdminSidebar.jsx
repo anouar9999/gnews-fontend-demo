@@ -14,6 +14,7 @@ import {
   FolderTree,
   FileText,
   X,
+  Gamepad2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import GnewzLogo from "./public/GnewzLogo";
@@ -45,6 +46,7 @@ const navGroups = [
       { to: "/admin/categories", icon: FolderTree, labelKey: "admin.categories" },
       { to: "/admin/tags", icon: Tag, labelKey: "admin.tags" },
       { to: "/admin/sources", icon: Radio, labelKey: "admin.sources" },
+      { to: "/admin/games", icon: Gamepad2, labelKey: "admin.games" },
     ],
   },
   {

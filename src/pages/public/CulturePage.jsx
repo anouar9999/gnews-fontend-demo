@@ -1,34 +1,45 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { BookOpen, ArrowRight, User } from 'lucide-react';
-import NewsCard from '../../components/public/NewsCard';
+import { Sparkles, ChevronDown } from 'lucide-react';
+import { FontImport, Tag, Meta, SectionHeader, ArticleCardV } from '../../components/public/landing/shared';
+import CategorySidebar from '../../components/public/landing/CategorySidebar';
 import api from '../../api/axios';
-import { toCard } from '../../utils/article';
+import { normalizeMediaUrl, timeAgo, formatViews } from '../../utils/article';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
-const VOICES = [
-  { name: 'Amara Chen', role: 'Senior Editor', img: 'https://picsum.photos/seed/amara/80/80', articles: 142 },
-  { name: 'Marcus Webb', role: 'Culture Writer', img: 'https://picsum.photos/seed/marcus/80/80', articles: 98 },
-  { name: 'Sofia Reyes', role: 'Music & Games', img: 'https://picsum.photos/seed/sofia/80/80', articles: 87 },
-  { name: 'Jake Frost', role: 'Esports & Culture', img: 'https://picsum.photos/seed/jake/80/80', articles: 201 },
-];
+const ACCENT = '#a855f7';
+const SLUG   = 'culture';
+
+function mapArticle(a) {
+  return {
+    id:      a.id,
+    slug:    a.slug,
+    title:   a.title,
+    image:   a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/800/450`,
+    tag:     a.category?.name || a.tags?.[0]?.name || 'CULTURE',
+    tagColor: ACCENT,
+    time:    timeAgo(a.published_at),
+    views:   formatViews(a.view_count),
+    author:  a.author?.username || '',
+    excerpt: a.meta_description || '',
+  };
+}
 
 export default function CulturePage() {
-  const { t } = useTranslation();
-  const [editorialHero, setEditorialHero] = useState(null);
-  const [features, setFeatures] = useState([]);
-  const [longReads, setLongReads] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [hero,        setHero]        = useState(null);
+  const [articles,    setArticles]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [nextPage,    setNextPage]    = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchData = useCallback(() => {
     setLoading(true);
-    api.get('/articles/', { params: { status: 'publie', category__slug: 'culture', ordering: '-published_at' } })
+    api.get('/articles/', { params: { status: 'publie', category__slug: SLUG, ordering: '-published_at' } })
       .then(({ data }) => {
-        const all = (data.results || []).map(toCard);
-        setEditorialHero(all[0] || null);
-        setFeatures(all.slice(1, 4));
-        setLongReads(all.slice(4, 8));
+        const all = (data.results || []).map(mapArticle);
+        setHero(all[0] || null);
+        setArticles(all.slice(1));
+        setNextPage(data.next || null);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -37,136 +48,102 @@ export default function CulturePage() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useRefetchOnFocus(fetchData);
 
+  const loadMore = async () => {
+    if (!nextPage || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { data } = await api.get(nextPage.replace(/^.*\/api/, '/api'));
+      setArticles(prev => [...prev, ...(data.results || []).map(mapArticle)]);
+      setNextPage(data.next || null);
+    } catch {}
+    finally { setLoadingMore(false); }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-[48px] font-black uppercase tracking-tighter text-white leading-none">{t('culture.title')}</h1>
-        <span className="gnewz-tag ml-2">{t('culture.tag')}</span>
-      </div>
+    <div className="text-white">
+      <FontImport />
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-8">
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-orange border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : (
-        <>
-          {editorialHero && (
-            <div className="mb-10">
-              <NewsCard article={editorialHero} size="hero" />
-            </div>
-          )}
+        <SectionHeader title="Culture" icon={Sparkles} color={ACCENT} />
 
-          {features.length > 0 && (
-            <section className="mb-10">
-              <div className="flex items-center gap-3 mb-5">
-                <BookOpen size={18} className="text-orange" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.featuredStories')}</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {features.map((a) => (
-                  <Link
-                    key={a.slug}
-                    to={`/article/${a.slug}`}
-                    className="gnewz-card group block overflow-hidden"
-                  >
-                    <div className="relative overflow-hidden" style={{ height: 240 }}>
-                      <img
-                        src={a.image}
-                        alt={a.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                      <span className="gnewz-tag absolute top-3 left-3">{a.tag}</span>
-                    </div>
-                    <div className="p-5">
-                      <h3 className="font-800 text-base text-white leading-snug mb-2 group-hover:text-orange transition-colors">
-                        {a.title}
-                      </h3>
-                      {a.excerpt && (
-                        <p className="text-gray-400 text-sm line-clamp-2 mb-4">{a.excerpt}</p>
+        {loading ? (
+          <div className="flex justify-center py-24">
+            <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2.5px solid ${ACCENT}`, borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
+
+            {/* ── Main content ── */}
+            <div>
+              {/* Hero article */}
+              {hero && (
+                <section className="mb-10 border-b border-[#1a1a28] pb-10">
+                  <Link to={`/articles/${hero.slug}`} className="relative block overflow-hidden group">
+                    <img
+                      src={hero.image}
+                      alt={hero.title}
+                      className="w-full aspect-video md:aspect-[21/9] object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${hero.slug}/800/450`; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d18] via-[#0d0d18]/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6">
+                      <Tag label={hero.tag} color={hero.tagColor} />
+                      <h1 className="text-white font-black text-[18px] md:text-[28px] leading-tight mt-2 mb-2 line-clamp-2 max-w-3xl">
+                        {hero.title}
+                      </h1>
+                      {hero.excerpt && (
+                        <p className="hidden md:block text-[#aaaabc] text-[15px] line-clamp-2 max-w-2xl mb-3">{hero.excerpt}</p>
                       )}
-                      <div className="flex items-center justify-between border-t border-[#2a2a2a] pt-3">
-                        <span className="text-[11px] text-gray-500">{a.time}</span>
-                        <ArrowRight size={14} className="text-gray-500 group-hover:text-orange transition-colors" />
+                      <div className="flex items-center gap-4 text-[13px]">
+                        {hero.author && <span className="font-bold" style={{ color: ACCENT }}>{hero.author}</span>}
+                        <Meta time={hero.time} views={hero.views} />
                       </div>
                     </div>
                   </Link>
-                ))}
-              </div>
-            </section>
-          )}
+                </section>
+              )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              {longReads.length > 0 && (
-                <>
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-1 h-6 bg-orange rounded-full" />
-                    <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.longReads')}</h2>
-                  </div>
-                  <div className="space-y-4">
-                    {longReads.map((a) => (
-                      <Link
-                        key={a.slug}
-                        to={`/article/${a.slug}`}
-                        className="gnewz-card group flex gap-4 p-4"
-                      >
-                        <div className="shrink-0 relative rounded-lg overflow-hidden" style={{ width: 120, height: 90 }}>
-                          <img src={a.image} alt={a.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="gnewz-tag">{a.tag}</span>
-                          </div>
-                          <h4 className="font-800 text-sm text-white leading-snug group-hover:text-orange transition-colors line-clamp-2 mb-2">
-                            {a.title}
-                          </h4>
-                          <div className="flex items-center gap-2 text-gray-500 text-xs">
-                            <span>{a.time}</span>
-                          </div>
-                        </div>
-                        <ArrowRight size={16} className="text-gray-600 group-hover:text-orange transition-colors shrink-0 self-center" />
-                      </Link>
+              {/* Article grid */}
+              {articles.length > 0 && (
+                <section className="mb-10">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {articles.map(a => (
+                      <ArticleCardV key={a.slug} article={a} accentColor={ACCENT} />
                     ))}
                   </div>
-                </>
+                </section>
+              )}
+
+              {articles.length === 0 && !hero && (
+                <p className="text-center text-[#555566] py-24 text-sm">No articles found in this category yet.</p>
+              )}
+
+              {/* Load more */}
+              {nextPage && (
+                <div className="flex justify-center pt-4 pb-10">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="flex items-center gap-2 px-8 py-3 text-[13px] font-black uppercase tracking-widest text-white disabled:opacity-40"
+                    style={{ background: loadingMore ? '#1a1a28' : ACCENT }}
+                  >
+                    {loadingMore
+                      ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                      : <ChevronDown size={15} strokeWidth={3} />}
+                    {loadingMore ? 'Loading…' : 'Load More'}
+                  </button>
+                </div>
               )}
             </div>
 
-            <aside>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-1 h-6 bg-orange rounded-full" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('culture.ourVoices')}</h2>
-              </div>
-              <div className="gnewz-card p-4 space-y-4">
-                {VOICES.map((v) => (
-                  <div key={v.name} className="flex items-center gap-3 pb-4 border-b border-[#2a2a2a] last:border-0 last:pb-0 hover:opacity-80 cursor-pointer transition-opacity">
-                    <img src={v.img} alt={v.name} className="w-11 h-11 rounded-full object-cover border-2 border-orange" />
-                    <div className="flex-1">
-                      <p className="text-white font-700 text-sm">{v.name}</p>
-                      <p className="text-gray-500 text-xs">{v.role}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-orange font-800 text-sm">{v.articles}</p>
-                      <p className="text-gray-600 text-[10px]">{t('culture.articles')}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* ── Sidebar ── */}
+            <div className="lg:border-l lg:border-[#1a1a28] lg:pl-8">
+              <CategorySidebar currentSlug={SLUG} />
+            </div>
 
-              <div className="gnewz-card p-5 mt-4 text-center border border-orange/30">
-                <p className="text-orange text-xs font-700 uppercase tracking-widest mb-2">{t('culture.writeForUs')}</p>
-                <h3 className="text-white font-800 text-base mb-2">{t('culture.shareYourVoice')}</h3>
-                <p className="text-gray-400 text-xs mb-4">{t('culture.shareDesc')}</p>
-                <button className="w-full bg-transparent border border-orange text-orange hover:bg-orange hover:text-white text-xs font-700 uppercase py-2.5 rounded transition-colors tracking-wider">
-                  {t('culture.submitArticle')}
-                </button>
-              </div>
-            </aside>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

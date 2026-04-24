@@ -19,6 +19,7 @@ const ROUTE_TITLES = {
   settings:       { label: 'Settings',      sub: 'Configuration' },
   'ai-orchestration': { label: 'AI Orchestration', sub: 'Automation' },
   'site-pages':       { label: 'Site Pages',       sub: 'Public page content' },
+  games:              { label: 'Games',            sub: 'Game library' },
 };
 
 function usePageTitle() {

@@ -9,7 +9,7 @@ export default function PromoBanner() {
       <img
         src="https://placehold.co/1280x300/080810/111122?text="
         alt="banner"
-        className="w-full h-[220px] object-cover"
+        className="w-full h-[260px] sm:h-[220px] object-cover"
       />
       {/* Overlay */}
       <div
@@ -37,11 +37,11 @@ export default function PromoBanner() {
         <h2 className="text-white font-black text-[20px] md:text-[26px] leading-tight mb-1">
           Ne ratez plus aucune actu gaming
         </h2>
-        <p className="text-[#888899] text-[15px] mb-4">
+        <p className="text-[#888899] text-[13px] sm:text-[15px] mb-4 px-2">
           Recevez chaque jour le meilleur du jeu vidéo directement dans votre boîte mail.
         </p>
         <form
-          className="flex gap-2 w-1/2 max-w-[420px]"
+          className="flex gap-2 w-full sm:w-3/4 md:w-1/2 max-w-[420px] px-4 sm:px-0"
           onSubmit={e => e.preventDefault()}
         >
           <input

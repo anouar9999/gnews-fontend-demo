@@ -47,14 +47,14 @@ export function SectionHeader({ title, icon: Icon, href, color = '#e8001c' }) {
           <div className="w-[2px] h-[16px] rounded-full" style={{ background: color, opacity: 0.4 }} />
         </div>
         {Icon && <Icon size={18} style={{ color }} />}
-        <h2 className="text-[35px] font-black uppercase tracking-tight text-white leading-none">{title}</h2>
+        <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tight text-white leading-none">{title}</h2>
       </div>
       {href && (
         <Link
           to={href}
           className="text-[11px] font-bold text-[#555566] hover:text-white flex items-center gap-1 transition-colors"
         >
-          VOIR TOUT <ChevronRight size={11} />
+          SEE ALL <ChevronRight size={11} />
         </Link>
       )}
     </div>
@@ -64,7 +64,7 @@ export function SectionHeader({ title, icon: Icon, href, color = '#e8001c' }) {
 /* ── Vertical article card (image top, meta bottom) ──────────────────────── */
 export function ArticleCardV({ article, accentColor }) {
   return (
-    <Link to={`/articles/${article.id}`} className="block group hover-img">
+    <Link to={`/articles/${article.slug}`} className="block group hover-img">
       <div
         className="overflow-hidden bg-[#0d0d18]"
         style={{ borderTop: `2px solid ${accentColor || article.tagColor || '#e8001c'}` }}
@@ -73,6 +73,7 @@ export function ArticleCardV({ article, accentColor }) {
           src={article.image}
           alt={article.title}
           className="w-full aspect-[16/10] object-cover"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/800/500`; }}
         />
       </div>
       <div className="pt-3 pb-1">

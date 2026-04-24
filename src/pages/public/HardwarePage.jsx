@@ -1,56 +1,45 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Star, CheckCircle, XCircle, Cpu, Monitor, HardDrive, Zap } from 'lucide-react';
-import NewsCard from '../../components/public/NewsCard';
+import { Link } from 'react-router-dom';
+import { Cpu, ChevronDown } from 'lucide-react';
+import { FontImport, Tag, Meta, SectionHeader, ArticleCardV } from '../../components/public/landing/shared';
+import CategorySidebar from '../../components/public/landing/CategorySidebar';
 import api from '../../api/axios';
-import { toCard } from '../../utils/article';
+import { normalizeMediaUrl, timeAgo, formatViews } from '../../utils/article';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
-const FILTER_KEYS = ['all', 'gpus', 'cpus', 'monitors', 'memory', 'storage', 'peripherals', 'cooling'];
+const ACCENT = '#3b82f6';
+const SLUG   = 'hardware';
 
-const SPEC_COMPARISON = {
-  title: 'GPU Comparison 2025',
-  subtitle: 'RTX 5090 vs RX 9900 XTX vs RTX 4090',
-  headers: ['Spec', 'RTX 5090', 'RX 9900 XTX', 'RTX 4090'],
-  rows: [
-    ['Architecture', 'Blackwell', 'RDNA 5', 'Ada Lovelace'],
-    ['VRAM', '32 GB GDDR7', '24 GB GDDR7', '24 GB GDDR6X'],
-    ['TDP', '600W', '350W', '450W'],
-    ['4K FPS (avg)', '180 fps', '155 fps', '120 fps'],
-    ['DLSS / FSR', 'DLSS 4', 'FSR 4', 'DLSS 3'],
-    ['MSRP', '$1,999', '$899', '$999'],
-  ],
-  winner: 0,
-};
-
-const SCORED_REVIEW = {
-  product: 'NVIDIA GeForce RTX 5090',
-  score: 9.2,
-  pros: ['Unmatched rasterization performance', 'DLSS 4 is transformative', 'Future-proof 32GB GDDR7'],
-  cons: ['$1,999 price tag is extreme', '600W TDP requires premium PSU', 'Overkill for 1080p/1440p'],
-};
-
-const CATEGORY_ICONS = [
-  { icon: Cpu,       key: 'cpus' },
-  { icon: Monitor,   key: 'monitors' },
-  { icon: HardDrive, key: 'storage' },
-  { icon: Zap,       key: 'gpus' },
-];
+function mapArticle(a) {
+  return {
+    id:      a.id,
+    slug:    a.slug,
+    title:   a.title,
+    image:   a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/800/450`,
+    tag:     a.category?.name || a.tags?.[0]?.name || 'HARDWARE',
+    tagColor: ACCENT,
+    time:    timeAgo(a.published_at),
+    views:   formatViews(a.view_count),
+    author:  a.author?.username || '',
+    excerpt: a.meta_description || '',
+  };
+}
 
 export default function HardwarePage() {
-  const { t } = useTranslation();
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [hero, setHero] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [hero,        setHero]        = useState(null);
+  const [articles,    setArticles]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [nextPage,    setNextPage]    = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchData = useCallback(() => {
     setLoading(true);
-    api.get('/articles/', { params: { status: 'publie', category__slug: 'hardware', ordering: '-published_at' } })
+    api.get('/articles/', { params: { status: 'publie', category__slug: SLUG, ordering: '-published_at' } })
       .then(({ data }) => {
-        const all = (data.results || []).map(toCard);
+        const all = (data.results || []).map(mapArticle);
         setHero(all[0] || null);
-        setReviews(all.slice(1, 5));
+        setArticles(all.slice(1));
+        setNextPage(data.next || null);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -59,147 +48,102 @@ export default function HardwarePage() {
   useEffect(() => { fetchData(); }, [fetchData]);
   useRefetchOnFocus(fetchData);
 
+  const loadMore = async () => {
+    if (!nextPage || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const { data } = await api.get(nextPage.replace(/^.*\/api/, '/api'));
+      setArticles(prev => [...prev, ...(data.results || []).map(mapArticle)]);
+      setNextPage(data.next || null);
+    } catch {}
+    finally { setLoadingMore(false); }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-1 h-8 bg-orange rounded-full" />
-        <h1 className="text-[48px] font-black uppercase tracking-tighter text-white leading-none">{t('hardware.title')}</h1>
-        <span className="gnewz-tag ml-2">{t('hardware.tag')}</span>
-      </div>
+    <div className="text-white">
+      <FontImport />
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-8">
 
-      <div className="flex items-center gap-3 mb-6 overflow-x-auto pb-2">
-        {FILTER_KEYS.map((key, idx) => (
-          <button
-            key={key}
-            onClick={() => setActiveIdx(idx)}
-            className={`shrink-0 px-4 py-1.5 rounded text-xs font-700 uppercase tracking-wider transition-colors ${
-              activeIdx === idx ? 'bg-orange text-white' : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-[#2a2a2a]'
-            }`}
-          >
-            {t(`hardware.filters.${key}`)}
-          </button>
-        ))}
-      </div>
+        <SectionHeader title="Hardware" icon={Cpu} color={ACCENT} />
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 border-2 border-orange border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : (
-        <>
-          {hero && (
-            <div className="mb-8">
-              <NewsCard article={hero} size="hero" />
-            </div>
-          )}
+        {loading ? (
+          <div className="flex justify-center py-24">
+            <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2.5px solid ${ACCENT}`, borderTopColor: 'transparent', animation: 'spin 0.7s linear infinite' }} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            <div className="gnewz-card p-6 flex flex-col gap-4">
-              <p className="text-orange text-xs font-700 uppercase tracking-widest">{t('hardware.editorScore')}</p>
-              <div>
-                <p className="text-white font-900 text-xl leading-tight mb-1">{SCORED_REVIEW.product}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-5xl font-900 text-orange">{SCORED_REVIEW.score}</span>
-                  <span className="text-gray-500 text-2xl font-700">/10</span>
-                </div>
-                <div className="flex gap-0.5 mt-1">
-                  {[...Array(10)].map((_, i) => (
-                    <div key={i} className={`h-1.5 flex-1 rounded-full ${i < Math.floor(SCORED_REVIEW.score) ? 'bg-orange' : 'bg-[#2a2a2a]'}`} />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-white text-xs font-700 uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <CheckCircle size={12} className="text-green-400" /> {t('hardware.pros')}
-                </p>
-                <ul className="space-y-1">
-                  {SCORED_REVIEW.pros.map((p) => (
-                    <li key={p} className="text-gray-300 text-xs flex items-start gap-2">
-                      <span className="text-green-400 mt-0.5">+</span> {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="text-white text-xs font-700 uppercase tracking-wide mb-2 flex items-center gap-1">
-                  <XCircle size={12} className="text-red-400" /> {t('hardware.cons')}
-                </p>
-                <ul className="space-y-1">
-                  {SCORED_REVIEW.cons.map((c) => (
-                    <li key={c} className="text-gray-300 text-xs flex items-start gap-2">
-                      <span className="text-red-400 mt-0.5">−</span> {c}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <button className="mt-auto bg-orange hover:bg-orange-dim text-white text-xs font-700 uppercase py-2.5 rounded transition-colors tracking-wider">
-                {t('hardware.readFullReview')}
-              </button>
-            </div>
+            {/* ── Main content ── */}
+            <div>
+              {/* Hero article */}
+              {hero && (
+                <section className="mb-10 border-b border-[#1a1a28] pb-10">
+                  <Link to={`/articles/${hero.slug}`} className="relative block overflow-hidden group">
+                    <img
+                      src={hero.image}
+                      alt={hero.title}
+                      className="w-full aspect-video md:aspect-[21/9] object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                      onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${hero.slug}/800/450`; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d18] via-[#0d0d18]/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-6">
+                      <Tag label={hero.tag} color={hero.tagColor} />
+                      <h1 className="text-white font-black text-[18px] md:text-[28px] leading-tight mt-2 mb-2 line-clamp-2 max-w-3xl">
+                        {hero.title}
+                      </h1>
+                      {hero.excerpt && (
+                        <p className="hidden md:block text-[#aaaabc] text-[15px] line-clamp-2 max-w-2xl mb-3">{hero.excerpt}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-[13px]">
+                        {hero.author && <span className="font-bold" style={{ color: ACCENT }}>{hero.author}</span>}
+                        <Meta time={hero.time} views={hero.views} />
+                      </div>
+                    </div>
+                  </Link>
+                </section>
+              )}
 
-            <div className="lg:col-span-2 gnewz-card overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#2a2a2a]">
-                <p className="text-orange text-xs font-700 uppercase tracking-widest">{SPEC_COMPARISON.subtitle}</p>
-                <h3 className="text-white font-800 text-lg">{SPEC_COMPARISON.title}</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#2a2a2a]">
-                      {SPEC_COMPARISON.headers.map((h, i) => (
-                        <th key={h} className={`px-4 py-3 text-left text-xs font-700 uppercase tracking-wide ${
-                          i === 0 ? 'text-gray-500' : i === SPEC_COMPARISON.winner + 1 ? 'text-orange' : 'text-gray-300'
-                        }`}>
-                          {h} {i === SPEC_COMPARISON.winner + 1 && <span className="text-[10px]">{t('hardware.best')}</span>}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {SPEC_COMPARISON.rows.map((row, ri) => (
-                      <tr key={ri} className="border-b border-[#1A1A1A] hover:bg-[#111] transition-colors">
-                        {row.map((cell, ci) => (
-                          <td key={ci} className={`px-4 py-3 text-sm ${
-                            ci === 0 ? 'text-gray-500 font-600' : ci === SPEC_COMPARISON.winner + 1 ? 'text-white font-700' : 'text-gray-400'
-                          }`}>
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
+              {/* Article grid */}
+              {articles.length > 0 && (
+                <section className="mb-10">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {articles.map(a => (
+                      <ArticleCardV key={a.slug} article={a} accentColor={ACCENT} />
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+                  </div>
+                </section>
+              )}
 
-          {reviews.length > 0 && (
-            <div className="mb-10">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-1 h-6 bg-orange rounded-full" />
-                <h2 className="text-xl font-900 text-white uppercase tracking-wide">{t('hardware.latestReviews')}</h2>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={12} className="text-orange fill-orange" />)}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {reviews.map((a) => <NewsCard key={a.slug} article={a} size="lg" showExcerpt />)}
-              </div>
-            </div>
-          )}
+              {articles.length === 0 && !hero && (
+                <p className="text-center text-[#555566] py-24 text-sm">No articles found in this category yet.</p>
+              )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {CATEGORY_ICONS.map(({ icon: Icon, key }) => (
-              <button key={key} className="gnewz-card flex flex-col items-center gap-3 p-6 group">
-                <div className="w-12 h-12 rounded-xl bg-orange/10 group-hover:bg-orange flex items-center justify-center transition-colors">
-                  <Icon size={22} className="text-orange group-hover:text-white transition-colors" />
+              {/* Load more */}
+              {nextPage && (
+                <div className="flex justify-center pt-4 pb-10">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="flex items-center gap-2 px-8 py-3 text-[13px] font-black uppercase tracking-widest text-white disabled:opacity-40"
+                    style={{ background: loadingMore ? '#1a1a28' : ACCENT }}
+                  >
+                    {loadingMore
+                      ? <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', animation: 'spin 0.7s linear infinite' }} />
+                      : <ChevronDown size={15} strokeWidth={3} />}
+                    {loadingMore ? 'Loading…' : 'Load More'}
+                  </button>
                 </div>
-                <p className="text-white font-800 text-sm">{t(`hardware.filters.${key}`)}</p>
-              </button>
-            ))}
+              )}
+            </div>
+
+            {/* ── Sidebar ── */}
+            <div className="lg:border-l lg:border-[#1a1a28] lg:pl-8">
+              <CategorySidebar currentSlug={SLUG} />
+            </div>
+
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

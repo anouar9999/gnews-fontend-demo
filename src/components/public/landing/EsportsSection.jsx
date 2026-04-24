@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Clock, Eye, Users, Crosshair } from 'lucide-react';
-import { ESPORTS_ARTICLES } from '../../../data/landingMockData';
+import { ChevronRight, Clock, Users, Crosshair } from 'lucide-react';
+import api from '../../../api/axios';
+import { normalizeMediaUrl, timeAgo, formatViews } from '../../../utils/article';
 
 const C  = '#FF6B00';
 const CR = '255,107,0';
@@ -26,138 +28,65 @@ const CSS = `
   }
 `;
 
-/* ── HUD bracket corners ── */
-function Bracket({ corner = 'tl', size = 13 }) {
-  const h = corner.endsWith('l') ? { left: 0 } : { right: 0 };
-  const v = corner.startsWith('t') ? { top: 0 } : { bottom: 0 };
-  const offset = {
-    tl: { top: 10, left: 10 },
-    tr: { top: 10, right: 10 },
-    bl: { bottom: 10, left: 10 },
-    br: { bottom: 10, right: 10 },
+function mapArticle(a) {
+  return {
+    slug:   a.slug,
+    title:  a.title,
+    tag:    a.category?.name || 'ESPORTS',
+    image:  a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/600/420`,
+    time:   timeAgo(a.published_at),
+    author: a.author?.username || '',
   };
-  return (
-    <div style={{ position: 'absolute', zIndex: 12, pointerEvents: 'none', ...offset[corner] }}>
-      <div style={{ position: 'absolute', height: 2, width: size, background: C, boxShadow: `0 0 5px ${C}`, ...v, ...h }} />
-      <div style={{ position: 'absolute', width: 2, height: size, background: C, boxShadow: `0 0 5px ${C}`, ...v, ...h }} />
-    </div>
-  );
 }
 
-/* ── LIVE badge with radar rings ── */
-function LiveBadge() {
-  return (
-    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-      {[0, 0.65, 1.3].map(d => (
-        <span key={d} style={{
-          position: 'absolute', inset: 0, borderRadius: 3,
-          border: '1.5px solid rgba(220,38,38,0.85)',
-          animation: `radarRing 2s ${d}s ease-out infinite`,
-          pointerEvents: 'none',
-        }} />
-      ))}
-      <span style={{
-        position: 'relative', zIndex: 1,
-        display: 'inline-flex', alignItems: 'center', gap: 5,
-        padding: '4px 9px', borderRadius: 3,
-        background: 'linear-gradient(135deg,#dc2626,#991b1b)',
-        fontSize: 9, fontWeight: 900, letterSpacing: '0.15em',
-        textTransform: 'uppercase', color: '#fff',
-        boxShadow: '0 0 16px rgba(220,38,38,0.7)',
-      }}>
-        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'liveDot 1s ease-in-out infinite' }} />
-        LIVE
-      </span>
-    </div>
-  );
-}
-
-/* ── Tag chip ── */
-function TagChip({ label }) {
-  return (
-    <span style={{
-      display: 'inline-block', padding: '3px 9px', borderRadius: 3,
-      background: `rgba(${CR},0.1)`, border: `1px solid rgba(${CR},0.3)`,
-      color: C, fontSize: 9, fontWeight: 900, letterSpacing: '0.14em', textTransform: 'uppercase',
-    }}>
-      {label}
-    </span>
-  );
-}
-
-/* ══════════════════════════════════════
-   ARTICLE CARD — 3-column equal grid
-══════════════════════════════════════ */
 function ArticleCard({ article, index }) {
   const shadow    = `0 0 0 1px rgba(${CR},0.12), 0 4px 20px rgba(0,0,0,0.5)`;
   const shadowHov = `0 0 0 1px rgba(${CR},0.45), 0 0 40px rgba(${CR},0.14), 0 12px 40px rgba(0,0,0,0.7)`;
 
   return (
     <Link
-      to={`/articles/${article.id}`}
+      to={`/articles/${article.slug}`}
       className="group relative flex flex-col overflow-hidden"
       style={{
         background: 'linear-gradient(175deg,rgba(4,14,20,0.98) 0%,rgba(2,8,12,0.97) 100%)',
         boxShadow: shadow,
         transition: 'box-shadow 0.3s ease, transform 0.3s ease',
       }}
-     
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = shadowHov)}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = shadow)}
     >
-      {/* ── Image area ── */}
-      <div className="relative overflow-hidden shrink-0" style={{ height: 210 }}>
+      {/* Image area */}
+      <div className="relative overflow-hidden shrink-0" style={{ height: 'clamp(140px, 20vw, 210px)' }}>
         <img
           src={article.image}
           alt={article.title}
-          className="w-full h-full object-cover  transition-transform duration-700"
+          className="w-full h-full object-cover transition-transform duration-700"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/600/420`; }}
         />
-
         {/* Scanlines */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
           backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 3px)',
         }} />
-
         {/* Scan beam */}
         <div style={{
           position: 'absolute', left: 0, right: 0, height: 70, zIndex: 3, pointerEvents: 'none',
           background: `linear-gradient(to bottom,transparent,rgba(${CR},0.04),transparent)`,
           animation: `hudScan ${4.5 + index * 0.7}s ease-in-out infinite`,
         }} />
-
         {/* Bottom gradient */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 4,
           background: 'linear-gradient(to bottom,rgba(2,8,12,0.05) 0%,rgba(2,8,12,0.55) 80%,rgba(2,8,12,0.9) 100%)',
         }} />
-
-        {/* HUD brackets */}
-        {/* <Bracket corner="tl" /> */}
-        {/* <Bracket corner="br" /> */}
-
-        {/* Top-left: LIVE or tag */}
-        {/* <div className="absolute top-3 left-3" style={{ zIndex: 10 }}>
-          {article.live ? <LiveBadge /> : <TagChip label={article.tag} />}
-        </div> */}
-
-        {/* Top-right: views */}
-        {/* {article.views && (
-          <div className="absolute top-3 right-3 flex items-center gap-1" style={{
-            zIndex: 10, fontSize: 10, fontWeight: 700,
-            color: 'rgba(255,255,255,0.38)', fontVariantNumeric: 'tabular-nums',
-          }}>
-            <Eye size={9} />{article.views}
-          </div>
-        )} */}
-
-        {/* Index number — bottom right of image */}
+        {/* Index number */}
         <div className="absolute bottom-3 right-3" style={{
           zIndex: 10, fontSize: 11, fontWeight: 900,
           color: `rgba(${CR},0.45)`, letterSpacing: '0.06em', fontVariantNumeric: 'tabular-nums',
         }}>
           {String(index + 1).padStart(2, '0')}
         </div>
-
-        {/* Cyan bottom rule */}
+        {/* Bottom rule */}
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, zIndex: 10,
           background: `linear-gradient(90deg, ${C} 0%, rgba(${CR},0.4) 40%, transparent 100%)`,
@@ -165,7 +94,7 @@ function ArticleCard({ article, index }) {
         }} />
       </div>
 
-      {/* ── Content area ── */}
+      {/* Content area */}
       <div className="flex flex-col flex-1 gap-3" style={{ padding: '16px 18px 18px' }}>
         <h3 style={{
           fontSize: 14, fontWeight: 800, lineHeight: 1.4,
@@ -180,19 +109,10 @@ function ArticleCard({ article, index }) {
           {article.title}
         </h3>
 
-        {/* Separator */}
-        <div style={{
-          height: 1,
-          background: `linear-gradient(90deg, rgba(${CR},0.18) 0%, transparent 70%)`,
-        }} />
+        <div style={{ height: 1, background: `linear-gradient(90deg, rgba(${CR},0.18) 0%, transparent 70%)` }} />
 
-        {/* Meta */}
         <div className="flex items-center gap-4 mt-auto" style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
-          {article.time   && (
-            <span className="flex items-center gap-1.5">
-              <Clock size={8} />{article.time}
-            </span>
-          )}
+          {article.time   && <span className="flex items-center gap-1.5"><Clock size={8} />{article.time}</span>}
           {article.author && (
             <span className="flex items-center gap-1.5 font-bold" style={{ color: 'rgba(255,255,255,0.44)' }}>
               <Users size={8} />{article.author}
@@ -210,10 +130,19 @@ function ArticleCard({ article, index }) {
   );
 }
 
-/* ══════════════════════════════════════
-   SECTION
-══════════════════════════════════════ */
 export default function EsportsSection() {
+  const [articles, setArticles] = useState([]);
+
+  useEffect(() => {
+    api.get('/articles/', {
+      params: { status: 'publie', category__slug: 'esports', ordering: '-published_at', page_size: 4 },
+    }).then(({ data }) => {
+      setArticles((data.results || []).map(mapArticle));
+    }).catch(() => {});
+  }, []);
+
+  if (articles.length === 0) return null;
+
   return (
     <section className="py-12 border-b border-[#1a1a28] relative overflow-hidden">
       <style>{CSS}</style>
@@ -227,11 +156,9 @@ export default function EsportsSection() {
       }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex items-start justify-between mb-7">
           <div>
-            {/* Sub-label */}
             <div className="flex items-center gap-2 mb-2">
               <div style={{
                 width: 18, height: 18, borderRadius: '50%',
@@ -249,14 +176,13 @@ export default function EsportsSection() {
               </span>
             </div>
 
-            {/* Title */}
             <div className="flex items-center gap-3">
               <div className="flex flex-col gap-[3px]">
                 <div style={{ width: 3, height: 28, borderRadius: 2, background: C, boxShadow: `0 0 8px ${C}` }} />
                 <div style={{ width: 3, height: 12, borderRadius: 2, background: C, opacity: 0.28 }} />
               </div>
               <h2 style={{
-                fontSize: 38, fontWeight: 900, lineHeight: 1,
+                fontSize: 'clamp(22px, 4vw, 38px)', fontWeight: 900, lineHeight: 1,
                 color: '#fff', textTransform: 'uppercase', letterSpacing: '-0.03em',
                 textShadow: `0 0 50px rgba(${CR},0.3)`,
               }}>
@@ -275,7 +201,6 @@ export default function EsportsSection() {
             </div>
           </div>
 
-          {/* View all */}
           <Link
             to="/esports"
             className="flex items-center gap-1"
@@ -297,14 +222,14 @@ export default function EsportsSection() {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            Voir tout <ChevronRight size={11} />
+            See all <ChevronRight size={11} />
           </Link>
         </div>
 
-        {/* ── 3×2 grid ── */}
-        <div className="grid grid-cols-4 gap-3">
-          {ESPORTS_ARTICLES.map((a, i) => (
-            <ArticleCard key={a.id} article={a} index={i} />
+        {/* 4-col grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {articles.map((a, i) => (
+            <ArticleCard key={a.slug} article={a} index={i} />
           ))}
         </div>
       </div>
