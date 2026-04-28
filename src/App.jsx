@@ -43,6 +43,7 @@ import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
 import TermsOfUsePage   from './pages/public/TermsOfUsePage';
 import CookiePolicyPage  from './pages/public/CookiePolicyPage';
 import GameDetailPage    from './pages/public/GameDetailPage';
+import TagPage          from './pages/public/TagPage';
 
 export default function App() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
             <Route path="search"          element={<SearchPage />} />
             <Route path="articles/:slug"  element={<PublicArticleDetail />} />
             <Route path="games/:slug"     element={<GameDetailPage />} />
+            <Route path="tag/:slug"       element={<TagPage />} />
             <Route path="about"           element={<AboutPage />} />
             <Route path="contact"         element={<ContactPage />} />
             <Route path="privacy-policy"  element={<PrivacyPolicyPage />} />
