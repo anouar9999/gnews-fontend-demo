@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
-import { Tag, Meta } from './shared';
+import { ChevronRight, Clock } from 'lucide-react';
 import api from '../../../api/axios';
 import { normalizeMediaUrl, timeAgo, formatViews } from '../../../utils/article';
 
@@ -10,32 +9,14 @@ function mapArticle(a) {
     slug:     a.slug,
     title:    a.title,
     tag:      a.category?.name || '',
-    tagColor: '#e8001c',
     image:    a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/400/300`,
     time:     timeAgo(a.published_at),
     views:    formatViews(a.view_count),
+    comments: a.comments_count || 0,
   };
 }
 
-function ArticleCard({ article, imgHeight = 140 }) {
-  return (
-    <Link to={`/articles/${article.slug}`} className="group block">
-      <div className="overflow-hidden rounded mb-2">
-        <img
-          src={article.image}
-          alt={article.title}
-          className="w-full object-cover group-hover:scale-105 transition-transform duration-300"
-          style={{ height: imgHeight }}
-          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/400/300`; }}
-        />
-      </div>
-      <p className="text-[13px] font-bold text-[#c8c8d8] leading-snug mt-1 line-clamp-2 group-hover:text-white transition-colors">
-        {article.title}
-      </p>
-      <Meta time={article.time} views={article.views} />
-    </Link>
-  );
-}
+const COL_LABELS = ['Actualités', 'Tests', 'Vidéos', 'Dossiers'];
 
 function Header({ title, icon: Icon, href, color }) {
   return (
@@ -45,7 +26,8 @@ function Header({ title, icon: Icon, href, color }) {
           <div className="w-[4px] h-[26px] rounded-full" style={{ background: color }} />
           <div className="w-[2px] h-[16px] rounded-full" style={{ background: color, opacity: 0.4 }} />
         </div>
-        <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tight text-white leading-none">{title}</h2>
+        {/* {Icon && <Icon size={18} style={{ color }} />} */}
+        <h2 className="text-[24px] md:text-[45px] font-black uppercase tracking-tight text-white leading-none">{title}</h2>
       </div>
       {href && (
         <Link
@@ -62,10 +44,6 @@ function Header({ title, icon: Icon, href, color }) {
   );
 }
 
-/**
- * CategorySection
- * Pass either `articles` (pre-fetched) OR `categorySlug` to self-fetch.
- */
 export default function CategorySection({
   title,
   icon,
@@ -77,8 +55,11 @@ export default function CategorySection({
   const [articles, setArticles] = useState(propArticles || []);
 
   useEffect(() => {
-    // Only self-fetch when no articles prop AND a categorySlug is given
-    if (propArticles?.length || !categorySlug) return;
+    if (propArticles?.length) {
+      setArticles(propArticles);
+      return;
+    }
+    if (!categorySlug) return;
     api.get('/articles/', {
       params: { status: 'publie', category__slug: categorySlug, ordering: '-published_at', page_size: 8 },
     }).then(({ data }) => {
@@ -88,19 +69,71 @@ export default function CategorySection({
 
   if (!articles.length) return null;
 
+  // Split into 4 columns of 2
+  const columns = [
+    { label: COL_LABELS[0], items: articles.slice(0, 2) },
+    { label: COL_LABELS[1], items: articles.slice(2, 4) },
+    { label: COL_LABELS[2], items: articles.slice(4, 6) },
+    { label: COL_LABELS[3], items: articles.slice(6, 8) },
+  ].filter(col => col.items.length > 0);
+
   return (
-    <section className="py-12 border-b border-[#1a1a28]">
+    <section className="py-12 ">
       <Header title={title} icon={icon} href={href} color={color} />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        {articles.slice(0, 4).map((a) => (
-          <ArticleCard key={a.slug} article={a} imgHeight={190} />
+
+      {/* 4-column layout — each column has its own header + stacked flex-row cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        {columns.map((col) => (
+          <div key={col.label} className="flex flex-col">
+            {/* Column header */}
+            <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-[#1a1a28]">
+              <div
+                className="w-[2px] h-[12px] rounded-full"
+                style={{ background: color }}
+              />
+              <span
+                className="text-[10px] font-black uppercase tracking-widest"
+                style={{ color }}
+              >
+                {col.label}
+              </span>
+            </div>
+
+            {/* Stacked flex-row cards */}
+            {col.items.map((a, cardIdx) => (
+              <Link
+                key={a.slug}
+                to={`/articles/${a.slug}`}
+                className={`group flex gap-2 py-2.5 hover:bg-[#0f0f1c] transition-colors${cardIdx < col.items.length - 1 ? ' border-b border-[#1a1a28]' : ''}`}
+              >
+                {/* Thumbnail — aspect-[3/2] short landscape */}
+                <div
+                  className="shrink-0 w-[80px] overflow-hidden bg-[#1a1a28]"
+                  style={{ aspectRatio: "3/2" }}
+                >
+                  <img
+                    src={a.image}
+                    alt={a.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${a.slug}/300/200`; }}
+                  />
+                </div>
+                {/* Text */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold text-[#ccccdd] leading-snug line-clamp-3 group-hover:text-white transition-colors">
+                    {a.title}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1 text-[10px] text-[#555566]">
+                    <Clock size={9} />
+                    <span>{a.time}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {articles.slice(4, 8).map((a) => (
-          <ArticleCard key={a.slug} article={a} imgHeight={120} />
-        ))}
-      </div>
+      
     </section>
   );
 }

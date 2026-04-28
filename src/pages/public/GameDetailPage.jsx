@@ -145,7 +145,7 @@ export default function GameDetailPage() {
             {/* Poster */}
             <div className="overflow-hidden rounded" style={{ aspectRatio: '3/4' }}>
               <img
-                src={game.image_url || `https://picsum.photos/seed/${game.slug}/400/533`}
+                src={game.cover_image || `https://picsum.photos/seed/${game.slug}/400/533`}
                 alt={game.title}
                 className="w-full h-full object-cover"
                 onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${game.slug}/400/533`; }}

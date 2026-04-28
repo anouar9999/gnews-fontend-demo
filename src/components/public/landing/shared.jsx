@@ -5,8 +5,36 @@ import { Link } from 'react-router-dom';
 export function FontImport() {
   return (
     <style>{`
-      .ticker-inner { display: flex; gap: 48px; animation: ticker 28s linear infinite; white-space: nowrap; }
+      @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600;700&display=swap');
+
+      /* Landing-scoped font stack */
+      .gnewz-landing,
+      .gnewz-landing h1,
+      .gnewz-landing h2,
+      .gnewz-landing h3,
+      .gnewz-landing h4 {
+        font-family: 'Rajdhani', 'Barlow Condensed', system-ui, sans-serif;
+        letter-spacing: 0.01em;
+      }
+
+      /* Big display headings (hero title, section titles) */
+      .gnewz-landing .font-black {
+        font-family: 'Barlow Condensed', 'Rajdhani', system-ui, sans-serif;
+        letter-spacing: -0.01em;
+      }
+
+      /* Body copy, meta, tags */
+      .gnewz-landing p,
+      .gnewz-landing span,
+      .gnewz-landing a {
+        font-family: 'Barlow', 'Rajdhani', system-ui, sans-serif;
+      }
+
+      /* Ticker */
+      .ticker-inner { display: flex; gap: 48px; animation: ticker 28s linear infinite; white-space: nowrap; font-family: 'Barlow', system-ui, sans-serif; font-weight: 500; }
       @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+      /* Utilities */
       .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
       .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
       .hover-img img { transition: transform 0.35s ease; }
@@ -40,14 +68,14 @@ export function Meta({ time, views }) {
 /* ── Section header with accent bar ──────────────────────────────────────── */
 export function SectionHeader({ title, icon: Icon, href, color = '#e8001c' }) {
   return (
-    <div className="flex items-center justify-between mb-5">
+    <div className="flex items-center justify-between mb-5 ">
       <div className="flex items-center gap-2.5">
         <div className="flex gap-[3px] items-center">
           <div className="w-[4px] h-[26px] rounded-full" style={{ background: color }} />
           <div className="w-[2px] h-[16px] rounded-full" style={{ background: color, opacity: 0.4 }} />
         </div>
         {Icon && <Icon size={18} style={{ color }} />}
-        <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tight text-white leading-none">{title}</h2>
+        <h2 className="text-[24px] md:text-[45px] text-center font-black uppercase tracking-tight text-white leading-none">{title}</h2>
       </div>
       {href && (
         <Link

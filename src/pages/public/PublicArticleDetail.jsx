@@ -14,31 +14,7 @@ import {
 } from "lucide-react";
 import api from "../../api/axios";
 import { normalizeMediaUrl, timeAgo, formatViews } from "../../utils/article";
-
-/* ─── STYLES ────────────────────────────────────────────────────────────────── */
-const FontImport = () => (
-  <style>{`
-    .prose p { margin-bottom: 1.1rem; line-height: 1.8; color: #ccccd8; font-size: 15px; }
-    .prose h2 { font-size: 20px; font-weight: 800; color: #fff; margin: 1.8rem 0 0.7rem; line-height: 1.3; }
-    .prose h3 { font-size: 16px; font-weight: 700; color: #e0e0ee; margin: 1.4rem 0 0.5rem; }
-    .prose strong { color: #fff; font-weight: 700; }
-    .prose em { color: #aaaabc; font-style: italic; }
-    .prose a { color: #f59e0b; text-decoration: underline; }
-    .prose a:hover { color: #fbbf24; }
-    .prose ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #ccccd8; }
-    .prose ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; color: #ccccd8; }
-    .prose li { font-size: 15px; line-height: 1.8; margin-bottom: 0.3rem; }
-    .prose img { width: 100%; border-radius: 2px; margin: 1.5rem 0; }
-    .prose figure { margin: 1.5rem 0; }
-    .prose figcaption { text-align: center; font-size: 11px; color: #555566; margin-top: 0.5rem; font-style: italic; }
-    .prose blockquote { border-left: 3px solid #f59e0b; padding-left: 1rem; margin: 1.5rem 0; font-style: italic; color: #888899; }
-    .prose pre { background: #0d0d18; border: 1px solid #1a1a28; border-radius: 4px; padding: 1rem; overflow-x: auto; margin-bottom: 1rem; }
-    .prose code { font-family: monospace; font-size: 13px; color: #f59e0b; background: rgba(245,158,11,0.1); padding: 1px 4px; border-radius: 2px; }
-    .prose pre code { background: none; padding: 0; color: #ccccd8; }
-    ::-webkit-scrollbar { width: 5px; background: #0a0a14; }
-    ::-webkit-scrollbar-thumb { background: #2a2a38; border-radius: 3px; }
-  `}</style>
-);
+import { FontImport } from "../../components/public/landing/shared";
 
 /* ─── HELPERS ───────────────────────────────────────────────────────────────── */
 function Tag({ label, color }) {
@@ -172,25 +148,34 @@ function TagsBar({ tags }) {
 
 /* ─── COMMENT FORM ──────────────────────────────────────────────────────────── */
 function CommentForm({ onSubmit, onCancel, compact = false }) {
-  const [name,  setName]  = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [text,  setText]  = useState("");
-  const [busy,  setBusy]  = useState(false);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !text.trim()) return;
     setBusy(true);
-    await onSubmit({ name: name.trim(), email: email.trim(), text: text.trim() });
-    setName(""); setEmail(""); setText("");
+    await onSubmit({
+      name: name.trim(),
+      email: email.trim(),
+      text: text.trim(),
+    });
+    setName("");
+    setEmail("");
+    setText("");
     setBusy(false);
   };
 
-  const inputCls = "w-full bg-[#1a1a2e] border border-[#2a2a3a] text-[13px] text-white px-3 py-2.5 outline-none focus:border-orange placeholder-[#444455] rounded-sm transition-colors";
+  const inputCls =
+    "w-full bg-[#080810] border border-[#1a1a28] text-[13px] text-white px-3 py-2.5 outline-none focus:border-[#FF6B00] placeholder-[#444455] rounded-sm transition-colors";
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <div className={`grid gap-3 ${compact ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
+      <div
+        className={`grid gap-3 ${compact ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}
+      >
         <input
           type="text"
           value={name}
@@ -220,7 +205,7 @@ function CommentForm({ onSubmit, onCancel, compact = false }) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-[12px] font-bold text-[#888899] hover:text-white border border-[#2a2a3a] rounded-sm transition-colors"
+            className="px-4 py-2 text-[12px] font-bold text-[#666677] hover:text-white border border-[#1a1a28] hover:border-[#333344] rounded-sm transition-colors"
           >
             Cancel
           </button>
@@ -229,7 +214,10 @@ function CommentForm({ onSubmit, onCancel, compact = false }) {
           type="submit"
           disabled={busy || !name.trim() || !text.trim()}
           className="px-5 py-2 text-white font-black text-[12px] uppercase tracking-wider rounded-sm disabled:opacity-40 transition-opacity"
-          style={{ background: "linear-gradient(135deg,#FF6B00 0%,#e05500 100%)", boxShadow: "0 4px 0 #a33a00" }}
+          style={{
+            background: "linear-gradient(135deg,#FF6B00 0%,#e05500 100%)",
+            boxShadow: "0 4px 0 #a33a00",
+          }}
         >
           {busy ? "Posting…" : "Confirm"}
         </button>
@@ -244,7 +232,10 @@ function Avatar({ name, size = 9 }) {
   return (
     <div
       className={`w-${size} h-${size} rounded-full flex items-center justify-center font-black shrink-0 text-white`}
-      style={{ background: `hsl(${hue},48%,30%)`, fontSize: size === 9 ? 12 : 10 }}
+      style={{
+        background: `hsl(${hue},48%,30%)`,
+        fontSize: size === 9 ? 12 : 10,
+      }}
     >
       {name.slice(0, 2).toUpperCase()}
     </div>
@@ -253,7 +244,11 @@ function Avatar({ name, size = 9 }) {
 
 function fmtDate(iso) {
   if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 /* ─── SINGLE COMMENT ITEM ───────────────────────────────────────────────────── */
@@ -262,7 +257,7 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
   const isOwned = ownedIds.has(comment.id);
 
   return (
-    <div className="bg-[#0d0d18] border border-[#1a1a28] rounded-sm p-4">
+    <div className="border border-[#1a1a28] p-4" style={{ background: '#0a0a14' }}>
       <div className="flex gap-3">
         <Avatar name={comment.name} size={9} />
 
@@ -270,8 +265,14 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
           {/* Header row */}
           <div className="flex items-center justify-between gap-2 mb-1">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-black text-white">{comment.name}</span>
-              {comment.date && <span className="text-[10px] text-[#555566]">{fmtDate(comment.date)}</span>}
+              <span className="text-[13px] font-black text-white">
+                {comment.name}
+              </span>
+              {comment.date && (
+                <span className="text-[10px] text-[#555566]">
+                  {fmtDate(comment.date)}
+                </span>
+              )}
             </div>
             {isOwned && (
               <button
@@ -285,7 +286,9 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
           </div>
 
           {/* Body */}
-          <p className="text-[13px] text-[#ccccdd] leading-relaxed">{comment.text}</p>
+          <p className="text-[13px] text-[#ccccdd] leading-relaxed">
+            {comment.text}
+          </p>
 
           {/* Actions */}
           <button
@@ -297,10 +300,13 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
 
           {/* Reply form */}
           {showReplyForm && (
-            <div className="mt-3 pl-3 border-l-2 border-[#2a2a3a]">
+            <div className="mt-3 pl-3 border-l-2 border-[#1a1a28]">
               <CommentForm
                 compact
-                onSubmit={async (data) => { await onReply(comment.id, data); setShowReplyForm(false); }}
+                onSubmit={async (data) => {
+                  await onReply(comment.id, data);
+                  setShowReplyForm(false);
+                }}
                 onCancel={() => setShowReplyForm(false)}
               />
             </div>
@@ -310,13 +316,22 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
           {comment.replies?.length > 0 && (
             <div className="mt-3 flex flex-col gap-2 pl-1">
               {comment.replies.map((r) => (
-                <div key={r.id} className="flex gap-2.5 bg-[#111120] border border-[#1a1a28] rounded-sm p-3">
+                <div
+                  key={r.id}
+                  className="flex gap-2.5 bg-[#0a0a14] border border-[#1a1a28] rounded-sm p-3"
+                >
                   <Avatar name={r.name} size={7} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-black text-white">{r.name}</span>
-                        {r.date && <span className="text-[10px] text-[#555566]">{fmtDate(r.date)}</span>}
+                        <span className="text-[12px] font-black text-white">
+                          {r.name}
+                        </span>
+                        {r.date && (
+                          <span className="text-[10px] text-[#555566]">
+                            {fmtDate(r.date)}
+                          </span>
+                        )}
                       </div>
                       {ownedIds.has(r.id) && (
                         <button
@@ -328,7 +343,9 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
                         </button>
                       )}
                     </div>
-                    <p className="text-[12px] text-[#ccccdd] leading-relaxed">{r.text}</p>
+                    <p className="text-[12px] text-[#ccccdd] leading-relaxed">
+                      {r.text}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -342,18 +359,30 @@ function CommentItem({ comment, ownedIds, onReply, onDelete, onDeleteReply }) {
 
 /* ─── localStorage helpers ───────────────────────────────────────────────────── */
 function loadComments(slug) {
-  try { return JSON.parse(localStorage.getItem(`gnewz_comments_${slug}`)) || []; }
-  catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(`gnewz_comments_${slug}`)) || [];
+  } catch {
+    return [];
+  }
 }
 function saveComments(slug, data) {
-  try { localStorage.setItem(`gnewz_comments_${slug}`, JSON.stringify(data)); } catch {}
+  try {
+    localStorage.setItem(`gnewz_comments_${slug}`, JSON.stringify(data));
+  } catch {}
 }
 function loadOwned(slug) {
-  try { return new Set(JSON.parse(localStorage.getItem(`gnewz_owned_${slug}`)) || []); }
-  catch { return new Set(); }
+  try {
+    return new Set(
+      JSON.parse(localStorage.getItem(`gnewz_owned_${slug}`)) || [],
+    );
+  } catch {
+    return new Set();
+  }
 }
 function saveOwned(slug, set) {
-  try { localStorage.setItem(`gnewz_owned_${slug}`, JSON.stringify([...set])); } catch {}
+  try {
+    localStorage.setItem(`gnewz_owned_${slug}`, JSON.stringify([...set]));
+  } catch {}
 }
 
 /* ─── COMMENTS SECTION ──────────────────────────────────────────────────────── */
@@ -361,18 +390,36 @@ function CommentsSection({ slug }) {
   const [comments, setComments] = useState(() => loadComments(slug));
   const [ownedIds, setOwnedIds] = useState(() => loadOwned(slug));
 
-  const totalCount = comments.reduce((acc, c) => acc + 1 + (c.replies?.length || 0), 0);
+  const totalCount = comments.reduce(
+    (acc, c) => acc + 1 + (c.replies?.length || 0),
+    0,
+  );
 
   /* persist on every change */
-  useEffect(() => { saveComments(slug, comments); }, [slug, comments]);
-  useEffect(() => { saveOwned(slug, ownedIds); }, [slug, ownedIds]);
+  useEffect(() => {
+    saveComments(slug, comments);
+  }, [slug, comments]);
+  useEffect(() => {
+    saveOwned(slug, ownedIds);
+  }, [slug, ownedIds]);
 
   /* add comment */
   const handleSubmit = async ({ name, email, text }) => {
     const id = Date.now();
-    const newComment = { id, name, email, text, date: new Date().toISOString(), replies: [] };
+    const newComment = {
+      id,
+      name,
+      email,
+      text,
+      date: new Date().toISOString(),
+      replies: [],
+    };
     try {
-      await api.post(`/articles/${slug}/comments/`, { author_name: name, author_email: email, content: text });
+      await api.post(`/articles/${slug}/comments/`, {
+        author_name: name,
+        author_email: email,
+        content: text,
+      });
     } catch {}
     setComments((prev) => [newComment, ...prev]);
     setOwnedIds((prev) => new Set([...prev, id]));
@@ -383,7 +430,11 @@ function CommentsSection({ slug }) {
     const id = Date.now();
     const newReply = { id, name, email, text, date: new Date().toISOString() };
     setComments((prev) =>
-      prev.map((c) => c.id === parentId ? { ...c, replies: [...(c.replies || []), newReply] } : c)
+      prev.map((c) =>
+        c.id === parentId
+          ? { ...c, replies: [...(c.replies || []), newReply] }
+          : c,
+      ),
     );
     setOwnedIds((prev) => new Set([...prev, id]));
   };
@@ -392,37 +443,56 @@ function CommentsSection({ slug }) {
   const handleDelete = (id) => {
     if (!ownedIds.has(id)) return;
     setComments((prev) => prev.filter((c) => c.id !== id));
-    setOwnedIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
+    setOwnedIds((prev) => {
+      const s = new Set(prev);
+      s.delete(id);
+      return s;
+    });
   };
 
   /* delete reply (only own) */
   const handleDeleteReply = (parentId, replyId) => {
     if (!ownedIds.has(replyId)) return;
     setComments((prev) =>
-      prev.map((c) => c.id === parentId ? { ...c, replies: (c.replies || []).filter((r) => r.id !== replyId) } : c)
+      prev.map((c) =>
+        c.id === parentId
+          ? { ...c, replies: (c.replies || []).filter((r) => r.id !== replyId) }
+          : c,
+      ),
     );
-    setOwnedIds((prev) => { const s = new Set(prev); s.delete(replyId); return s; });
+    setOwnedIds((prev) => {
+      const s = new Set(prev);
+      s.delete(replyId);
+      return s;
+    });
   };
 
   return (
     <section className="mt-10 pt-6 border-t border-[#1a1a28]">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-5">
-        <div className="w-[3px] h-5 bg-orange rounded-full" />
-        <h2 className="text-[15px] font-black uppercase tracking-widest text-white">
-          Comments <span className="text-[#555566] ml-1">({totalCount})</span>
+      <div className="flex items-center gap-2.5 mb-6">
+        <div className="flex gap-[3px] items-center">
+          <div className="w-[4px] h-[22px] rounded-full" style={{ background: '#FF6B00' }} />
+          <div className="w-[2px] h-[14px] rounded-full" style={{ background: '#FF6B00', opacity: 0.4 }} />
+        </div>
+        <h2 className="text-[18px] font-black uppercase tracking-tight text-white leading-none">
+          Comments
         </h2>
+        <span className="text-[13px] font-bold text-[#444455]">({totalCount})</span>
       </div>
 
       {/* Form box */}
-      <div className="mb-8 bg-[#0d0d18] border border-[#1a1a28] p-4 rounded-sm">
-        <p className="text-[12px] font-bold text-white mb-3">Leave a comment</p>
-        <CommentForm onSubmit={handleSubmit} />
+      <div className="mb-7 border border-[#1a1a28] overflow-hidden" style={{ background: '#0a0a14' }}>
+        <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, rgba(255,107,0,0.5), transparent 60%)' }} />
+        <div className="p-4">
+          <p className="text-[11px] font-black uppercase tracking-widest text-[#666677] mb-4">Leave a comment</p>
+          <CommentForm onSubmit={handleSubmit} />
+        </div>
       </div>
 
       {/* Comments list */}
       {comments.length > 0 ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {comments.map((c) => (
             <CommentItem
               key={c.id}
@@ -435,7 +505,7 @@ function CommentsSection({ slug }) {
           ))}
         </div>
       ) : (
-        <p className="text-[12px] text-[#444455] text-center py-6">
+        <p className="text-[12px] text-white text-center py-8">
           Be the first to comment.
         </p>
       )}
@@ -445,24 +515,27 @@ function CommentsSection({ slug }) {
 
 /* ─── CATEGORY CONFIG ───────────────────────────────────────────────────────── */
 const CATEGORY_COLORS = {
-  gaming:   '#e8001c',
-  hardware: '#3b82f6',
-  culture:  '#a855f7',
-  esports:  '#f59e0b',
+  gaming: "#e8001c",
+  hardware: "#3b82f6",
+  culture: "#a855f7",
+  esports: "#f59e0b",
 };
 
 function categoryColor(slug) {
-  return CATEGORY_COLORS[slug] || '#f59e0b';
+  return CATEGORY_COLORS[slug] || "#f59e0b";
 }
 
 function mapSidebarArticle(a) {
   return {
-    slug:  a.slug,
+    slug: a.slug,
     title: a.title,
-    image: a.featured_image_b64 || normalizeMediaUrl(a.featured_image) || `https://picsum.photos/seed/${a.slug}/400/240`,
-    time:  timeAgo(a.published_at),
+    image:
+      a.featured_image_b64 ||
+      normalizeMediaUrl(a.featured_image) ||
+      `https://picsum.photos/seed/${a.slug}/400/240`,
+    time: timeAgo(a.published_at),
     views: formatViews(a.view_count),
-    tag:   a.category?.name || 'NEWS',
+    tag: a.category?.name || "NEWS",
     tagColor: categoryColor(a.category?.slug),
   };
 }
@@ -472,13 +545,23 @@ function WidgetHeader({ title, icon: Icon, color, href }) {
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        {Icon
-          ? <Icon size={14} style={{ color }} />
-          : <div className="w-[3px] h-5 rounded-full" style={{ background: color }} />}
-        <h3 className="text-[13px] font-black uppercase tracking-widest text-white">{title}</h3>
+        {Icon ? (
+          <Icon size={14} style={{ color }} />
+        ) : (
+          <div
+            className="w-[3px] h-5 rounded-full"
+            style={{ background: color }}
+          />
+        )}
+        <h3 className="text-[13px] font-black uppercase  text-white">
+          {title}
+        </h3>
       </div>
       {href && (
-        <Link to={href} className="text-[10px] font-bold uppercase tracking-widest text-[#444455] hover:text-white transition-colors flex items-center gap-0.5">
+        <Link
+          to={href}
+          className="text-[10px] font-bold uppercase tracking-widest text-[#444455] hover:text-white transition-colors flex items-center gap-0.5"
+        >
           All <ChevronRight size={9} />
         </Link>
       )}
@@ -490,15 +573,29 @@ function WidgetHeader({ title, icon: Icon, color, href }) {
 function LatestNewsWidget({ categorySlug, excludeSlug }) {
   const [articles, setArticles] = useState([]);
   const color = categoryColor(categorySlug);
-  const label = categorySlug ? categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1) : 'Latest';
+  const label = categorySlug
+    ? categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1)
+    : "Latest";
 
   useEffect(() => {
     if (!categorySlug) return;
-    api.get('/articles/', { params: { status: 'publie', category__slug: categorySlug, ordering: '-published_at', page_size: 7 } })
+    api
+      .get("/articles/", {
+        params: {
+          status: "publie",
+          category__slug: categorySlug,
+          ordering: "-published_at",
+          page_size: 7,
+        },
+      })
       .then(({ data }) => {
-        const all = (data.results || []).filter(a => a.slug !== excludeSlug).slice(0, 5).map(mapSidebarArticle);
+        const all = (data.results || [])
+          .filter((a) => a.slug !== excludeSlug)
+          .slice(0, 5)
+          .map(mapSidebarArticle);
         setArticles(all);
-      }).catch(() => {});
+      })
+      .catch(() => {});
   }, [categorySlug, excludeSlug]);
 
   if (!articles.length) return null;
@@ -506,17 +603,33 @@ function LatestNewsWidget({ categorySlug, excludeSlug }) {
 
   return (
     <div>
-      <WidgetHeader title={`Latest ${label} News`} color={color} href={`/${categorySlug}`} />
+      <WidgetHeader
+        title={`Latest ${label} News`}
+        color={color}
+        href={`/${categorySlug}`}
+      />
 
       {/* Featured */}
-      <Link to={`/articles/${featured.slug}`} className="block group mb-px bg-[#0d0d18] hover:bg-[#12121e] transition-colors">
+      <Link
+        to={`/articles/${featured.slug}`}
+        className="block group mb-px bg-[#0d0d18] hover:bg-[#12121e] transition-colors"
+      >
         <div className="overflow-hidden">
-          <img src={featured.image} alt={featured.title}
-            className="w-full aspect-[16/9] object-cover group-hover:scale-[1.02] transition-transform duration-400"
-            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${featured.slug}/400/225`; }} />
+          <img
+            src={featured.image}
+            alt={featured.title}
+            className="w-full aspect-[16/9] object-cover  transition-transform duration-400"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = `https://picsum.photos/seed/${featured.slug}/400/225`;
+            }}
+          />
         </div>
         <div className="p-2.5">
-          <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-[2px] text-white inline-block mb-1" style={{ background: color }}>
+          <span
+            className="text-[9px] font-black uppercase tracking-widest px-1.5 py-[2px] text-white inline-block mb-1"
+            style={{ background: color }}
+          >
             {featured.tag}
           </span>
           <p className="text-[13px] font-bold text-white leading-snug line-clamp-2 group-hover:text-orange transition-colors">
@@ -530,11 +643,22 @@ function LatestNewsWidget({ categorySlug, excludeSlug }) {
 
       {/* Small list */}
       <div className="flex flex-col gap-px bg-[#1a1a28] mt-px">
-        {rest.map(a => (
-          <Link key={a.slug} to={`/articles/${a.slug}`}
-            className="flex gap-2.5 p-2.5 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group">
+        {rest.map((a) => (
+          <Link
+            key={a.slug}
+            to={`/articles/${a.slug}`}
+            className="flex gap-2.5 p-2.5 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group"
+          >
             <div className="shrink-0 w-[72px] h-[46px] overflow-hidden">
-              <img src={a.image} alt={a.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${a.slug}/200/130`; }} />
+              <img
+                src={a.image}
+                alt={a.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://picsum.photos/seed/${a.slug}/200/130`;
+                }}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[11.5px] font-semibold text-[#ccccdd] leading-snug line-clamp-2 group-hover:text-white transition-colors">
@@ -548,8 +672,10 @@ function LatestNewsWidget({ categorySlug, excludeSlug }) {
         ))}
       </div>
 
-      <Link to={`/${categorySlug}`}
-        className="flex items-center justify-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-widest text-[#444455] hover:text-white transition-colors py-2 border border-[#1a1a28] hover:border-[#333344]">
+      <Link
+        to={`/${categorySlug}`}
+        className="flex items-center justify-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-widest text-[#444455] hover:text-white transition-colors py-2 border border-[#1a1a28] hover:border-[#333344]"
+      >
         See all {label} news <ChevronRight size={9} />
       </Link>
     </div>
@@ -561,17 +687,28 @@ function TopArticlesWidget({ excludeSlug }) {
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    api.get('/articles/', { params: { status: 'publie', ordering: '-view_count,-published_at', page_size: 7 } })
+    api
+      .get("/articles/", {
+        params: {
+          status: "publie",
+          ordering: "-view_count,-published_at",
+          page_size: 7,
+        },
+      })
       .then(({ data }) => {
-        const all = (data.results || []).filter(a => a.slug !== excludeSlug).slice(0, 5).map(a => ({
-          slug:  a.slug,
-          title: a.title,
-          views: formatViews(a.view_count),
-          tag:   a.category?.name || 'NEWS',
-          tagColor: categoryColor(a.category?.slug),
-        }));
+        const all = (data.results || [])
+          .filter((a) => a.slug !== excludeSlug)
+          .slice(0, 5)
+          .map((a) => ({
+            slug: a.slug,
+            title: a.title,
+            views: formatViews(a.view_count),
+            tag: a.category?.name || "NEWS",
+            tagColor: categoryColor(a.category?.slug),
+          }));
         setArticles(all);
-      }).catch(() => {});
+      })
+      .catch(() => {});
   }, [excludeSlug]);
 
   if (!articles.length) return null;
@@ -581,14 +718,19 @@ function TopArticlesWidget({ excludeSlug }) {
       <WidgetHeader title="Top Articles" icon={TrendingUp} color="#f59e0b" />
       <div className="flex flex-col gap-px bg-[#1a1a28]">
         {articles.map((a, i) => (
-          <Link key={a.slug} to={`/articles/${a.slug}`}
-            className="flex items-start gap-3 p-3 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group">
-            <span className="shrink-0 w-7 h-7 flex items-center justify-center text-[11px] font-black text-white"
-              style={{ background: i < 3 ? '#f59e0b' : '#1a1a28' }}>
+          <Link
+            key={a.slug}
+            to={`/articles/${a.slug}`}
+            className="flex items-start gap-3 p-3 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group"
+          >
+            <span className="shrink-0 w-7 h-7 flex items-center justify-center text-[64px] font-black text-gray-500">
               {i + 1}
             </span>
             <div className="min-w-0">
-              <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-[2px] text-white inline-block mb-1" style={{ background: a.tagColor }}>
+              <span
+                className="text-[9px] font-black uppercase tracking-widest px-1.5 py-[2px] text-white inline-block mb-1"
+                style={{ background: a.tagColor }}
+              >
                 {a.tag}
               </span>
               <p className="text-[12px] font-semibold text-[#ccccdd] leading-snug line-clamp-2 group-hover:text-white transition-colors">
@@ -612,34 +754,200 @@ function PopularGamesWidget() {
   const [games, setGames] = useState([]);
 
   useEffect(() => {
-    api.get('/games/', { params: { game_type: 'popular', page_size: 8, ordering: 'rank' } })
+    api
+      .get("/games/", {
+        params: { game_type: "popular", page_size: 8, ordering: "rank" },
+      })
       .then(({ data }) => setGames(data.results || data))
       .catch(() => {});
   }, []);
 
   if (!games.length) return null;
 
+  const ACCENT = "#10b981";
+
   return (
-    <div>
-      <WidgetHeader title="Popular Games" icon={Flame} color="#10b981" href="/gaming" />
-      <div className="flex flex-col gap-px bg-[#1a1a28]">
-        {games.map((g, i) => (
-          <Link key={g.id} to={`/games/${g.slug}`}
-            className="flex items-center gap-3 p-2.5 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group">
-            <span className="shrink-0 w-7 h-7 flex items-center justify-center text-[11px] font-black text-white"
-              style={{ background: i < 3 ? '#10b981' : '#1a1a28' }}>
-              {g.rank || i + 1}
-            </span>
-            <div className="min-w-0">
-              <p className="text-[12px] font-bold text-white leading-snug line-clamp-1 group-hover:text-[#10b981] transition-colors">{g.title}</p>
-              {g.players && <p className="text-[10px] text-[#555566] mt-0.5">{g.players}</p>}
-            </div>
-          </Link>
-        ))}
+    <div
+      style={{
+        overflow: "hidden",
+      }}
+    >
+      {/* Header accent bar */}
+
+      <div
+        style={{
+          padding: "10px 12px 8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <div
+            style={{
+              width: 3,
+              height: 16,
+              borderRadius: 2,
+              background: ACCENT,
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 900,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "#fff",
+            }}
+          >
+            Popular Games
+          </span>
+        </div>
+        <Link
+          to="/gaming"
+          style={{
+            fontSize: 9,
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "#444455",
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
+          className="hover:text-white transition-colors"
+        >
+          All <ChevronRight size={8} />
+        </Link>
       </div>
-      <Link to="/gaming"
-        className="flex items-center justify-center gap-1 mt-1 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-[#1a1a28] hover:border-[#10b981] hover:text-[#10b981] transition-colors">
-        Top Games <ChevronRight size={9} />
+
+      <div className="flex flex-col">
+        {games.map((g, i) => {
+          const isTop3 = i < 3;
+          const cover = g.cover_image || g.image || null;
+          return (
+            <Link
+              key={g.id}
+              to={`/games/${g.slug}`}
+              className="group flex items-center gap-3 transition-colors"
+              style={{
+                padding: "8px 12px",
+                borderBottom: "1px solid #111120",
+                background: "#0a0a14",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#0f0f1e")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "#0a0a14")
+              }
+            >
+              {/* Rank badge */}
+              {/* <div className="shrink-0 flex items-center justify-center font-black"
+                style={{
+                  width: 24, height: 24, fontSize: 11, borderRadius: 3,
+                  background: isTop3 ? ACCENT : 'transparent',
+                  border: isTop3 ? 'none' : '1px solid #1e1e2e',
+                  color: isTop3 ? '#fff' : '#444455',
+                }}>
+                {g.rank || i + 1}
+              </div> */}
+
+              {/* Cover thumbnail */}
+              {cover ? (
+                <div
+                  className="shrink-0 overflow-hidden"
+                  style={{
+                    width: 38,
+                    height: 50,
+                    borderRadius: 3,
+                    background: "#111120",
+                  }}
+                >
+                  <img
+                    src={cover}
+                    alt={g.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="shrink-0 flex items-center justify-center"
+                  style={{
+                    width: 38,
+                    height: 50,
+                    borderRadius: 3,
+                    background: "#111120",
+                    fontSize: 16,
+                  }}
+                >
+                  <img src="" alt="" />
+                </div>
+              )}
+
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <p
+                  className="font-bold leading-snug line-clamp-2 transition-colors"
+                  style={{ fontSize: 12, color: "#ccccdd" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = ACCENT)}
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "#ccccdd")
+                  }
+                >
+                  {g.title}
+                </p>
+                {(g.genre || g.players) && (
+                  <p style={{ fontSize: 10, color: "#555566", marginTop: 2 }}>
+                    {g.genre || g.players}
+                  </p>
+                )}
+              </div>
+
+              {/* Top-3 glow dot */}
+              {isTop3 && (
+                <div
+                  className="shrink-0"
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: ACCENT,
+                    boxShadow: `0 0 6px ${ACCENT}`,
+                  }}
+                />
+              )}
+            </Link>
+          );
+        })}
+      </div>
+
+      <Link
+        to="/gaming"
+        className="flex items-center justify-center gap-1.5 transition-colors"
+        style={{
+          padding: "9px 12px",
+          fontSize: 10,
+          fontWeight: 800,
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          color: "#444455",
+          borderTop: "1px solid #1a1a28",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = ACCENT;
+          e.currentTarget.style.background = `rgba(16,185,129,0.04)`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = "#444455";
+          e.currentTarget.style.background = "transparent";
+        }}
+      >
+        See all top games <ChevronRight size={9} />
       </Link>
     </div>
   );
@@ -650,7 +958,10 @@ function AnticipatedGamesWidget() {
   const [games, setGames] = useState([]);
 
   useEffect(() => {
-    api.get('/games/', { params: { game_type: 'anticipated', page_size: 8, ordering: 'rank' } })
+    api
+      .get("/games/", {
+        params: { game_type: "anticipated", page_size: 8, ordering: "rank" },
+      })
       .then(({ data }) => setGames(data.results || data))
       .catch(() => {});
   }, []);
@@ -659,24 +970,42 @@ function AnticipatedGamesWidget() {
 
   return (
     <div>
-      <WidgetHeader title="Most Anticipated" icon={Flame} color="#f97316" href="/gaming" />
+      <WidgetHeader
+        title="Most Anticipated"
+        icon={Flame}
+        color="#f97316"
+        href="/gaming"
+      />
       <div className="flex flex-col gap-px bg-[#1a1a28]">
         {games.map((g, i) => (
-          <Link key={g.id} to={`/games/${g.slug}`}
-            className="flex items-center gap-3 p-2.5 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group">
-            <span className="shrink-0 w-7 h-7 flex items-center justify-center text-[11px] font-black text-white"
-              style={{ background: i < 3 ? '#f97316' : '#1a1a28' }}>
-              {g.rank || i + 1}
+          <Link
+            key={g.id}
+            to={`/games/${g.slug}`}
+            className="flex items-center gap-3 p-2.5 bg-[#0d0d18] hover:bg-[#12121e] transition-colors group"
+          >
+            <span
+              className="shrink-0 w-7 h-7 flex items-center justify-center text-[11px] font-black text-white"
+         
+            >
+             <img src={g.cover_image} alt="" />
             </span>
             <div className="min-w-0">
-              <p className="text-[12px] font-bold text-white leading-snug line-clamp-1 group-hover:text-[#f97316] transition-colors">{g.title}</p>
-              {g.release_display && <p className="text-[10px] text-[#555566] mt-0.5">{g.release_display}</p>}
+              <p className="text-[12px] font-bold text-white leading-snug line-clamp-1 group-hover:text-[#f97316] transition-colors">
+                {g.title}
+              </p>
+              {g.release_display && (
+                <p className="text-[10px] text-[#555566] mt-0.5">
+                  {g.release_display}
+                </p>
+              )}
             </div>
           </Link>
         ))}
       </div>
-      <Link to="/gaming"
-        className="flex items-center justify-center gap-1 mt-1 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-[#1a1a28] hover:border-[#f97316] hover:text-[#f97316] transition-colors">
+      <Link
+        to="/gaming"
+        className="flex items-center justify-center gap-1 mt-1 py-2 text-[10px] font-black uppercase tracking-widest text-white border border-[#1a1a28] hover:border-[#f97316] hover:text-[#f97316] transition-colors"
+      >
         Most Anticipated <ChevronRight size={9} />
       </Link>
     </div>
@@ -685,11 +1014,10 @@ function AnticipatedGamesWidget() {
 
 /* ─── SIDEBAR ───────────────────────────────────────────────────────────────── */
 function Sidebar({ categorySlug, currentSlug }) {
-  const crossPromoSlug = categorySlug === 'gaming' ? 'esports' : 'gaming';
+  const crossPromoSlug = categorySlug === "gaming" ? "esports" : "gaming";
 
   return (
     <aside className="flex flex-col gap-8">
-
       {/* 1 — Latest news from same category */}
       <LatestNewsWidget categorySlug={categorySlug} excludeSlug={currentSlug} />
 
@@ -697,14 +1025,16 @@ function Sidebar({ categorySlug, currentSlug }) {
       <TopArticlesWidget excludeSlug={currentSlug} />
 
       {/* 3 — Cross-promo: gaming ↔ esports, hardware/culture → gaming */}
-      <LatestNewsWidget categorySlug={crossPromoSlug} excludeSlug={currentSlug} />
+      <LatestNewsWidget
+        categorySlug={crossPromoSlug}
+        excludeSlug={currentSlug}
+      />
 
       {/* 4 — Popular Games */}
       <PopularGamesWidget />
 
       {/* 5 — Most Anticipated */}
       <AnticipatedGamesWidget />
-
     </aside>
   );
 }
@@ -770,7 +1100,9 @@ export default function PublicArticleDetail() {
       .get(`/articles/${slug}/`)
       .then(({ data }) => setArticle(data))
       .catch(() =>
-        setError("This article could not be loaded. It may not exist or is unavailable.")
+        setError(
+          "This article could not be loaded. It may not exist or is unavailable.",
+        ),
       )
       .finally(() => setLoading(false));
   }, [slug]);
@@ -807,10 +1139,9 @@ export default function PublicArticleDetail() {
   return (
     <>
       <FontImport />
-      <div className="min-h-screen text-white">
-        <main className="max-w-[1280px] mx-auto px-3 sm:px-6 lg:px-12 py-8">
+      <div className="min-h-screen text-white px-22">
+        <main className="max-w-[1280px] mx-auto    py-8">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
-
             {/* ── Main article column ── */}
             <article>
               <Breadcrumb category={article.category} title={article.title} />
@@ -867,7 +1198,10 @@ export default function PublicArticleDetail() {
                   src={image}
                   alt={article.title}
                   className="w-full aspect-[16/9] object-cover"
-                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/860/480`; }}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/860/480`;
+                  }}
                 />
               </figure>
 
@@ -879,7 +1213,9 @@ export default function PublicArticleDetail() {
                 />
               ) : (
                 <div className="prose">
-                  <p className="text-[#555566]">No content available for this article.</p>
+                  <p className="text-[#555566]">
+                    No content available for this article.
+                  </p>
                 </div>
               )}
 

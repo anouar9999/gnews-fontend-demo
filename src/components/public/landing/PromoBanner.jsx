@@ -1,8 +1,18 @@
 import { useState } from 'react';
 import { Flame, Mail } from 'lucide-react';
+import Button3D from '../../Button3D';
 
-export default function PromoBanner() {
+export default function PromoBanner({
+  color    = 'var(--color-orange)',
+  colorDim = '#b0001a',
+  colorFloor = '#6e0010',
+  colorRgb = '232,0,28',
+}) {
   const [email, setEmail] = useState('');
+
+  const shadow     = `0 6px 0 ${colorFloor}, 0 8px 16px rgba(${colorRgb},0.45), inset 0 1px 0 rgba(255,255,255,0.18)`;
+  const shadowHover= `0 8px 0 ${colorFloor}, 0 12px 24px rgba(${colorRgb},0.55), inset 0 1px 0 rgba(255,255,255,0.18)`;
+  const shadowDown = `0 2px 0 ${colorFloor}, 0 4px 8px rgba(${colorRgb},0.3), inset 0 1px 0 rgba(255,255,255,0.1)`;
 
   return (
     <section className="relative overflow-hidden   rounded-sm">
@@ -34,7 +44,7 @@ export default function PromoBanner() {
             Newsletter
           </span>
         </div>
-        <h2 className="text-white font-black text-[20px] md:text-[26px] leading-tight mb-1">
+        <h2 className="text-white font-black uppercase text-[20px] md:text-[26px] leading-tight mb-1">
           Ne ratez plus aucune actu gaming
         </h2>
         <p className="text-[#888899] text-[13px] sm:text-[15px] mb-4 px-2">
@@ -51,9 +61,20 @@ export default function PromoBanner() {
             placeholder="votre@email.com"
             className="flex-1 bg-[#1a1a28] border border-[#2a2a38] text-white text-[14px] px-4 py-2.5 outline-none focus:border-orange placeholder-[#444455]"
           />
+           
           <button
             type="submit"
-            className="bg-orange hover:bg-[#cc0018] text-white font-black text-[13px] uppercase tracking-wider px-5 py-2.5 transition-colors flex items-center gap-2 shrink-0"
+            className="flex items-center gap-2 px-5 py-2.5 text-[13px] font-black text-white uppercase tracking-wider shrink-0"
+            style={{
+              background: `linear-gradient(135deg, ${color} 0%, ${colorDim} 100%)`,
+              boxShadow: shadow,
+              transform: 'translateY(-3px)',
+              transition: 'transform 0.08s ease, box-shadow 0.08s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = shadowHover; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = shadow;      e.currentTarget.style.transform = 'translateY(-3px)'; }}
+            onMouseDown={e  => { e.currentTarget.style.boxShadow = shadowDown;  e.currentTarget.style.transform = 'translateY(0px)'; }}
+            onMouseUp={e    => { e.currentTarget.style.boxShadow = shadow;      e.currentTarget.style.transform = 'translateY(-3px)'; }}
           >
             <Mail size={13} /> S'abonner
           </button>

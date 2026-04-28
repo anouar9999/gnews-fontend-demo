@@ -14,7 +14,8 @@ import AdminLogin      from './pages/admin/AdminLogin';
 import AdminDashboard  from './pages/admin/AdminDashboard';
 import AdminSettings   from './pages/admin/AdminSettings';
 import AnalyticsPage   from './pages/admin/AnalyticsPage';
-import SitePagesAdmin  from './pages/admin/SitePagesAdmin';
+import SitePagesAdmin       from './pages/admin/SitePagesAdmin';
+import LandingSectionsAdmin from './pages/admin/LandingSectionsAdmin';
 
 // Existing admin CRUD pages
 import ArticleList   from './pages/articles/ArticleList';
@@ -116,7 +117,8 @@ export default function App() {
 
             <Route path="users" element={<UserList />} />
 
-            <Route path="site-pages" element={<SitePagesAdmin />} />
+            <Route path="site-pages"        element={<SitePagesAdmin />} />
+            <Route path="landing-sections"  element={<LandingSectionsAdmin />} />
 
             <Route path="games" element={<GamesPage />} />
           </Route>

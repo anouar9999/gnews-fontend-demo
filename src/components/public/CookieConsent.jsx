@@ -1,38 +1,41 @@
 import { useState, useEffect } from 'react';
-import { Shield, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, Lock, BarChart2, Megaphone, Settings2 } from 'lucide-react';
+import Button3D from '../Button3D';
+
+const COOKIE_IMG = 'https://lh3.googleusercontent.com/yML5TEO1-N1ngawnIW4MxhsnB7HQr7DMS4RBH8SJGEg-R0P3RDAUoSSgtROcpcsy6l44h-G3urZYL9JEIj8S7ypQ=s120';
 
 const STORAGE_KEY = 'gnewz_cookie_consent';
 
 const COOKIE_TYPES = [
   {
     id: 'essential',
-    label: 'Essential Cookies',
-    description:
-      "Strictly necessary for the website to function. They enable core features like page navigation, secure login, and access to protected areas. These cannot be disabled.",
+    icon: Lock,
+    label: 'Essential',
+    description: 'Required for the site to function — login sessions, navigation, and security. These cannot be disabled.',
     alwaysOn: true,
     defaultOn: true,
   },
   {
     id: 'analytics',
-    label: 'Analytics & Performance',
-    description:
-      "Help us understand how visitors interact with our website by collecting information anonymously. This helps us improve the site's structure and content.",
+    icon: BarChart2,
+    label: 'Analytics',
+    description: 'Collects anonymous data on how you navigate the site so we can improve performance and content relevance.',
     alwaysOn: false,
     defaultOn: true,
   },
   {
     id: 'marketing',
-    label: 'Marketing & Advertising',
-    description:
-      "Used to deliver advertisements more relevant to you. They track your browsing activity across websites and are set by third-party advertising partners.",
+    icon: Megaphone,
+    label: 'Marketing',
+    description: 'Tracks browsing activity to serve personalised ads via third-party advertising partners.',
     alwaysOn: false,
     defaultOn: false,
   },
   {
     id: 'preferences',
-    label: 'Preferences & Personalisation',
-    description:
-      "Allow the website to remember choices you make (such as language or region) and provide enhanced, more personal features for a better experience.",
+    icon: Settings2,
+    label: 'Preferences',
+    description: 'Remembers your settings such as language, region, and display options across visits.',
     alwaysOn: false,
     defaultOn: true,
   },
@@ -44,49 +47,15 @@ function Toggle({ on, onChange, disabled }) {
       type="button"
       disabled={disabled}
       onClick={() => !disabled && onChange(!on)}
-      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 transition-colors duration-200 focus:outline-none
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        ${on ? 'border-[#e8001c] bg-[#e8001c]' : 'border-[#444] bg-[#222]'}`}
+      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200 focus:outline-none
+        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+        ${on ? 'bg-orange' : 'bg-[#3a3a3a]'}`}
     >
       <span
-        className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 mt-[1px]
-          ${on ? 'translate-x-5' : 'translate-x-0.5'}`}
+        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform duration-200 mt-[3px]
+          ${on ? 'translate-x-[18px]' : 'translate-x-[3px]'}`}
       />
     </button>
-  );
-}
-
-function CookieRow({ type, on, onChange }) {
-  const [expanded, setExpanded] = useState(false);
-  return (
-    <div className="border border-[#2a2a2a] rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3.5 bg-[#151515]">
-        <button
-          type="button"
-          onClick={() => setExpanded(e => !e)}
-          className="flex items-center gap-2.5 text-left flex-1 min-w-0"
-        >
-          {expanded
-            ? <ChevronUp size={15} className="text-[#666] shrink-0" />
-            : <ChevronDown size={15} className="text-[#666] shrink-0" />}
-          <span className="text-white text-[14px] font-bold">{type.label}</span>
-          {type.alwaysOn && (
-            <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded text-white ml-1"
-                  style={{ background: '#e8001c' }}>
-              Always On
-            </span>
-          )}
-        </button>
-        <div className="ml-4 shrink-0">
-          <Toggle on={on} onChange={onChange} disabled={type.alwaysOn} />
-        </div>
-      </div>
-      {expanded && (
-        <div className="px-4 py-3 bg-[#0d0d0d] border-t border-[#222]">
-          <p className="text-[#aaa] text-[13px] leading-relaxed">{type.description}</p>
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -108,103 +77,180 @@ export default function CookieConsent({ forceOpen = false, onForceClose, onDone 
   const close = (choice, savedPrefs) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ choice, prefs: savedPrefs }));
     setVisible(false);
+    setShowManage(false);
     onForceClose?.();
     onDone?.();
   };
 
   const acceptAll  = () => close('accepted', Object.fromEntries(COOKIE_TYPES.map(t => [t.id, true])));
   const declineAll = () => close('declined', Object.fromEntries(COOKIE_TYPES.map(t => [t.id, t.alwaysOn])));
-  const savePrefs  = () => close('custom', prefs);
+  const savePrefs  = () => close('custom',   prefs);
 
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+    <div
+      className="fixed bottom-0 left-0 right-0 z-[60] overflow-hidden"
+      style={{ background: '#1a1a1a', borderTop: '1px solid #2e2e2e' }}
+    >
+      {/* Cookie watermark background */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-48 pointer-events-none"
+        style={{
+          backgroundImage: `url(${COOKIE_IMG})`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right -16px center',
+          backgroundSize: '120px 120px',
+          opacity: 0.04,
+        }}
+      />
+      {/* Manage panel — expands upward */}
+      {showManage && (
+        <div style={{ borderBottom: '1px solid #2e2e2e', background: '#161616' }}>
+          <div className="max-w-[1280px] mx-auto px-4 py-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {COOKIE_TYPES.map(type => {
+              const Icon = type.icon;
+              return (
+                <div
+                  key={type.id}
+                  className="flex flex-col gap-3 p-4"
+                  style={{ background: '#1e1e1e', border: '1px solid #2e2e2e' }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Icon size={13} style={{ color: type.alwaysOn ? 'var(--color-orange)' : '#888' }} />
+                      <span className="text-[11px] font-black uppercase tracking-widest text-white">
+                        {type.label}
+                      </span>
+                    </div>
+                    {type.alwaysOn ? (
+                      <span
+                        className="text-[9px] font-black bg-orange   uppercase tracking-widest px-1.5 py-[3px] text-white shrink-0"
+                       
+                      >
+                        Always On
+                      </span>
+                    ) : (
+                      <Toggle
+                        on={prefs[type.id]}
+                        onChange={val => setPrefs(p => ({ ...p, [type.id]: val }))}
+                      />
+                    )}
+                  </div>
+                  <p className="text-[11px] leading-relaxed" style={{ color: '#888' }}>
+                    {type.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-      <div className="relative w-full max-w-2xl bg-[#0d0d0d] border border-[#2a2a2a] rounded-2xl shadow-[0_0_100px_rgba(232,0,28,0.12)] overflow-hidden">
+      {/* Main bar */}
+      <div className="max-w-[1280px] mx-auto px-4 py-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
 
-        {/* Header */}
-        <div className="flex items-start justify-between px-7 pt-7 pb-5 border-b border-[#1e1e1e]">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                 style={{ background: 'rgba(232,0,28,0.12)' }}>
-              <Shield size={24} style={{ color: '#e8001c' }} />
-            </div>
-            <div>
-              <h2 className="text-white text-[22px] font-black leading-tight">We Value Your Privacy</h2>
-              <p className="text-[#666] text-[12px] mt-0.5 font-medium">gnewz.com · Cookie Preferences</p>
+          {/* Info block */}
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <img
+              src={COOKIE_IMG}
+              alt="cookie"
+              className="shrink-0 w-9 h-9 object-contain"
+            />
+            <div className="min-w-0">
+              <p className="text-[12px] font-black uppercase tracking-widest text-white mb-0.5">
+                Cookie &amp; Privacy Settings
+              </p>
+              <p className="text-[11px] leading-relaxed" style={{ color: '#888' }}>
+                We use cookies to personalise content, analyse traffic, and serve relevant ads. By clicking{' '}
+                <strong className="text-white font-bold">Accept All</strong> you agree to our{' '}
+                <a
+                  href="/cookie-policy"
+                  className="underline transition-colors"
+                  style={{ color: '#aaa' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#aaa')}
+                >
+                  Cookie Policy
+                </a>{' '}
+                and{' '}
+                <a
+                  href="/privacy-policy"
+                  className="underline transition-colors"
+                  style={{ color: '#aaa' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#aaa')}
+                >
+                  Privacy Policy
+                </a>
+                . You can adjust preferences at any time via the cookie icon in the footer.
+              </p>
             </div>
           </div>
-          <button onClick={declineAll} className="text-[#555] hover:text-white transition-colors ml-4 mt-1">
-            <X size={20} />
-          </button>
-        </div>
 
-        {/* Body */}
-        <div className="px-7 py-6">
-          <p className="text-[#bbb] text-[14px] leading-relaxed mb-6">
-            We use cookies and similar technologies to enhance your browsing experience, analyse site
-            traffic, personalise content and serve targeted advertisements. By clicking{' '}
-            <strong className="text-white font-bold">"Accept All"</strong>, you consent to our use of
-            cookies. You can manage your preferences at any time. For more details, see our{' '}
-            <a href="/cookie-policy"   className="underline font-semibold" style={{ color: '#e8001c' }}>Cookie Policy</a>{' '}
-            and{' '}
-            <a href="/privacy-policy"  className="underline font-semibold" style={{ color: '#e8001c' }}>Privacy Policy</a>.
-          </p>
-
-          {/* Manage toggle */}
-          <button
-            type="button"
-            onClick={() => setShowManage(m => !m)}
-            className="flex items-center gap-2 text-[13px] font-black uppercase tracking-widest mb-5 transition-colors"
-            style={{ color: showManage ? '#e8001c' : '#777' }}
-          >
-            {showManage ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            {showManage ? 'Hide Preferences' : 'Manage Preferences'}
-          </button>
-
-          {showManage && (
-            <div className="flex flex-col gap-2 mb-6">
-              {COOKIE_TYPES.map(type => (
-                <CookieRow
-                  key={type.id}
-                  type={type}
-                  on={prefs[type.id]}
-                  onChange={val => setPrefs(p => ({ ...p, [type.id]: val }))}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+          {/* Controls */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            {/* Manage */}
             <button
-              onClick={acceptAll}
-              className="flex-1 py-3.5 text-[14px] font-black uppercase tracking-widest text-white rounded-xl transition-opacity hover:opacity-90"
-              style={{ background: '#e8001c' }}
+              onClick={() => setShowManage(m => !m)}
+              className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest px-3 h-8 transition-colors duration-150"
+              style={{
+                color: showManage ? '#fff' : '#888',
+                border: '1px solid #2e2e2e',
+                background: showManage ? '#2a2a2a' : 'transparent',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#444'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = showManage ? '#fff' : '#888'; e.currentTarget.style.borderColor = '#2e2e2e'; }}
             >
-              Accept All
+              {showManage ? <ChevronDown size={11} /> : <ChevronUp size={11} />}
+              Manage
             </button>
+
+            {/* Save preferences — only when manage is open */}
             {showManage && (
               <button
                 onClick={savePrefs}
-                className="flex-1 py-3.5 text-[14px] font-black uppercase tracking-widest text-white rounded-xl border border-[#333] bg-[#1a1a1a] hover:bg-[#222] transition-colors"
+                className="text-[11px] font-black uppercase tracking-widest text-white px-3 h-8 transition-colors duration-150"
+                style={{ border: '1px solid #2e2e2e', background: '#2a2a2a' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#555'; e.currentTarget.style.background = '#333'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#2e2e2e'; e.currentTarget.style.background = '#2a2a2a'; }}
               >
                 Save Preferences
               </button>
             )}
+
+            {/* Decline */}
             <button
               onClick={declineAll}
-              className="flex-1 py-3.5 text-[14px] font-bold text-[#777] hover:text-white rounded-xl border border-[#2a2a2a] hover:border-[#444] transition-colors"
+              className="text-[11px] font-black uppercase tracking-widest px-3 h-8 transition-colors duration-150"
+              style={{ color: '#888', border: '1px solid #2e2e2e' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#444'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#888'; e.currentTarget.style.borderColor = '#2e2e2e'; }}
             >
               Decline All
             </button>
-          </div>
 
-          <p className="text-[#444] text-[11px] text-center mt-5 leading-relaxed">
-            You can update your preferences at any time via the cookie icon in the footer.
-          </p>
+            {/* Accept All */}
+            <Button3D
+              color="var(--color-orange)"
+              onClick={acceptAll}
+              className="text-[11px] uppercase tracking-widest px-4 h-8"
+            >
+              Accept All
+            </Button3D>
+
+            {/* Dismiss */}
+            <button
+              onClick={declineAll}
+              className="w-7 h-7 flex items-center justify-center transition-colors duration-150"
+              style={{ color: '#555' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#ccc')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#555')}
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

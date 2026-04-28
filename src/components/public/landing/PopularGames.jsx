@@ -42,8 +42,8 @@ export default function PopularGames() {
         </div>
         <div className="flex gap-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="shrink-0 w-[185px]">
-              <div className="h-[248px] bg-[#1a1a28] animate-pulse" />
+            <div key={i} className="shrink-0 w-[160px]">
+              <div className="aspect-[2/3] bg-[#1a1a28] animate-pulse" />
               <div className="mt-2 h-4 w-3/4 bg-[#1a1a28] animate-pulse rounded" />
             </div>
           ))}
@@ -63,7 +63,7 @@ export default function PopularGames() {
             <div className="w-[4px] h-[22px] rounded-full bg-[#10b981]" />
             <div className="w-[2px] h-[14px] rounded-full bg-[#10b981] opacity-40" />
           </div>
-          <h2 className="text-[24px] md:text-[35px] font-black uppercase tracking-tight text-white leading-none">
+          <h2 className="text-[24px] md:text-[45px] font-black uppercase tracking-tight text-white leading-none">
             Jeux les plus populaires
           </h2>
         </div>
@@ -71,18 +71,14 @@ export default function PopularGames() {
           to="/gaming"
           className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest"
           style={{ color: "rgba(255,255,255,0.3)" }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.color = "rgba(255,255,255,0.8)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.color = "rgba(255,255,255,0.3)")
-          }
+          onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.8)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.3)")}
         >
           Voir tout <ChevronRight size={12} />
         </Link>
       </div>
 
-      {/* Horizontal scroll */}
+      {/* Horizontal scroll — aspect-[2/3] tall portrait cards */}
       <div
         className="flex gap-3 overflow-x-auto pb-2"
         style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none" }}
@@ -93,40 +89,28 @@ export default function PopularGames() {
             key={game.id}
             to={`/games/${game.slug}`}
             className="popular-scroll group shrink-0 block"
-            style={{ width: 185, scrollSnapAlign: "start" }}
+            style={{ width: 160, scrollSnapAlign: "start" }}
           >
-            {/* Cover */}
-            <div
-              className="relative overflow-hidden"
-              style={{ height: 248 }}
-            >
+            {/* Cover — aspect-[2/3] portrait */}
+            <div className="relative overflow-hidden aspect-[2/3] rounded">
               <img
-                src={game.image_url || `https://picsum.photos/seed/${game.slug}/400/533`}
+                src={game.cover_image || `https://picsum.photos/seed/${game.slug}/320/480`}
                 alt={game.title}
-                className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
-                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${game.slug}/400/533`; }}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${game.slug}/320/480`; }}
               />
               {/* Rank */}
               <div
-                className="font-machina absolute top-2 left-2 w-7 h-7 flex items-center justify-center text-[12px] font-black text-white"
-                style={{ background: i < 3 ? "#10b981" : "rgba(0,0,0,0.7)" }}
+                className="absolute top-1 left-0.5 w-7 h-7 flex items-center justify-center text-[92px] font-black text-orange "
+                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.7)' }}
+                // style={{ background: i < 3 ? "#10b981" : "rgba(0,0,0,0.7)" }}
               >
-                {game.rank || i + 1}
-              </div>
-              {/* Gradient bottom */}
-              <div
-                className="absolute bottom-0 left-0 right-0 p-2.5"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(5,5,15,0.9), transparent)",
-                }}
-              >
-                <TrendArrow trend={game.trend} />
+                {i + 1}
               </div>
             </div>
-            {/* Info */}
+            {/* Info below */}
             <div className="pt-2">
-              <p className="text-[15px] font-bold uppercase tracking-tight text-white leading-none line-clamp-1">
+              <p className="text-[16px] font-bold uppercase tracking-tight text-white leading-none line-clamp-1">
                 {game.title}
               </p>
               {game.players && (
@@ -134,6 +118,7 @@ export default function PopularGames() {
                   <Users size={10} /> {game.players}
                 </div>
               )}
+              <TrendArrow trend={game.trend} />
             </div>
           </Link>
         ))}

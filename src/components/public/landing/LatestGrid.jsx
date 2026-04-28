@@ -4,6 +4,7 @@ import { Clock } from 'lucide-react';
 import { Tag, Meta } from './shared';
 import api from '../../../api/axios';
 import { normalizeMediaUrl, timeAgo, formatViews } from '../../../utils/article';
+import { useLandingSection } from '../../../context/LandingSectionsContext';
 
 function mapArticle(a) {
   return {
@@ -27,108 +28,126 @@ const CATEGORIES = [
 ];
 
 function CategoryBlock({ slug, label, color, featuredSlug }) {
-  const [articles, setArticles] = useState([]);
+  const [article, setArticle] = useState(null);
 
   useEffect(() => {
-    api.get('/articles/', {
-      params: { status: 'publie', category__slug: slug, ordering: '-published_at', page_size: 4 },
-    }).then(({ data }) => {
-      setArticles((data.results || []).filter(a => a.slug !== featuredSlug).slice(0, 2).map(mapArticle));
-    }).catch(() => {});
+    api
+      .get("/articles/", {
+        params: {
+          status: "publie",
+          category__slug: slug,
+          ordering: "-published_at",
+          page_size: 2,
+        },
+      })
+      .then(({ data }) => {
+        const filtered = (data.results || [])
+          .filter((a) => a.slug !== featuredSlug)
+          .map(mapArticle);
+        if (filtered[0]) setArticle(filtered[0]);
+      })
+      .catch(() => {});
   }, [slug, featuredSlug]);
 
-  if (!articles.length) return null;
+  if (!article) return null;
 
   return (
-    <div className="border-b border-[#1a1a28] last:border-0">
-      <div className="flex items-center gap-2 px-3 py-1.5" style={{ borderLeft: `3px solid ${color}` }}>
-        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color }}>{label}</span>
+    <Link to={`/articles/${article.slug}`} className="group block rounded">
+      {/* fixed 120px image on top */}
+      <div className="overflow-hidden h-[120px] rounded">
+        <img
+          src={article.image}
+          alt={article.title}
+          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${article.slug}/400/300`; }}
+        />
       </div>
-      {articles.map(a => (
-        <Link
-          key={a.slug}
-          to={`/articles/${a.slug}`}
-          className="flex items-start gap-2.5 px-3 py-2 hover:bg-[#12121e] transition-colors group border-t border-[#1a1a28]"
-        >
-          <div className="shrink-0 w-[68px] h-[44px] overflow-hidden bg-[#1a1a28]">
-            <img
-              src={a.image} alt={a.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${a.slug}/200/130`; }}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11.5px] font-semibold text-[#ccccdd] leading-snug line-clamp-2 group-hover:text-white transition-colors">{a.title}</p>
-            <span className="text-[10px] text-[#555566] flex items-center gap-1 mt-0.5"><Clock size={8} />{a.time}</span>
-          </div>
-        </Link>
-      ))}
-    </div>
+      {/* Text below */}
+      <div className="pt-2">
+        <Tag label={article.tag} color={color} />
+        <p className="text-[14px] font-bold text-[#ccccdd] leading-snug line-clamp-2 mt-1 group-hover:text-white transition-colors">
+          {article.title}
+        </p>
+        <div className="flex items-center gap-1 mt-1 text-[10px] text-[#555566]">
+          <Clock size={9} />
+          <span>{article.time}</span>
+        </div>
+      </div>
+    </Link>
   );
 }
 
 export default function LatestGrid() {
+  const config = useLandingSection('latest');
   const [featured, setFeatured] = useState(null);
 
   useEffect(() => {
-    api.get('/articles/', {
-      params: { status: 'publie', ordering: '-published_at', page_size: 1 },
-    }).then(({ data }) => {
-      const articles = (data.results || []).map(mapArticle);
-      if (articles[0]) setFeatured(articles[0]);
-    }).catch(() => {});
-  }, []);
+    // Use first pinned article as the featured card
+    if (config?.articles?.length > 0) {
+      setFeatured(mapArticle(config.articles[0].article));
+      return;
+    }
+    const params = { status: 'publie', ordering: '-published_at', page_size: 1 };
+    if (config?.category_slug) params.category__slug = config.category_slug;
+    api.get('/articles/', { params })
+      .then(({ data }) => {
+        const articles = (data.results || []).map(mapArticle);
+        if (articles[0]) setFeatured(articles[0]);
+      }).catch(() => {});
+  }, [config]);
 
+  if (config?.is_active === false) return null;
   if (!featured) return null;
 
   return (
-    <section className="py-12 border-b border-[#1a1a28]">
-
+    <section className="py-12 ">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-5">
         <div className="flex gap-[3px] items-center">
           <div className="w-[4px] h-[32px] rounded-full bg-orange" />
           <div className="w-[2px] h-[14px] rounded-full bg-orange opacity-40" />
         </div>
-        <h2 className="text-[22px] md:text-[30px] font-black uppercase tracking-tight text-white leading-none">Latest News</h2>
+        <h2 className="text-[24px] md:text-[45px] font-black uppercase tracking-tight text-white leading-none">Latest News</h2>
       </div>
-
-      {/* Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3 items-start">
-
-        {/* Featured article */}
-        <Link
-          to={`/articles/${featured.slug}`}
-          className="relative block overflow-hidden group bg-[#0d0d18]"
-        >
-          <img
-            src={featured.image}
-            alt={featured.title}
-            className="w-full aspect-[16/9] object-cover group-hover:scale-[1.02] transition-transform duration-500"
-            onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${featured.slug}/900/506`; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d18] via-[#0d0d18]/55 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
-            <Tag label={featured.tag} color={featured.tagColor} />
-            <h3 className="text-white font-black text-[18px] sm:text-[22px] leading-tight mt-2 mb-2 line-clamp-3">{featured.title}</h3>
-            {featured.excerpt && (
-              <p className="hidden sm:block text-[#aaaabc] text-[13px] leading-relaxed line-clamp-2 mb-2">{featured.excerpt}</p>
-            )}
-            <div className="flex items-center gap-4 text-[12px] text-[#666677]">
-              <span className="text-orange font-bold">{featured.author}</span>
-              <Meta time={featured.time} views={featured.views} />
-            </div>
+<div className='px-4'>
+   {/* Featured — full width, fixed 220px height, content overlaid */}
+      <Link to={`/articles/${featured.slug}`} className="group block mb-4 relative overflow-hidden h-[220px] rounded">
+        <img
+          src={featured.image}
+          alt={featured.title}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = `https://picsum.photos/seed/${featured.slug}/900/506`; }}
+        />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 55%, transparent 100%)' }} />
+        {/* Text content */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <Tag label={featured.tag} color={featured.tagColor} />
+          <h3 className="text-white font-black text-[22px] leading-tight mt-1 mb-1 line-clamp-2">
+            {featured.title}
+          </h3>
+          <div className="flex items-center gap-4">
+            <span className="text-orange font-bold text-[11px]">{featured.author}</span>
+            <Meta time={featured.time} views={featured.views} />
           </div>
-        </Link>
-
-        {/* Category sidebar */}
-        <div className="bg-[#0d0d18] flex flex-col">
-          {CATEGORIES.map(cat => (
-            <CategoryBlock key={cat.slug} slug={cat.slug} label={cat.label} color={cat.color} featuredSlug={featured.slug} />
-          ))}
         </div>
+      </Link>
 
+      {/* 4-column grid — aspect-[16/9] cards, image on top, text below */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+        {CATEGORIES.map(cat => (
+          <CategoryBlock
+            key={cat.slug}
+            slug={cat.slug}
+            label={cat.label}
+            color={cat.color}
+            featuredSlug={featured.slug}
+          />
+        ))}
       </div>
+</div>
+   
+      
     </section>
   );
 }

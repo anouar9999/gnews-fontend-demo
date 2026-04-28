@@ -15,6 +15,7 @@ import {
   FileText,
   X,
   Gamepad2,
+  Layout,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import GnewzLogo from "./public/GnewzLogo";
@@ -52,7 +53,8 @@ const navGroups = [
   {
     label: "Site",
     items: [
-      { to: "/admin/site-pages", icon: FileText, labelKey: "admin.sitePages" },
+      { to: "/admin/landing-sections", icon: Layout,   labelKey: "admin.landingSections" },
+      { to: "/admin/site-pages",       icon: FileText, labelKey: "admin.sitePages" },
     ],
   },
   {
